@@ -1,0 +1,11 @@
+id,employee_id,branch_code,name,name_kana,phone,email,role,pin_code,is_active,hire_date
+staff-001,S001,jinan,山田 太郎,ヤマダ タロウ,090-1111-0001,yamada@yakiniku-jinan.jp,admin,111111,true,2020-04-01
+staff-002,S002,jinan,佐藤 花子,サトウ ハナコ,090-1111-0002,sato@yakiniku-jinan.jp,admin,222222,true,2020-04-01
+staff-003,S003,jinan,田中 一郎,タナカ イチロウ,090-1111-0003,tanaka@yakiniku-jinan.jp,manager,333333,true,2021-06-15
+staff-004,S004,jinan,鈴木 美咲,スズキ ミサキ,090-1111-0004,suzuki@yakiniku-jinan.jp,cashier,444444,true,2022-01-10
+staff-005,S005,jinan,高橋 健太,タカハシ ケンタ,090-1111-0005,takahashi@yakiniku-jinan.jp,waiter,555555,true,2022-03-20
+staff-006,S006,jinan,伊藤 さくら,イトウ サクラ,090-1111-0006,ito@yakiniku-jinan.jp,waiter,666666,true,2023-04-01
+staff-007,S007,jinan,渡辺 大輔,ワタナベ ダイスケ,090-1111-0007,watanabe@yakiniku-jinan.jp,kitchen,777777,true,2021-08-01
+staff-008,S008,jinan,中村 真由美,ナカムラ マユミ,090-1111-0008,nakamura@yakiniku-jinan.jp,kitchen,888888,true,2022-07-15
+staff-009,S009,jinan,小林 翔太,コバヤシ ショウタ,090-1111-0009,kobayashi@yakiniku-jinan.jp,receptionist,999999,true,2023-09-01
+staff-010,S010,jinan,加藤 愛,カトウ アイ,090-1111-0010,kato@yakiniku-jinan.jp,waiter,000000,true,2024-01-15

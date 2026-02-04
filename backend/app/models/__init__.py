@@ -9,6 +9,7 @@ from app.models.chat import ChatMessage, ChatInsight
 from app.models.table import Table, TableAssignment, TableAvailability
 from app.models.menu import MenuItem, MenuCategory
 from app.models.order import Order, OrderItem, TableSession, OrderStatus
+from app.models.staff import Staff, StaffRole
 
 __all__ = [
     "Branch",
@@ -28,4 +29,6 @@ __all__ = [
     "OrderItem",
     "TableSession",
     "OrderStatus",
+    "Staff",
+    "StaffRole",
 ]

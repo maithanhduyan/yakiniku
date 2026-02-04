@@ -358,6 +358,15 @@ function selectCategory(category) {
     }
 }
 
+function getImageUrl(imageUrl) {
+    if (!imageUrl) return 'https://via.placeholder.com/400x200?text=No+Image';
+    // If it's a relative path from API, prepend the API base
+    if (imageUrl.startsWith('/images/')) {
+        return CONFIG.API_BASE.replace('/api', '') + imageUrl;
+    }
+    return imageUrl;
+}
+
 function renderMenuItems(items) {
     const container = document.getElementById('menuGrid');
 
@@ -369,11 +378,12 @@ function renderMenuItems(items) {
     container.innerHTML = items.map(item => {
         const inCart = state.cart.find(c => c.id === item.id);
         const cartQty = inCart ? inCart.quantity : 0;
+        const imgUrl = getImageUrl(item.image_url);
 
         return `
             <div class="menu-card ${inCart ? 'in-cart' : ''}" onclick="openItemModal('${item.id}')">
                 ${cartQty > 0 ? `<div class="menu-card-cart-indicator">${cartQty}</div>` : ''}
-                <img class="menu-card-image" src="${item.image_url || ''}" alt="${item.name}" loading="lazy"
+                <img class="menu-card-image" src="${imgUrl}" alt="${item.name}" loading="lazy"
                      onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
                 <div class="menu-card-content">
                     <h3 class="menu-card-name">${item.name}</h3>
@@ -402,7 +412,7 @@ function renderCartItems() {
 
     container.innerHTML = state.cart.map((item, index) => `
         <div class="cart-item">
-            <img class="cart-item-image" src="${item.image_url || ''}" alt="${item.name}"
+            <img class="cart-item-image" src="${getImageUrl(item.image_url)}" alt="${item.name}"
                  onerror="this.src='https://via.placeholder.com/60?text=No'">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
@@ -531,7 +541,7 @@ function openItemModal(itemId) {
     state.currentItem = item;
     state.modalQty = 1;
 
-    document.getElementById('modalImage').src = item.image_url || '';
+    document.getElementById('modalImage').src = getImageUrl(item.image_url);
     document.getElementById('modalTitle').textContent = item.name;
     document.getElementById('modalDescription').textContent = item.description || '';
     document.getElementById('modalPrice').textContent = `¥${item.price.toLocaleString()}`;

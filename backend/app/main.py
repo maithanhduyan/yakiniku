@@ -63,6 +63,9 @@ app = FastAPI(
 # Static files for dashboard
 app.mount("/static", StaticFiles(directory="../dashboard/static"), name="static")
 
+# Static files for menu images (backend serves images)
+app.mount("/images", StaticFiles(directory="static/images"), name="images")
+
 # CORS - allow web frontend
 app.add_middleware(
     CORSMiddleware,

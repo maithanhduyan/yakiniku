@@ -18,6 +18,7 @@ from app.database import AsyncSessionLocal, engine, Base
 from app.models.staff import Staff, StaffRole
 from app.models.customer import GlobalCustomer, BranchCustomer
 from app.models.preference import CustomerPreference
+from app.models.menu import MenuItem
 
 
 DATA_DIR = Path(__file__).parent
@@ -163,6 +164,54 @@ async def seed_preferences(session: AsyncSession):
     print(f"   Categories: {categories}")
 
 
+async def seed_menu_items(session: AsyncSession):
+    """Seed menu items from CSV."""
+    csv_path = DATA_DIR / "menu_items.csv"
+    if not csv_path.exists():
+        print("❌ menu_items.csv not found")
+        return
+
+    count = 0
+    categories = {}
+
+    with open(csv_path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Build image URL from filename
+            image_filename = row.get("image_filename", "")
+            image_url = f"/images/menu/{image_filename}" if image_filename else None
+
+            menu_item = MenuItem(
+                id=row["id"],
+                branch_code=row["branch_code"],
+                name=row["name"],
+                name_en=row.get("name_en", ""),
+                description=row.get("description", ""),
+                category=row["category"],
+                subcategory=row.get("subcategory", ""),
+                price=int(row["price"]),
+                display_order=int(row.get("display_order", 0)),
+                is_available=row.get("is_available", "true").lower() == "true",
+                is_popular=row.get("is_popular", "false").lower() == "true",
+                is_spicy=row.get("is_spicy", "false").lower() == "true",
+                is_vegetarian=row.get("is_vegetarian", "false").lower() == "true",
+                allergens=row.get("allergens", ""),
+                prep_time_minutes=int(row.get("prep_time_minutes", 5)),
+                kitchen_note=row.get("kitchen_note", ""),
+                image_url=image_url,
+            )
+            session.add(menu_item)
+            count += 1
+
+            # Count categories
+            cat = row["category"]
+            categories[cat] = categories.get(cat, 0) + 1
+
+    await session.commit()
+    print(f"✅ Seeded {count} menu items")
+    print(f"   Categories: {categories}")
+
+
 async def seed_all(drop_existing=True):
     """Run all seed functions."""
     print("\n🌱 Seeding Yakiniku Jinan database...\n")
@@ -175,6 +224,8 @@ async def seed_all(drop_existing=True):
     from app.models.table import Table
     from app.models.branch import Branch
     from app.models.chat import ChatMessage
+    from app.models.menu import MenuItem
+    from app.models.order import Order, OrderItem
 
     # Drop and recreate tables
     async with engine.begin() as conn:
@@ -189,6 +240,7 @@ async def seed_all(drop_existing=True):
         await seed_customers(session)
         await seed_branch_customers(session)
         await seed_preferences(session)
+        await seed_menu_items(session)
 
     print("\n🎉 Database seeding complete!\n")
     print("Summary:")
@@ -196,6 +248,7 @@ async def seed_all(drop_existing=True):
     print("  - 100 Global customers with Japanese names")
     print("  - 100 Branch customers with visit history & sentiment")
     print("  - Customer preferences for CRM insights")
+    print("  - 40 Menu items with images")
 
 
 if __name__ == "__main__":

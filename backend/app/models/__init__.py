@@ -7,6 +7,8 @@ from app.models.preference import CustomerPreference
 from app.models.booking import Booking
 from app.models.chat import ChatMessage, ChatInsight
 from app.models.table import Table, TableAssignment, TableAvailability
+from app.models.menu import MenuItem, MenuCategory
+from app.models.order import Order, OrderItem, TableSession, OrderStatus
 
 __all__ = [
     "Branch",
@@ -20,4 +22,10 @@ __all__ = [
     "Table",
     "TableAssignment",
     "TableAvailability",
+    "MenuItem",
+    "MenuCategory",
+    "Order",
+    "OrderItem",
+    "TableSession",
+    "OrderStatus",
 ]

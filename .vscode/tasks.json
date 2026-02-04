@@ -1,0 +1,102 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Backend: Start",
+            "type": "shell",
+            "command": ".venv/Scripts/python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^INFO:.*Uvicorn running",
+                    "endsPattern": "^INFO:.*Application startup complete"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "servers"
+            }
+        },
+        {
+            "label": "Backend: Stop",
+            "type": "shell",
+            "command": "Stop-Process -Name python -ErrorAction SilentlyContinue; Stop-Process -Name uvicorn -ErrorAction SilentlyContinue",
+            "windows": {
+                "command": "taskkill /F /IM python.exe /FI \"WINDOWTITLE eq *uvicorn*\" 2>$null; Write-Host 'Backend stopped'"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Web: Start",
+            "type": "shell",
+            "command": ".venv/Scripts/python.exe -m http.server 8080",
+            "options": {
+                "cwd": "${workspaceFolder}/web"
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "servers"
+            }
+        },
+        {
+            "label": "Table Order App: Start",
+            "type": "shell",
+            "command": ".venv/Scripts/python.exe -m http.server 8081",
+            "options": {
+                "cwd": "${workspaceFolder}/apps/table-order"
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "servers"
+            }
+        },
+        {
+            "label": "All: Start (Backend + Web)",
+            "dependsOn": [
+                "Backend: Start",
+                "Web: Start"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Database: Seed Menu",
+            "type": "shell",
+            "command": ".venv/Scripts/python.exe -c \"import asyncio; from scripts.seed_menu import seed_menu; asyncio.run(seed_menu())\"",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}

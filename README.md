@@ -1,5 +1,5 @@
 # Yakiniku Jinan - Restaurant Booking System
-
+[![Deploy static content to Pages](https://github.com/maithanhduyan/yakiniku/actions/workflows/static.yml/badge.svg)](https://github.com/maithanhduyan/yakiniku/actions/workflows/static.yml)
 > Multi-tenant restaurant booking platform with AI-powered customer insights.
 
 ## Architecture

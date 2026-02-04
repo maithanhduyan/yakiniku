@@ -84,12 +84,14 @@ async def health_check():
 
 
 # Include routers
-from app.routers import bookings, customers, branches, chat, dashboard, notifications, tables
+from app.routers import bookings, customers, branches, chat, dashboard, notifications, tables, menu, orders
 
 app.include_router(bookings.router, prefix="/api/bookings", tags=["bookings"])
 app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
 app.include_router(branches.router, prefix="/api/branches", tags=["branches"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(tables.router, prefix="/api/tables", tags=["tables"])
+app.include_router(menu.router, prefix="/api/menu", tags=["menu"])
+app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(dashboard.router, prefix="/admin", tags=["dashboard"])

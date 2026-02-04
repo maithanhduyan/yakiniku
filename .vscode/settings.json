@@ -9,4 +9,6 @@
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "chat.agent.maxRequests": 200,
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv",
+
 }

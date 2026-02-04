@@ -4,11 +4,11 @@
 
 ## Trạng thái phát triển
 
-| App | Status | Files |
-|-----|--------|-------|
-| Table Order | ✅ Created | `apps/table-order/` |
-| Kitchen (KDS) | 🔲 Planned | `apps/kitchen/` |
-| POS | 🔲 Planned | `apps/pos/` |
+| App | Status | Port | Files |
+|-----|--------|------|-------|
+| Table Order | ✅ Created | 8081 | `apps/table-order/` |
+| Kitchen (KDS) | ✅ Created | 8082 | `apps/kitchen/` |
+| POS | 🔲 Planned | 8083 | `apps/pos/` |
 
 ## Cấu trúc thư mục đã tạo
 

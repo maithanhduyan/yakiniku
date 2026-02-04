@@ -76,6 +76,21 @@
             }
         },
         {
+            "label": "Kitchen (KDS) App: Start",
+            "type": "shell",
+            "command": ".venv/Scripts/python.exe -m http.server 8082",
+            "options": {
+                "cwd": "${workspaceFolder}/apps/kitchen"
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "servers"
+            }
+        },
+        {
             "label": "All: Start (Backend + Web)",
             "dependsOn": [
                 "Backend: Start",

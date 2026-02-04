@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} | 焼肉ジナン</title>
+
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+
+    <!-- HTMX (local) -->
+    <script src="/static/js/htmx.min.js"></script>
+
+    {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 w-64 h-full bg-[#252525] border-r border-gray-700">
+        <div class="p-6">
+            <h1 class="text-xl font-bold text-primary">焼肉ジナン</h1>
+            <p class="text-sm text-gray-400">Dashboard</p>
+        </div>
+
+        <nav class="mt-4">
+            <a href="/admin/" class="block px-6 py-3 hover:bg-gray-700 {% if active == 'home' %}bg-gray-700{% endif %}">
+                📊 ダッシュボード
+            </a>
+            <a href="/admin/bookings" class="block px-6 py-3 hover:bg-gray-700 {% if active == 'bookings' %}bg-gray-700{% endif %}">
+                📅 予約管理
+            </a>
+            <a href="/admin/tables" class="block px-6 py-3 hover:bg-gray-700 {% if active == 'tables' %}bg-gray-700{% endif %}">
+                🪑 テーブル管理
+            </a>
+            <a href="/admin/customers" class="block px-6 py-3 hover:bg-gray-700 {% if active == 'customers' %}bg-gray-700{% endif %}">
+                👤 顧客インサイト
+            </a>
+            <a href="/admin/analytics" class="block px-6 py-3 hover:bg-gray-700 {% if active == 'analytics' %}bg-gray-700{% endif %}">
+                📈 分析
+            </a>
+
+            {% if is_super_admin %}
+            <div class="border-t border-gray-700 mt-4 pt-4">
+                <a href="/admin/branches" class="block px-6 py-3 hover:bg-gray-700 {% if active == 'branches' %}bg-gray-700{% endif %}">
+                    🏢 店舗管理
+                </a>
+            </div>
+            {% endif %}
+        </nav>
+
+        <!-- Branch Selector -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+            <select class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm">
+                <option value="jinan">平間本店</option>
+                <!-- More branches -->
+            </select>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold">{% block header %}Dashboard{% endblock %}</h2>
+            <div class="flex items-center gap-4">
+                <!-- Notification Status Indicator -->
+                <div class="flex items-center gap-2" title="通知接続状態">
+                    <span id="notification-status" style="width: 8px; height: 8px; border-radius: 50%; background-color: #6b7280;"></span>
+                    <span class="text-sm text-gray-400">通知</span>
+                </div>
+                <span class="text-gray-400">{{ current_user.email if current_user else 'Admin' }}</span>
+                <a href="/admin/logout" class="text-sm text-gray-400 hover:text-white">ログアウト</a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Notifications Script -->
+    <script src="/static/js/notifications.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

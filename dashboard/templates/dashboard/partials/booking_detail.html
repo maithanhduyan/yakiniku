@@ -1,0 +1,114 @@
+<div class="relative">
+    <button class="absolute top-0 right-0 text-gray-400 hover:text-white text-2xl"
+            onclick="document.getElementById('modal').classList.add('hidden')">
+        ×
+    </button>
+
+    <h3 class="text-xl font-bold mb-6">予約詳細</h3>
+
+    <div class="grid grid-cols-2 gap-6 mb-6">
+        <div>
+            <div class="text-sm text-gray-400 mb-1">日時</div>
+            <div class="text-lg">
+                {{ booking.date.strftime('%Y年%m月%d日') }}
+                <span class="text-primary font-mono">{{ booking.time }}</span>
+            </div>
+        </div>
+        <div>
+            <div class="text-sm text-gray-400 mb-1">人数</div>
+            <div class="text-lg">{{ booking.guests }}名様</div>
+        </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-4 mb-6">
+        <div class="text-sm text-gray-400 mb-2">お客様情報</div>
+        <div class="text-xl font-bold mb-1">{{ booking.guest_name }}</div>
+        <div class="flex gap-4">
+            <a href="tel:{{ booking.guest_phone }}" class="text-primary hover:underline">
+                📞 {{ booking.guest_phone }}
+            </a>
+            {% if booking.guest_email %}
+            <a href="mailto:{{ booking.guest_email }}" class="text-gray-400 hover:text-white">
+                ✉️ {{ booking.guest_email }}
+            </a>
+            {% endif %}
+        </div>
+
+        {% if customer %}
+        <div class="mt-4 pt-4 border-t border-gray-700">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-sm text-gray-400">顧客インサイト</span>
+                {% if customer.is_vip %}
+                <span class="text-primary text-sm">⭐ VIP</span>
+                {% endif %}
+            </div>
+            <div class="text-sm">
+                <span class="text-gray-400">来店回数:</span>
+                <span class="text-primary">{{ customer.visit_count or 0 }}回</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if booking.note %}
+    <div class="mb-6">
+        <div class="text-sm text-gray-400 mb-1">お客様からのご要望</div>
+        <div class="bg-gray-800 rounded-lg p-3">{{ booking.note }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Staff Note -->
+    <div class="mb-6">
+        <div class="text-sm text-gray-400 mb-1">スタッフメモ</div>
+        <form hx-put="/admin/bookings/{{ booking.id }}/note"
+              hx-target="#note-status"
+              hx-swap="innerHTML">
+            <textarea name="staff_note"
+                      rows="2"
+                      placeholder="内部メモを追加..."
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-primary focus:outline-none">{{ booking.staff_note or '' }}</textarea>
+            <div class="flex justify-between items-center mt-2">
+                <span id="note-status" class="text-sm"></span>
+                <button type="submit" class="px-4 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm">
+                    保存
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Status Update -->
+    <div class="flex gap-3">
+        {% if booking.status == 'pending' %}
+        <button class="flex-1 py-2 bg-green-700 hover:bg-green-600 rounded-lg font-medium transition"
+                hx-put="/admin/bookings/{{ booking.id }}/status"
+                hx-vals='{"status": "confirmed"}'
+                hx-target="#modal-content"
+                hx-swap="innerHTML">
+            ✓ 確認する
+        </button>
+        {% endif %}
+
+        {% if booking.status in ['pending', 'confirmed'] %}
+        <button class="flex-1 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg font-medium transition"
+                hx-put="/admin/bookings/{{ booking.id }}/status"
+                hx-vals='{"status": "completed"}'
+                hx-target="#modal-content"
+                hx-swap="innerHTML">
+            完了にする
+        </button>
+        <button class="flex-1 py-2 bg-red-700 hover:bg-red-600 rounded-lg font-medium transition"
+                hx-put="/admin/bookings/{{ booking.id }}/status"
+                hx-vals='{"status": "cancelled"}'
+                hx-target="#modal-content"
+                hx-swap="innerHTML"
+                hx-confirm="本当にキャンセルしますか？">
+            キャンセル
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="text-center mt-4 text-xs text-gray-500">
+        予約ID: {{ booking.id[:8] }}... |
+        作成: {{ booking.created_at.strftime('%Y/%m/%d %H:%M') if booking.created_at else '-' }}
+    </div>
+</div>

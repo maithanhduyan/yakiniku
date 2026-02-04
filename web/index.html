@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="焼肉ジナン - 平間の上質焼肉。厳選された黒毛和牛と秘伝のタレで極上の焼肉体験をお届けします。">
+
+    <title>焼肉ジナン | YAKINIKU JINAN - 平間の上質焼肉</title>
+
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container header-inner">
+            <div class="logo">
+                <a href="#"><h1>焼肉<span>ジナン</span></h1></a>
+            </div>
+
+            <!-- Desktop Nav -->
+            <nav class="desktop-nav">
+                <a href="#">ホーム</a>
+                <a href="#concept">こだわり</a>
+                <a href="#menu">お品書き</a>
+                <a href="#space">空間・個室</a>
+                <a href="#access">店舗情報</a>
+            </nav>
+
+            <!-- Header Booking Button -->
+            <a href="#booking" class="header-book-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                今すぐ予約
+            </a>
+
+            <!-- Mobile Hamburger -->
+            <div class="hamburger" aria-label="メニューを開く">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Nav Overlay -->
+    <nav class="mobile-nav" aria-label="モバイルナビゲーション">
+        <a href="#">ホーム</a>
+        <a href="#concept">こだわり</a>
+        <a href="#menu">お品書き</a>
+        <a href="#space">空間・個室</a>
+        <a href="#access">店舗情報</a>
+        <a href="#booking" class="header-book-btn" style="margin-top: 30px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+            今すぐ予約
+        </a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content" data-aos="fade-up" data-aos-duration="800">
+            <h2><span>平間の隠れ家で味わう</span>極上の焼肉体験</h2>
+            <p>厳選された黒毛和牛と、創業以来変わらぬ秘伝のタレ。<br>大切な人と過ごす、特別なひとときを。</p>
+            <div class="hero-buttons">
+                <a href="#menu" class="btn-gold">メニューを見る</a>
+                <a href="#booking" class="btn-gold" style="background: var(--accent-color); color: #000;">今すぐ予約</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- News Ticker -->
+    <div class="news-bar">
+        <div class="container news-container">
+            <span class="news-label">NEWS</span>
+            <span class="news-text">2026.02.01 【2月のお休み】火曜定休日となります。</span>
+        </div>
+    </div>
+
+    <!-- Concept Section -->
+    <section id="concept" class="container">
+        <div class="concept-grid">
+            <div class="concept-content" data-aos="fade-right" data-aos-delay="100">
+                <h2 class="section-title" style="text-align:left; left:0; transform:none;">職人のこだわり</h2>
+                <p style="margin-bottom: 20px;">普通の焼肉店とは一味違う、新鮮で上質な肉を揃えて皆様のご来店をお待ちしております。</p>
+                <p style="margin-bottom: 20px;">店主自らが市場で目利きした黒毛和牛は、口の中でとろけるような食感と濃厚な旨味が特徴です。お肉以外にも旬の地野菜や鮮度抜群の魚介など、素材本来の味を活かしたメニューを豊富にご用意しています。</p>
+                <a href="#menu" class="btn-gold">詳しく見る</a>
+            </div>
+            <div class="concept-img" data-aos="fade-left" data-aos-delay="200">
+                <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?q=80&w=800&auto=format&fit=crop" alt="こだわりのお肉" loading="lazy">
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" style="background-color: var(--bg-secondary);">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">自慢のお品書き</h2>
+
+            <div class="menu-grid">
+                <!-- Card 1 -->
+                <div class="menu-card" data-aos="fade-up" data-aos-delay="100">
+                    <div style="overflow:hidden;">
+                        <img src="https://images.unsplash.com/photo-1558030089-02acba3c214e?q=80&w=600&auto=format&fit=crop" alt="和牛上ハラミ" loading="lazy">
+                    </div>
+                    <div class="menu-info">
+                        <h3>和牛上ハラミ</h3>
+                        <p>口の中でほどける柔らかさと濃厚な味わい。</p>
+                        <div class="price">¥1,800</div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="menu-card" data-aos="fade-up" data-aos-delay="200">
+                    <div style="overflow:hidden;">
+                        <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?q=80&w=600&auto=format&fit=crop" alt="厚切り上タン塩" loading="lazy">
+                    </div>
+                    <div class="menu-info">
+                        <h3>厚切り上タン塩</h3>
+                        <p>贅沢な厚切り。歯ごたえと肉汁が溢れます。</p>
+                        <div class="price">¥2,200</div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="menu-card" data-aos="fade-up" data-aos-delay="300">
+                    <div style="overflow:hidden;">
+                        <img src="https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?q=80&w=600&auto=format&fit=crop" alt="特選盛り合わせ" loading="lazy">
+                    </div>
+                    <div class="menu-info">
+                        <h3>特選盛り合わせ</h3>
+                        <p>本日のおすすめ希少部位を贅沢に。</p>
+                        <div class="price">¥4,500〜</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;" data-aos="fade-up" data-aos-delay="400">
+                <a href="#" class="btn-gold">全てのメニューを見る</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Space Section -->
+    <section id="space" class="container">
+        <div class="concept-grid">
+            <div class="concept-img" data-aos="fade-right" data-aos-delay="100">
+                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=800&auto=format&fit=crop" alt="店内の様子" loading="lazy">
+            </div>
+            <div class="concept-content" data-aos="fade-left" data-aos-delay="200">
+                <h2 class="section-title" style="text-align:left; left:0; transform:none;">上質な空間</h2>
+                <p style="margin-bottom: 20px;">落ち着いた照明とモダンなインテリアが織りなす大人の隠れ家。</p>
+                <p>無煙ロースターを完備しておりますので、匂いを気にせずお食事をお楽しみいただけます。掘りごたつ式の個室もご用意しており、接待や記念日、ご家族での団らんに最適です。</p>
+                <a href="#access" class="btn-gold">店舗情報へ</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="booking-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">ご予約</h2>
+
+            <div class="booking-container" data-aos="fade-up" data-aos-delay="100">
+                <div class="booking-widget">
+                    <!-- Progress Indicator -->
+                    <div class="booking-progress">
+                        <div class="progress-step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-label">日付</div>
+                        </div>
+                        <div class="progress-step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-label">時間</div>
+                        </div>
+                        <div class="progress-step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-label">人数</div>
+                        </div>
+                        <div class="progress-step" data-step="4">
+                            <div class="step-number">4</div>
+                            <div class="step-label">情報</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Date -->
+                    <div class="booking-step active" data-step="1">
+                        <h3 class="step-title">
+                            ご来店日を選択
+                            <span>Select Date</span>
+                        </h3>
+
+                        <div class="month-nav">
+                            <button type="button" onclick="changeMonth(-1)" aria-label="前月">‹</button>
+                            <span class="current-month" id="currentMonth"></span>
+                            <button type="button" onclick="changeMonth(1)" aria-label="翌月">›</button>
+                        </div>
+
+                        <div class="date-grid" id="dateGrid">
+                            <div class="date-header">日</div>
+                            <div class="date-header">月</div>
+                            <div class="date-header">火</div>
+                            <div class="date-header">水</div>
+                            <div class="date-header">木</div>
+                            <div class="date-header">金</div>
+                            <div class="date-header">土</div>
+                        </div>
+
+                        <div class="booking-nav">
+                            <button class="btn-booking" onclick="nextStep()" id="btnStep1" disabled>次へ進む</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Time -->
+                    <div class="booking-step" data-step="2">
+                        <h3 class="step-title">
+                            ご来店時間を選択
+                            <span>Select Time</span>
+                        </h3>
+
+                        <div class="time-grid">
+                            <button class="time-slot" data-time="17:00">17:00</button>
+                            <button class="time-slot" data-time="17:30">17:30</button>
+                            <button class="time-slot" data-time="18:00">18:00</button>
+                            <button class="time-slot" data-time="18:30">18:30</button>
+                            <button class="time-slot" data-time="19:00">19:00</button>
+                            <button class="time-slot" data-time="19:30">19:30</button>
+                            <button class="time-slot" data-time="20:00">20:00</button>
+                            <button class="time-slot" data-time="20:30">20:30</button>
+                            <button class="time-slot" data-time="21:00">21:00</button>
+                        </div>
+
+                        <div class="booking-nav">
+                            <button class="btn-booking" onclick="nextStep()" id="btnStep2" disabled>次へ進む</button>
+                            <button class="btn-booking btn-back" onclick="prevStep()">戻る</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Guests -->
+                    <div class="booking-step" data-step="3">
+                        <h3 class="step-title">
+                            ご来店人数を選択
+                            <span>Number of Guests</span>
+                        </h3>
+
+                        <div class="guest-grid">
+                            <button class="guest-btn" data-guests="1">
+                                <span class="num">1</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="2">
+                                <span class="num">2</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="3">
+                                <span class="num">3</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="4">
+                                <span class="num">4</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="5">
+                                <span class="num">5</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="6">
+                                <span class="num">6</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="7">
+                                <span class="num">7</span>
+                                <span class="label">名様</span>
+                            </button>
+                            <button class="guest-btn" data-guests="8">
+                                <span class="num">8+</span>
+                                <span class="label">名様</span>
+                            </button>
+                        </div>
+
+                        <div class="booking-nav">
+                            <button class="btn-booking" onclick="nextStep()" id="btnStep3" disabled>次へ進む</button>
+                            <button class="btn-booking btn-back" onclick="prevStep()">戻る</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Contact Info -->
+                    <div class="booking-step" data-step="4">
+                        <h3 class="step-title">
+                            お客様情報
+                            <span>Contact Information</span>
+                        </h3>
+
+                        <form id="bookingForm" autocomplete="on">
+                            <div class="form-group">
+                                <label for="guestName">お名前 <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="guestName" name="name" placeholder="山田 太郎" required autocomplete="name" inputmode="text">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="guestPhone">電話番号 <span class="required">*</span></label>
+                                <input type="tel" class="form-input" id="guestPhone" name="phone" placeholder="090-1234-5678" required autocomplete="tel" inputmode="tel">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="guestEmail">メールアドレス</label>
+                                <input type="email" class="form-input" id="guestEmail" name="email" placeholder="example@email.com" autocomplete="email" inputmode="email">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="guestNote">ご要望・備考</label>
+                                <textarea class="form-input" id="guestNote" name="note" placeholder="アレルギーや特別なリクエストがあればご記入ください"></textarea>
+                            </div>
+                        </form>
+
+                        <div class="booking-nav">
+                            <button class="btn-booking" onclick="showConfirmation()" id="btnStep4">確認画面へ</button>
+                            <button class="btn-booking btn-back" onclick="prevStep()">戻る</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Confirmation -->
+                    <div class="booking-step" data-step="5">
+                        <h3 class="step-title">
+                            ご予約内容の確認
+                            <span>Confirmation</span>
+                        </h3>
+
+                        <div class="confirmation-summary">
+                            <div class="summary-row">
+                                <span class="summary-label">ご来店日</span>
+                                <span class="summary-value" id="confirmDate">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">時間</span>
+                                <span class="summary-value" id="confirmTime">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">人数</span>
+                                <span class="summary-value" id="confirmGuests">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">お名前</span>
+                                <span class="summary-value" id="confirmName">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">電話番号</span>
+                                <span class="summary-value" id="confirmPhone">-</span>
+                            </div>
+                        </div>
+
+                        <div class="booking-nav">
+                            <button class="btn-booking" onclick="submitBooking()">予約を確定する</button>
+                            <button class="btn-booking btn-back" onclick="prevStep()">戻る</button>
+                        </div>
+                    </div>
+
+                    <!-- Success State -->
+                    <div class="booking-step" data-step="success">
+                        <div class="booking-success">
+                            <div class="success-icon">✓</div>
+                            <h3 class="success-title">ご予約ありがとうございます</h3>
+                            <p class="success-message">
+                                ご予約を承りました。<br>
+                                確認のお電話をさせていただく場合がございます。<br>
+                                当日のご来店を心よりお待ちしております。
+                            </p>
+                            <button class="btn-booking" onclick="resetBooking()">新しい予約をする</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="access">
+        <div class="container">
+            <div class="footer-logo" data-aos="fade-up">焼肉ジナン</div>
+            <div class="footer-info" data-aos="fade-up" data-aos-delay="100">
+                <p>〒211-0013 神奈川県川崎市中原区上平間XXXX</p>
+                <p class="phone"><a href="tel:044-789-8413">044-789-8413</a></p>
+                <p>営業時間: 17:00 - 23:00 (L.O. 22:30)</p>
+                <p>定休日: 火曜日</p>
+            </div>
+            <div class="copyright">
+                &copy; 2026 YAKINIKU JINAN. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Book Button (Mobile) -->
+    <a href="#booking" class="floating-book-btn" aria-label="予約する">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+    </a>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <!-- Chat Toggle Button -->
+        <button class="chat-toggle" id="chatToggle" aria-label="チャットを開く">
+            <svg class="chat-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+            <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <span class="chat-badge" id="chatBadge">1</span>
+        </button>
+
+        <!-- Chat Window -->
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar">
+                        <span>肉</span>
+                    </div>
+                    <div class="chat-header-text">
+                        <h4>焼肉ジナン</h4>
+                        <span class="chat-status"><span class="status-dot"></span>オンライン</span>
+                    </div>
+                </div>
+                <button class="chat-close" id="chatClose" aria-label="閉じる">×</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be inserted here -->
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="chat-quick-actions" id="quickActions">
+                <button class="quick-action-btn" data-message="おすすめのお肉を教えてください">🥩 おすすめ</button>
+                <button class="quick-action-btn" data-message="特別なリクエストがあります">✨ 特別注文</button>
+                <button class="quick-action-btn" data-message="アレルギー対応について">🍃 アレルギー</button>
+                <button class="quick-action-btn" data-message="記念日のサプライズをお願いしたい">🎂 記念日</button>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-customer-name" id="chatCustomerName">
+                    <input type="text" id="customerNameInput" placeholder="お名前を入力..." class="chat-name-input">
+                    <button class="chat-name-save" id="saveNameBtn">保存</button>
+                </div>
+                <div class="chat-input-wrapper">
+                    <textarea id="chatInput" placeholder="メッセージを入力..." rows="1"></textarea>
+                    <button class="chat-send" id="chatSend" aria-label="送信">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Removed LINE button to centralize customer insights -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

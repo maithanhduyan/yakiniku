@@ -1,0 +1,1575 @@
+/* ========================================
+   YAKINIKU JINAN - Main Stylesheet
+   Mobile-First Design for Booking Experience
+   ======================================== */
+
+/* --- 1. VARIABLES & RESET --- */
+:root {
+    --bg-color: #1a1a1a;
+    --bg-secondary: #252525;
+    --text-color: #f0f0f0;
+    --accent-color: #d4af37;
+    --font-main: 'Noto Sans JP', sans-serif;
+    --font-serif: 'Shippori Mincho', serif;
+    --transition: all 0.4s ease;
+    --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.3);
+
+    /* Mobile Touch Targets */
+    --touch-target: 48px;
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+/* --- 2. TYPOGRAPHY --- */
+h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+}
+
+.section-title {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    color: var(--accent-color);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: var(--accent-color);
+    margin: 15px auto 0;
+}
+
+.container {
+    width: 92%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-sm);
+}
+
+/* --- 3. BUTTONS --- */
+.btn-gold {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-xl);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    margin-top: var(--spacing-md);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    min-height: var(--touch-target);
+    touch-action: manipulation;
+}
+
+.btn-gold::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 0%; height: 100%;
+    background: var(--accent-color);
+    z-index: -1;
+    transition: var(--transition);
+}
+
+.btn-gold:hover, .btn-gold:active {
+    color: #000;
+}
+
+.btn-gold:hover::before, .btn-gold:active::before {
+    width: 100%;
+}
+
+/* --- 4. HEADER & NAVIGATION --- */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: var(--spacing-md) 0;
+    z-index: 1000;
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    font-size: clamp(1.4rem, 4vw, 1.8rem);
+    color: var(--text-color);
+    letter-spacing: 0.1em;
+}
+
+.logo span {
+    color: var(--accent-color);
+}
+
+/* Desktop Nav */
+.desktop-nav {
+    display: none;
+    gap: 30px;
+}
+
+.desktop-nav a {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.desktop-nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--accent-color);
+    transition: var(--transition);
+}
+
+.desktop-nav a:hover {
+    color: var(--accent-color);
+}
+
+.desktop-nav a:hover::after {
+    width: 100%;
+}
+
+/* Header Booking Button */
+.header-book-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--accent-color);
+    color: #000;
+    font-family: var(--font-serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 4px;
+    transition: var(--transition);
+    text-decoration: none;
+    min-height: var(--touch-target);
+    touch-action: manipulation;
+}
+
+.header-book-btn:hover, .header-book-btn:active {
+    background: #fff;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-gold);
+}
+
+.header-book-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* Mobile Menu Button (Hamburger) */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    z-index: 2000;
+    padding: var(--spacing-sm);
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    justify-content: center;
+    align-items: center;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 2px;
+    margin: 4px auto;
+    background-color: var(--accent-color);
+    transition: var(--transition);
+}
+
+/* Mobile Nav Drawer */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition);
+    z-index: 1500;
+}
+
+.mobile-nav.active {
+    right: 0;
+}
+
+.mobile-nav a {
+    font-size: 1.3rem;
+    margin: var(--spacing-md) 0;
+    font-family: var(--font-serif);
+    padding: var(--spacing-sm) var(--spacing-xl);
+    min-height: var(--touch-target);
+}
+
+/* Hamburger Animation */
+.hamburger.active .bar:nth-child(2) { opacity: 0; }
+.hamburger.active .bar:nth-child(1) { transform: translateY(10px) rotate(45deg); }
+.hamburger.active .bar:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
+
+/* --- 5. HERO SECTION --- */
+.hero {
+    height: 100vh;
+    height: 100dvh;
+    width: 100%;
+    background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?q=80&w=1920&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 var(--spacing-md);
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.hero h2 {
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    margin-bottom: var(--spacing-md);
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+}
+
+.hero h2 span {
+    display: block;
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    font-family: var(--font-main);
+    font-weight: 300;
+    margin-bottom: var(--spacing-sm);
+    color: var(--accent-color);
+}
+
+.hero p {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    margin-bottom: var(--spacing-lg);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+/* --- 6. SECTIONS & LAYOUT --- */
+section {
+    padding: 60px 0;
+}
+
+/* News Ticker */
+.news-bar {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid #333;
+}
+
+.news-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.news-label {
+    color: var(--accent-color);
+    font-weight: bold;
+    border: 1px solid var(--accent-color);
+    padding: 2px 8px;
+}
+
+/* Concept (Grid Layout) */
+.concept-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+    align-items: center;
+}
+
+.concept-img {
+    position: relative;
+}
+
+.concept-img::before {
+    content: '';
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 100%; height: 100%;
+    border: 1px solid var(--accent-color);
+    z-index: -1;
+}
+
+.concept-content { order: 1; }
+.concept-img { order: 2; }
+
+/* Menu (Card Grid) */
+.menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+}
+
+.menu-card {
+    background: var(--bg-secondary);
+    transition: var(--transition);
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+}
+
+.menu-card:hover, .menu-card:active {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.menu-card img {
+    height: 200px;
+    transition: var(--transition);
+}
+
+.menu-card:hover img {
+    transform: scale(1.05);
+}
+
+.menu-info {
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.menu-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-color);
+}
+
+.menu-info p {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: var(--spacing-sm);
+}
+
+.price {
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.1rem;
+    font-family: var(--font-serif);
+}
+
+/* Space Section */
+.space-section {
+    background-color: var(--bg-secondary);
+}
+
+/* --- 7. BOOKING WIDGET (Mobile Optimized) --- */
+.booking-section {
+    background: linear-gradient(135deg, var(--bg-color) 0%, #0d0d0d 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 40px 0;
+}
+
+.booking-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+}
+
+.booking-container {
+    position: relative;
+    z-index: 1;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.booking-widget {
+    background: rgba(37, 37, 37, 0.98);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Progress Steps */
+.booking-progress {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+}
+
+.booking-progress::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 12%;
+    right: 12%;
+    height: 2px;
+    background: #333;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: #666;
+    transition: var(--transition);
+    margin-bottom: var(--spacing-xs);
+}
+
+.progress-step.active .step-number,
+.progress-step.completed .step-number {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #000;
+}
+
+.progress-step.completed .step-number::after {
+    content: '✓';
+}
+
+.step-label {
+    font-size: 0.7rem;
+    color: #666;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.progress-step.active .step-label,
+.progress-step.completed .step-label {
+    color: var(--accent-color);
+}
+
+/* Booking Steps Content */
+.booking-step {
+    display: none;
+    animation: fadeInUp 0.4s ease;
+}
+
+.booking-step.active {
+    display: block;
+}
+
+.step-title {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--text-color);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.step-title span {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+    font-family: var(--font-main);
+    font-weight: 300;
+    margin-top: 4px;
+}
+
+/* Date Picker (Mobile Optimized) */
+.month-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.month-nav button {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--text-color);
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1.4rem;
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    border-radius: 4px;
+}
+
+.month-nav button:active {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.current-month {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+}
+
+.date-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: var(--spacing-md);
+}
+
+.date-header {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #888;
+    padding: var(--spacing-xs) 0;
+}
+
+.date-header:first-child { color: #e74c3c; }
+.date-header:last-child { color: #3498db; }
+
+.date-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    background: transparent;
+    color: var(--text-color);
+    min-height: 42px;
+    touch-action: manipulation;
+}
+
+.date-cell:active:not(.disabled):not(.empty) {
+    border-color: var(--accent-color);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.date-cell.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #000;
+    font-weight: 700;
+}
+
+.date-cell.disabled {
+    color: #444;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.date-cell.empty {
+    border: none;
+    cursor: default;
+}
+
+.date-cell.sunday { color: #e74c3c; }
+.date-cell.saturday { color: #3498db; }
+.date-cell.sunday.selected,
+.date-cell.saturday.selected { color: #000; }
+
+/* Time Picker (Mobile Optimized) */
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.time-slot {
+    padding: var(--spacing-md);
+    border: 1px solid #333;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: transparent;
+    color: var(--text-color);
+    font-size: 1rem;
+    min-height: var(--touch-target);
+    touch-action: manipulation;
+}
+
+.time-slot:active:not(.disabled) {
+    border-color: var(--accent-color);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.time-slot.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #000;
+    font-weight: 700;
+}
+
+.time-slot.disabled {
+    color: #444;
+    cursor: not-allowed;
+    border-color: #2a2a2a;
+}
+
+/* Guest Picker (Mobile Optimized) */
+.guest-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.guest-btn {
+    padding: var(--spacing-md);
+    border: 1px solid #333;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: transparent;
+    color: var(--text-color);
+    min-height: 70px;
+    touch-action: manipulation;
+}
+
+.guest-btn:active {
+    border-color: var(--accent-color);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.guest-btn.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #000;
+}
+
+.guest-btn .num {
+    font-size: 1.4rem;
+    font-family: var(--font-serif);
+    display: block;
+}
+
+.guest-btn .label {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.guest-btn.selected .label {
+    color: #333;
+}
+
+/* Form Inputs (Mobile Optimized) */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.form-group label .required {
+    color: #e74c3c;
+    margin-left: 4px;
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 16px; /* Prevent zoom on iOS */
+    font-family: var(--font-main);
+    transition: var(--transition);
+    min-height: var(--touch-target);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.form-input::placeholder {
+    color: #555;
+}
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Navigation Buttons (Mobile Optimized) */
+.booking-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+.btn-booking {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--accent-color);
+    background: transparent;
+    color: var(--accent-color);
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    min-height: 52px;
+    border-radius: 8px;
+    touch-action: manipulation;
+}
+
+.btn-booking::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 0%; height: 100%;
+    background: var(--accent-color);
+    z-index: -1;
+    transition: var(--transition);
+}
+
+.btn-booking:active {
+    color: #000;
+}
+
+.btn-booking:active::before {
+    width: 100%;
+}
+
+.btn-booking.btn-back {
+    border-color: #444;
+    color: #888;
+    order: 2;
+}
+
+.btn-booking.btn-back::before {
+    background: #444;
+}
+
+.btn-booking.btn-back:active {
+    color: #fff;
+}
+
+.btn-booking:not(.btn-back) {
+    order: 1;
+}
+
+.btn-booking:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Confirmation Summary */
+.confirmation-summary {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid #333;
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.summary-value {
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    text-align: right;
+}
+
+/* Success State */
+.booking-success {
+    text-align: center;
+    padding: var(--spacing-xl) var(--spacing-md);
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
+    font-size: 2.5rem;
+    color: #000;
+    animation: scaleIn 0.5s ease;
+}
+
+.success-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.success-message {
+    color: #aaa;
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.8;
+    font-size: 0.9rem;
+}
+
+/* Floating Book Button (Mobile) */
+.floating-book-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-gold);
+    z-index: 999;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+}
+
+.floating-book-btn:active {
+    transform: scale(0.95);
+}
+
+.floating-book-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: #000;
+}
+
+/* --- 8. FOOTER --- */
+footer {
+    background-color: #000;
+    padding: 40px 0 20px;
+    border-top: 1px solid #333;
+    text-align: center;
+}
+
+.footer-logo {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.footer-info {
+    color: #888;
+    margin-bottom: var(--spacing-lg);
+    font-size: 0.9rem;
+}
+
+.footer-info .phone {
+    font-size: 1.4rem;
+    color: #fff;
+    margin: var(--spacing-sm) 0;
+}
+
+.footer-info a {
+    color: var(--accent-color);
+}
+
+.copyright {
+    font-size: 0.75rem;
+    color: #555;
+    border-top: 1px solid #222;
+    padding-top: var(--spacing-md);
+}
+
+/* --- 9. ANIMATIONS --- */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+/* --- 10. RESPONSIVE (Tablet & Desktop) --- */
+@media (min-width: 768px) {
+    .hamburger { display: none; }
+    .desktop-nav { display: flex; }
+
+    .hero {
+        background-attachment: fixed;
+    }
+
+    .hero-buttons {
+        flex-direction: row;
+        gap: var(--spacing-md);
+    }
+
+    section {
+        padding: 100px 0;
+    }
+
+    .concept-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+    }
+
+    .concept-content { order: initial; }
+    .concept-img { order: initial; }
+
+    .concept-img::before {
+        top: -15px; left: -15px;
+    }
+
+    .menu-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .menu-card img {
+        height: 250px;
+    }
+
+    .booking-widget {
+        padding: 40px;
+    }
+
+    .booking-nav {
+        flex-direction: row;
+    }
+
+    .btn-booking {
+        width: auto;
+        flex: 1;
+    }
+
+    .btn-booking.btn-back {
+        order: initial;
+    }
+
+    .btn-booking:not(.btn-back) {
+        order: initial;
+    }
+
+    .guest-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .floating-book-btn {
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-book-btn:not(.mobile-nav .header-book-btn) {
+        display: inline-flex;
+        margin-left: 20px;
+    }
+
+    .floating-book-btn {
+        display: none;
+    }
+}
+
+/* --- 11. AOS CUSTOM ANIMATIONS --- */
+[data-aos] {
+    pointer-events: none;
+}
+
+[data-aos].aos-animate {
+    pointer-events: auto;
+}
+
+[data-aos="fade-up-custom"] {
+    transform: translateY(30px);
+    opacity: 0;
+    transition-property: transform, opacity;
+}
+
+[data-aos="fade-up-custom"].aos-animate {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    [data-aos] {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* --- 12. CHAT WIDGET --- */
+.chat-widget {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    font-family: var(--font-main);
+}
+
+.chat-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00B900 0%, #00a000 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 185, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.chat-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(0, 185, 0, 0.5);
+}
+
+.chat-toggle:active {
+    transform: scale(0.95);
+}
+
+.chat-toggle svg {
+    width: 26px;
+    height: 26px;
+    fill: #fff;
+    transition: var(--transition);
+}
+
+.chat-toggle .close-icon {
+    display: none;
+}
+
+.chat-widget.active .chat-toggle .chat-icon {
+    display: none;
+}
+
+.chat-widget.active .chat-toggle .close-icon {
+    display: block;
+}
+
+.chat-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+.chat-badge.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Chat Window */
+.chat-window {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 340px;
+    max-width: calc(100vw - 40px);
+    height: 480px;
+    max-height: calc(100vh - 140px);
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.chat-widget.active .chat-window {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Chat Header */
+.chat-header {
+    background: linear-gradient(135deg, var(--bg-color) 0%, #0d0d0d 100%);
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: #000;
+    font-weight: 700;
+}
+
+.chat-header-text h4 {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 2px;
+}
+
+.chat-status {
+    font-size: 0.75rem;
+    color: #00B900;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00B900;
+    animation: pulse 2s infinite;
+}
+
+.chat-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid #444;
+    color: #888;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Chat Messages */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    background: var(--bg-color);
+}
+
+.chat-message {
+    max-width: 85%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 16px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    animation: messageIn 0.3s ease;
+}
+
+@keyframes messageIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-message.incoming {
+    background: var(--bg-secondary);
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+}
+
+.chat-message.outgoing {
+    background: var(--accent-color);
+    color: #000;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+}
+
+.chat-message .time {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 4px;
+    display: block;
+}
+
+.chat-message.incoming .time {
+    color: #888;
+}
+
+.chat-message.outgoing .time {
+    color: #333;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    align-self: flex-start;
+    width: fit-content;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #666;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: 0s; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+}
+
+/* Quick Actions */
+.chat-quick-actions {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-color);
+    border-top: 1px solid #333;
+    display: flex;
+    gap: var(--spacing-xs);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.chat-quick-actions::-webkit-scrollbar {
+    display: none;
+}
+
+.quick-action-btn {
+    flex-shrink: 0;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--bg-secondary);
+    border: 1px solid #444;
+    border-radius: 20px;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.quick-action-btn:hover, .quick-action-btn:active {
+    background: var(--accent-color);
+    color: #000;
+    border-color: var(--accent-color);
+}
+
+/* Chat Input */
+.chat-input-area {
+    background: var(--bg-secondary);
+    padding: var(--spacing-sm);
+    border-top: 1px solid #333;
+}
+
+.chat-customer-name {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+}
+
+.chat-customer-name.hidden {
+    display: none;
+}
+
+.chat-name-input {
+    flex: 1;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 0.85rem;
+}
+
+.chat-name-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.chat-name-save {
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--accent-color);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.chat-name-save:hover {
+    background: #fff;
+}
+
+.chat-input-wrapper {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: flex-end;
+}
+
+.chat-input-wrapper textarea {
+    flex: 1;
+    padding: var(--spacing-sm);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #444;
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 16px;
+    font-family: var(--font-main);
+    resize: none;
+    min-height: 44px;
+    max-height: 100px;
+    line-height: 1.4;
+}
+
+.chat-input-wrapper textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.chat-input-wrapper textarea::placeholder {
+    color: #666;
+}
+
+.chat-send {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.chat-send:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+.chat-send:active {
+    transform: scale(0.95);
+}
+
+.chat-send svg {
+    width: 20px;
+    height: 20px;
+    fill: #000;
+}
+
+/* Chat Footer with LINE */
+.chat-footer {
+    padding: var(--spacing-sm);
+    background: var(--bg-secondary);
+    border-top: 1px solid #333;
+}
+
+.line-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    background: #00B900;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.line-btn:hover {
+    background: #00a000;
+}
+
+.line-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: #fff;
+}
+
+/* Mobile adjustments for chat */
+@media (max-width: 480px) {
+    .chat-widget {
+        bottom: 15px;
+        left: 15px;
+    }
+
+    .chat-window {
+        width: calc(100vw - 30px);
+        height: calc(100vh - 100px);
+        bottom: 65px;
+        left: 0;
+        right: 0;
+        border-radius: 12px;
+    }
+
+    .chat-toggle {
+        width: 52px;
+        height: 52px;
+    }
+}
+
+/* Adjust floating book button position when chat exists */
+.floating-book-btn {
+    right: 20px;
+    left: auto;
+}

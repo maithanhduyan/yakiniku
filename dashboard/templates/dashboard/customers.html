@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}顧客インサイト{% endblock %}
+{% block header %}顧客インサイト{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="card p-4 mb-6">
+    <div class="flex gap-4">
+        <input type="text"
+               name="search"
+               value="{{ search or '' }}"
+               placeholder="電話番号 or 名前で検索..."
+               class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-primary focus:outline-none"
+               hx-get="/admin/customers"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target="#customers-list"
+               hx-include="[name='branch_code']">
+        <input type="hidden" name="branch_code" value="{{ branch_code }}">
+    </div>
+</div>
+
+<!-- Customers List -->
+<div id="customers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for customer in customers %}
+    <div class="card p-4 hover:bg-gray-700 transition cursor-pointer"
+         hx-get="/admin/customers/{{ customer.id }}?branch_code={{ branch_code }}"
+         hx-target="#modal-content"
+         hx-trigger="click"
+         onclick="document.getElementById('modal').classList.remove('hidden')">
+
+        <div class="flex items-start justify-between mb-3">
+            <div>
+                <div class="font-bold text-lg">
+                    {{ customer.global_customer.name }}
+                    {% if customer.is_vip %}
+                    <span class="text-primary text-sm">⭐ VIP</span>
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-400">{{ customer.global_customer.phone }}</div>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold text-primary">{{ customer.visit_count }}</div>
+                <div class="text-xs text-gray-500">来店</div>
+            </div>
+        </div>
+
+        <!-- Preferences -->
+        {% if customer.preferences %}
+        <div class="flex flex-wrap gap-1 mt-2">
+            {% for pref in customer.preferences[:4] %}
+            <span class="px-2 py-1 bg-gray-700 text-xs rounded">{{ pref.preference }}</span>
+            {% endfor %}
+            {% if customer.preferences|length > 4 %}
+            <span class="px-2 py-1 text-gray-500 text-xs">+{{ customer.preferences|length - 4 }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if customer.last_visit %}
+        <div class="text-xs text-gray-500 mt-3">
+            最終来店: {{ customer.last_visit.strftime('%Y/%m/%d') }}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="col-span-full text-center py-12 text-gray-500">
+        <div class="text-4xl mb-2">👤</div>
+        <p>顧客が見つかりません</p>
+        {% if search %}
+        <p class="text-sm mt-2">「{{ search }}」の検索結果はありません</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Detail Modal -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+     onclick="if(event.target === this) this.classList.add('hidden')">
+    <div class="bg-[#252525] rounded-lg w-full max-w-3xl max-h-[80vh] overflow-auto m-4">
+        <div id="modal-content" class="p-6">
+            <div class="text-center py-8 text-gray-500">読み込み中...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

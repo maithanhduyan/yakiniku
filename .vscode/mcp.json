@@ -1,0 +1,14 @@
+{
+    "servers": {
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "@playwright/mcp@latest",
+                "--browser",
+                "chrome",
+                "--viewport-size",
+                "1280x720"
+            ]
+        }
+    }
+}

@@ -8,7 +8,7 @@
 |-----|--------|------|-------|
 | Table Order | ✅ Created | 8081 | `apps/table-order/` |
 | Kitchen (KDS) | ✅ Created | 8082 | `apps/kitchen/` |
-| POS | 🔲 Planned | 8083 | `apps/pos/` |
+| POS | ✅ Created | 8083 | `apps/pos/` |
 
 ## Cấu trúc thư mục đã tạo
 

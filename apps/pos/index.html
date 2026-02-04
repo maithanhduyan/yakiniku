@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="焼肉ジナン - POSレジシステム">
+
+    <title>POSレジ | 焼肉ジナン</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">💰 POSレジ</div>
+                <div class="branch-name">焼肉ジナン 本店</div>
+            </div>
+
+            <div class="header-center">
+                <div class="quick-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="statTables">0/10</span>
+                        <span class="stat-label">使用中</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="statSales">¥0</span>
+                        <span class="stat-label">本日売上</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="statOrders">0</span>
+                        <span class="stat-label">会計済</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="staff-info">
+                    <span class="staff-name">スタッフ: 田中</span>
+                </div>
+                <div class="current-time" id="currentTime">00:00</div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel - Table Map -->
+            <section class="table-map-panel">
+                <div class="panel-header">
+                    <h2>テーブル選択</h2>
+                    <div class="legend">
+                        <span class="legend-item empty">空席</span>
+                        <span class="legend-item occupied">使用中</span>
+                        <span class="legend-item billing">会計中</span>
+                    </div>
+                </div>
+                <div class="table-grid" id="tableGrid">
+                    <!-- Tables will be loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Right Panel - Checkout -->
+            <section class="checkout-panel" id="checkoutPanel">
+                <!-- Empty State -->
+                <div class="empty-checkout" id="emptyCheckout">
+                    <div class="empty-icon">👆</div>
+                    <h3>テーブルを選択してください</h3>
+                    <p>左側のテーブルをタップすると会計が表示されます</p>
+                </div>
+
+                <!-- Checkout Content (hidden initially) -->
+                <div class="checkout-content" id="checkoutContent" style="display: none;">
+                    <!-- Checkout Header -->
+                    <div class="checkout-header">
+                        <div class="table-info">
+                            <span class="table-number" id="selectedTable">T1</span>
+                            <span class="guest-count" id="guestCount">2名様</span>
+                            <span class="session-time" id="sessionTime">1:30</span>
+                        </div>
+                        <button class="btn-close-checkout" id="btnCloseCheckout">×</button>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items" id="orderItems">
+                        <!-- Items will be loaded dynamically -->
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span>小計</span>
+                            <span id="subtotal">¥0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>消費税 (10%)</span>
+                            <span id="tax">¥0</span>
+                        </div>
+                        <div class="summary-row discount" id="discountRow" style="display: none;">
+                            <span>割引</span>
+                            <span id="discount">-¥0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>合計</span>
+                            <span id="total">¥0</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="checkout-actions">
+                        <div class="action-row secondary">
+                            <button class="btn-action" id="btnDiscount">
+                                <span class="btn-icon">🏷️</span>
+                                <span>割引</span>
+                            </button>
+                            <button class="btn-action" id="btnSplitBill">
+                                <span class="btn-icon">✂️</span>
+                                <span>分割</span>
+                            </button>
+                            <button class="btn-action" id="btnPrintReceipt">
+                                <span class="btn-icon">🖨️</span>
+                                <span>伝票</span>
+                            </button>
+                        </div>
+                        <div class="action-row primary">
+                            <button class="btn-payment cash" id="btnPayCash">
+                                <span class="btn-icon">💴</span>
+                                <span>現金</span>
+                            </button>
+                            <button class="btn-payment card" id="btnPayCard">
+                                <span class="btn-icon">💳</span>
+                                <span>カード</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="paymentModal" style="display: none;">
+        <div class="modal payment-modal">
+            <div class="modal-header">
+                <h2 id="paymentTitle">現金会計</h2>
+                <button class="btn-close-modal" id="btnClosePayment">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-amount">
+                    <span class="label">お会計金額</span>
+                    <span class="amount" id="paymentAmount">¥0</span>
+                </div>
+
+                <!-- Cash Payment -->
+                <div class="cash-payment" id="cashPayment">
+                    <div class="received-amount">
+                        <span class="label">お預かり</span>
+                        <input type="number" class="amount-input" id="receivedAmount" placeholder="0">
+                    </div>
+                    <div class="quick-amounts">
+                        <button class="quick-btn" data-amount="1000">¥1,000</button>
+                        <button class="quick-btn" data-amount="5000">¥5,000</button>
+                        <button class="quick-btn" data-amount="10000">¥10,000</button>
+                        <button class="quick-btn" data-amount="exact">ピッタリ</button>
+                    </div>
+                    <div class="change-amount">
+                        <span class="label">お釣り</span>
+                        <span class="amount" id="changeAmount">¥0</span>
+                    </div>
+                </div>
+
+                <!-- Card Payment -->
+                <div class="card-payment" id="cardPayment" style="display: none;">
+                    <div class="card-instruction">
+                        <div class="card-icon">💳</div>
+                        <p>カードリーダーに</p>
+                        <p>カードをタッチしてください</p>
+                    </div>
+                    <div class="card-status" id="cardStatus">
+                        待機中...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnCancelPayment">キャンセル</button>
+                <button class="btn-confirm" id="btnConfirmPayment">会計完了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount Modal -->
+    <div class="modal-overlay" id="discountModal" style="display: none;">
+        <div class="modal discount-modal">
+            <div class="modal-header">
+                <h2>割引を適用</h2>
+                <button class="btn-close-modal" id="btnCloseDiscount">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="discount-options">
+                    <button class="discount-option" data-type="percent" data-value="5">5% OFF</button>
+                    <button class="discount-option" data-type="percent" data-value="10">10% OFF</button>
+                    <button class="discount-option" data-type="percent" data-value="15">15% OFF</button>
+                    <button class="discount-option" data-type="amount" data-value="500">¥500 OFF</button>
+                    <button class="discount-option" data-type="amount" data-value="1000">¥1,000 OFF</button>
+                    <button class="discount-option" data-type="custom">カスタム</button>
+                </div>
+                <div class="custom-discount" id="customDiscount" style="display: none;">
+                    <input type="number" id="customDiscountValue" placeholder="金額を入力">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnCancelDiscount">キャンセル</button>
+                <button class="btn-confirm" id="btnApplyDiscount">適用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="toast" id="successToast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message" id="toastMessage">会計が完了しました</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>

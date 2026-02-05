@@ -35,48 +35,48 @@ INSERT INTO branches (id, code, name, subdomain, phone, address, theme_primary_c
 -- ============ STAFF (6-8 per branch = ~35 total) ============
 -- 平間本店 Staff (8人)
 INSERT INTO staff (id, employee_id, branch_code, name, name_kana, phone, email, role, pin_code, is_active, hire_date, created_at) VALUES
-('staff-001', 'J001', 'jinan', '山田 太郎', 'ヤマダ タロウ', '090-1111-0001', 'yamada@jinan.jp', 'admin', '111111', 1, '2020-04-01', datetime('now')),
-('staff-002', 'J002', 'jinan', '佐藤 花子', 'サトウ ハナコ', '090-1111-0002', 'sato@jinan.jp', 'manager', '222222', 1, '2020-04-01', datetime('now')),
-('staff-003', 'J003', 'jinan', '田中 一郎', 'タナカ イチロウ', '090-1111-0003', 'tanaka@jinan.jp', 'cashier', '333333', 1, '2021-06-15', datetime('now')),
-('staff-004', 'J004', 'jinan', '鈴木 美咲', 'スズキ ミサキ', '090-1111-0004', 'suzuki@jinan.jp', 'waiter', '444444', 1, '2022-01-10', datetime('now')),
-('staff-005', 'J005', 'jinan', '高橋 健太', 'タカハシ ケンタ', '090-1111-0005', 'takahashi@jinan.jp', 'waiter', '555555', 1, '2022-03-20', datetime('now')),
-('staff-006', 'J006', 'jinan', '伊藤 さくら', 'イトウ サクラ', '090-1111-0006', 'ito@jinan.jp', 'kitchen', '666666', 1, '2023-04-01', datetime('now')),
-('staff-007', 'J007', 'jinan', '渡辺 大輔', 'ワタナベ ダイスケ', '090-1111-0007', 'watanabe@jinan.jp', 'kitchen', '777777', 1, '2021-08-01', datetime('now')),
-('staff-008', 'J008', 'jinan', '中村 真由美', 'ナカムラ マユミ', '090-1111-0008', 'nakamura@jinan.jp', 'receptionist', '888888', 1, '2022-07-15', datetime('now')),
+('staff-001', 'J001', 'jinan', '山田 太郎', 'ヤマダ タロウ', '090-1111-0001', 'yamada@jp', 'admin', '111111', 1, '2020-04-01', datetime('now')),
+('staff-002', 'J002', 'jinan', '佐藤 花子', 'サトウ ハナコ', '090-1111-0002', 'sato@jp', 'manager', '222222', 1, '2020-04-01', datetime('now')),
+('staff-003', 'J003', 'jinan', '田中 一郎', 'タナカ イチロウ', '090-1111-0003', 'tanaka@jp', 'cashier', '333333', 1, '2021-06-15', datetime('now')),
+('staff-004', 'J004', 'jinan', '鈴木 美咲', 'スズキ ミサキ', '090-1111-0004', 'suzuki@jp', 'waiter', '444444', 1, '2022-01-10', datetime('now')),
+('staff-005', 'J005', 'jinan', '高橋 健太', 'タカハシ ケンタ', '090-1111-0005', 'takahashi@jp', 'waiter', '555555', 1, '2022-03-20', datetime('now')),
+('staff-006', 'J006', 'jinan', '伊藤 さくら', 'イトウ サクラ', '090-1111-0006', 'ito@jp', 'kitchen', '666666', 1, '2023-04-01', datetime('now')),
+('staff-007', 'J007', 'jinan', '渡辺 大輔', 'ワタナベ ダイスケ', '090-1111-0007', 'watanabe@jp', 'kitchen', '777777', 1, '2021-08-01', datetime('now')),
+('staff-008', 'J008', 'jinan', '中村 真由美', 'ナカムラ マユミ', '090-1111-0008', 'nakamura@jp', 'receptionist', '888888', 1, '2022-07-15', datetime('now')),
 
 -- 新宿店 Staff (8人)
-('staff-011', 'S001', 'shinjuku', '小林 翔太', 'コバヤシ ショウタ', '090-2111-0001', 'kobayashi@shinjuku.jinan.jp', 'admin', '111111', 1, '2021-04-01', datetime('now')),
-('staff-012', 'S002', 'shinjuku', '加藤 愛', 'カトウ アイ', '090-2111-0002', 'kato@shinjuku.jinan.jp', 'manager', '222222', 1, '2021-04-01', datetime('now')),
-('staff-013', 'S003', 'shinjuku', '吉田 隆', 'ヨシダ タカシ', '090-2111-0003', 'yoshida@shinjuku.jinan.jp', 'cashier', '333333', 1, '2022-01-10', datetime('now')),
-('staff-014', 'S004', 'shinjuku', '山口 美優', 'ヤマグチ ミユウ', '090-2111-0004', 'yamaguchi@shinjuku.jinan.jp', 'waiter', '444444', 1, '2022-06-01', datetime('now')),
-('staff-015', 'S005', 'shinjuku', '松本 大地', 'マツモト ダイチ', '090-2111-0005', 'matsumoto@shinjuku.jinan.jp', 'waiter', '555555', 1, '2023-01-15', datetime('now')),
-('staff-016', 'S006', 'shinjuku', '井上 結衣', 'イノウエ ユイ', '090-2111-0006', 'inoue@shinjuku.jinan.jp', 'waiter', '666666', 1, '2023-04-01', datetime('now')),
-('staff-017', 'S007', 'shinjuku', '木村 拓也', 'キムラ タクヤ', '090-2111-0007', 'kimura@shinjuku.jinan.jp', 'kitchen', '777777', 1, '2021-08-01', datetime('now')),
-('staff-018', 'S008', 'shinjuku', '林 美穂', 'ハヤシ ミホ', '090-2111-0008', 'hayashi@shinjuku.jinan.jp', 'kitchen', '888888', 1, '2022-03-01', datetime('now')),
+('staff-011', 'S001', 'shinjuku', '小林 翔太', 'コバヤシ ショウタ', '090-2111-0001', 'kobayashi@shinjuku.jp', 'admin', '111111', 1, '2021-04-01', datetime('now')),
+('staff-012', 'S002', 'shinjuku', '加藤 愛', 'カトウ アイ', '090-2111-0002', 'kato@shinjuku.jp', 'manager', '222222', 1, '2021-04-01', datetime('now')),
+('staff-013', 'S003', 'shinjuku', '吉田 隆', 'ヨシダ タカシ', '090-2111-0003', 'yoshida@shinjuku.jp', 'cashier', '333333', 1, '2022-01-10', datetime('now')),
+('staff-014', 'S004', 'shinjuku', '山口 美優', 'ヤマグチ ミユウ', '090-2111-0004', 'yamaguchi@shinjuku.jp', 'waiter', '444444', 1, '2022-06-01', datetime('now')),
+('staff-015', 'S005', 'shinjuku', '松本 大地', 'マツモト ダイチ', '090-2111-0005', 'matsumoto@shinjuku.jp', 'waiter', '555555', 1, '2023-01-15', datetime('now')),
+('staff-016', 'S006', 'shinjuku', '井上 結衣', 'イノウエ ユイ', '090-2111-0006', 'inoue@shinjuku.jp', 'waiter', '666666', 1, '2023-04-01', datetime('now')),
+('staff-017', 'S007', 'shinjuku', '木村 拓也', 'キムラ タクヤ', '090-2111-0007', 'kimura@shinjuku.jp', 'kitchen', '777777', 1, '2021-08-01', datetime('now')),
+('staff-018', 'S008', 'shinjuku', '林 美穂', 'ハヤシ ミホ', '090-2111-0008', 'hayashi@shinjuku.jp', 'kitchen', '888888', 1, '2022-03-01', datetime('now')),
 
 -- 八重洲店 Staff (6人)
-('staff-021', 'Y001', 'yaesu', '清水 誠', 'シミズ マコト', '090-3111-0001', 'shimizu@yaesu.jinan.jp', 'admin', '111111', 1, '2022-04-01', datetime('now')),
-('staff-022', 'Y002', 'yaesu', '森田 さやか', 'モリタ サヤカ', '090-3111-0002', 'morita@yaesu.jinan.jp', 'manager', '222222', 1, '2022-04-01', datetime('now')),
-('staff-023', 'Y003', 'yaesu', '岡田 浩二', 'オカダ コウジ', '090-3111-0003', 'okada@yaesu.jinan.jp', 'cashier', '333333', 1, '2022-08-01', datetime('now')),
-('staff-024', 'Y004', 'yaesu', '前田 凛', 'マエダ リン', '090-3111-0004', 'maeda@yaesu.jinan.jp', 'waiter', '444444', 1, '2023-01-10', datetime('now')),
-('staff-025', 'Y005', 'yaesu', '藤井 健', 'フジイ ケン', '090-3111-0005', 'fujii@yaesu.jinan.jp', 'waiter', '555555', 1, '2023-04-01', datetime('now')),
-('staff-026', 'Y006', 'yaesu', '村上 亜美', 'ムラカミ アミ', '090-3111-0006', 'murakami@yaesu.jinan.jp', 'kitchen', '666666', 1, '2022-06-01', datetime('now')),
+('staff-021', 'Y001', 'yaesu', '清水 誠', 'シミズ マコト', '090-3111-0001', 'shimizu@yaesu.jp', 'admin', '111111', 1, '2022-04-01', datetime('now')),
+('staff-022', 'Y002', 'yaesu', '森田 さやか', 'モリタ サヤカ', '090-3111-0002', 'morita@yaesu.jp', 'manager', '222222', 1, '2022-04-01', datetime('now')),
+('staff-023', 'Y003', 'yaesu', '岡田 浩二', 'オカダ コウジ', '090-3111-0003', 'okada@yaesu.jp', 'cashier', '333333', 1, '2022-08-01', datetime('now')),
+('staff-024', 'Y004', 'yaesu', '前田 凛', 'マエダ リン', '090-3111-0004', 'maeda@yaesu.jp', 'waiter', '444444', 1, '2023-01-10', datetime('now')),
+('staff-025', 'Y005', 'yaesu', '藤井 健', 'フジイ ケン', '090-3111-0005', 'fujii@yaesu.jp', 'waiter', '555555', 1, '2023-04-01', datetime('now')),
+('staff-026', 'Y006', 'yaesu', '村上 亜美', 'ムラカミ アミ', '090-3111-0006', 'murakami@yaesu.jp', 'kitchen', '666666', 1, '2022-06-01', datetime('now')),
 
 -- 品川店 Staff (6人)
-('staff-031', 'G001', 'shinagawa', '太田 勇気', 'オオタ ユウキ', '090-4111-0001', 'ota@shinagawa.jinan.jp', 'admin', '111111', 1, '2022-10-01', datetime('now')),
-('staff-032', 'G002', 'shinagawa', '石井 麻衣', 'イシイ マイ', '090-4111-0002', 'ishii@shinagawa.jinan.jp', 'manager', '222222', 1, '2022-10-01', datetime('now')),
-('staff-033', 'G003', 'shinagawa', '後藤 翔', 'ゴトウ ショウ', '090-4111-0003', 'goto@shinagawa.jinan.jp', 'cashier', '333333', 1, '2023-01-15', datetime('now')),
-('staff-034', 'G004', 'shinagawa', '坂本 彩乃', 'サカモト アヤノ', '090-4111-0004', 'sakamoto@shinagawa.jinan.jp', 'waiter', '444444', 1, '2023-04-01', datetime('now')),
-('staff-035', 'G005', 'shinagawa', '長谷川 蓮', 'ハセガワ レン', '090-4111-0005', 'hasegawa@shinagawa.jinan.jp', 'waiter', '555555', 1, '2023-07-01', datetime('now')),
-('staff-036', 'G006', 'shinagawa', '近藤 美月', 'コンドウ ミヅキ', '090-4111-0006', 'kondo@shinagawa.jinan.jp', 'kitchen', '666666', 1, '2023-01-01', datetime('now')),
+('staff-031', 'G001', 'shinagawa', '太田 勇気', 'オオタ ユウキ', '090-4111-0001', 'ota@shinagawa.jp', 'admin', '111111', 1, '2022-10-01', datetime('now')),
+('staff-032', 'G002', 'shinagawa', '石井 麻衣', 'イシイ マイ', '090-4111-0002', 'ishii@shinagawa.jp', 'manager', '222222', 1, '2022-10-01', datetime('now')),
+('staff-033', 'G003', 'shinagawa', '後藤 翔', 'ゴトウ ショウ', '090-4111-0003', 'goto@shinagawa.jp', 'cashier', '333333', 1, '2023-01-15', datetime('now')),
+('staff-034', 'G004', 'shinagawa', '坂本 彩乃', 'サカモト アヤノ', '090-4111-0004', 'sakamoto@shinagawa.jp', 'waiter', '444444', 1, '2023-04-01', datetime('now')),
+('staff-035', 'G005', 'shinagawa', '長谷川 蓮', 'ハセガワ レン', '090-4111-0005', 'hasegawa@shinagawa.jp', 'waiter', '555555', 1, '2023-07-01', datetime('now')),
+('staff-036', 'G006', 'shinagawa', '近藤 美月', 'コンドウ ミヅキ', '090-4111-0006', 'kondo@shinagawa.jp', 'kitchen', '666666', 1, '2023-01-01', datetime('now')),
 
 -- 横浜店 Staff (6人)
-('staff-041', 'K001', 'yokohama', '斎藤 大樹', 'サイトウ ダイキ', '090-5111-0001', 'saito@yokohama.jinan.jp', 'admin', '111111', 1, '2023-04-01', datetime('now')),
-('staff-042', 'K002', 'yokohama', '遠藤 真理', 'エンドウ マリ', '090-5111-0002', 'endo@yokohama.jinan.jp', 'manager', '222222', 1, '2023-04-01', datetime('now')),
-('staff-043', 'K003', 'yokohama', '原田 航平', 'ハラダ コウヘイ', '090-5111-0003', 'harada@yokohama.jinan.jp', 'cashier', '333333', 1, '2023-06-01', datetime('now')),
-('staff-044', 'K004', 'yokohama', '中島 葵', 'ナカジマ アオイ', '090-5111-0004', 'nakajima@yokohama.jinan.jp', 'waiter', '444444', 1, '2023-08-01', datetime('now')),
-('staff-045', 'K005', 'yokohama', '小野 陽太', 'オノ ヨウタ', '090-5111-0005', 'ono@yokohama.jinan.jp', 'waiter', '555555', 1, '2024-01-15', datetime('now')),
-('staff-046', 'K006', 'yokohama', '竹内 優花', 'タケウチ ユウカ', '090-5111-0006', 'takeuchi@yokohama.jinan.jp', 'kitchen', '666666', 1, '2023-10-01', datetime('now'));
+('staff-041', 'K001', 'yokohama', '斎藤 大樹', 'サイトウ ダイキ', '090-5111-0001', 'saito@yokohama.jp', 'admin', '111111', 1, '2023-04-01', datetime('now')),
+('staff-042', 'K002', 'yokohama', '遠藤 真理', 'エンドウ マリ', '090-5111-0002', 'endo@yokohama.jp', 'manager', '222222', 1, '2023-04-01', datetime('now')),
+('staff-043', 'K003', 'yokohama', '原田 航平', 'ハラダ コウヘイ', '090-5111-0003', 'harada@yokohama.jp', 'cashier', '333333', 1, '2023-06-01', datetime('now')),
+('staff-044', 'K004', 'yokohama', '中島 葵', 'ナカジマ アオイ', '090-5111-0004', 'nakajima@yokohama.jp', 'waiter', '444444', 1, '2023-08-01', datetime('now')),
+('staff-045', 'K005', 'yokohama', '小野 陽太', 'オノ ヨウタ', '090-5111-0005', 'ono@yokohama.jp', 'waiter', '555555', 1, '2024-01-15', datetime('now')),
+('staff-046', 'K006', 'yokohama', '竹内 優花', 'タケウチ ユウカ', '090-5111-0006', 'takeuchi@yokohama.jp', 'kitchen', '666666', 1, '2023-10-01', datetime('now'));
 
 -- ============ TABLES (per branch) ============
 -- 平間本店 Tables (8 tables, 40 seats max)

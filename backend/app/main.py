@@ -60,11 +60,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Static files for dashboard
-app.mount("/static", StaticFiles(directory="../dashboard/static"), name="static")
-
 # Static files for menu images (backend serves images)
-app.mount("/images", StaticFiles(directory="static/images"), name="images")
+try:
+    app.mount("/images", StaticFiles(directory="static/images"), name="images")
+except RuntimeError:
+    print("⚠️ Static images directory not found")
 
 # CORS - allow web frontend
 app.add_middleware(
@@ -88,6 +88,7 @@ async def health_check():
 
 # ============ Legacy Routers (backward compatibility) ============
 from app.routers import bookings, customers, branches, chat, dashboard, notifications, tables, menu, orders
+from app.routers import websocket as ws_router
 
 app.include_router(bookings.router, prefix="/api/bookings", tags=["bookings"])
 app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
@@ -98,6 +99,7 @@ app.include_router(menu.router, prefix="/api/menu", tags=["menu"])
 app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(dashboard.router, prefix="/admin", tags=["dashboard"])
+app.include_router(ws_router.router, tags=["websocket"])
 
 # ============ Domain Routers (new modular structure) ============
 # Team: web

@@ -90,4 +90,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for multi-tenant strategy.
 
 ## License
 
-Private - Yakiniku Jinan
+Private - Yakiniku platform.
+
+## DISCLAIMER
+**This project is for educational purposes only. Do not use in production without proper security reviews and testing.**
+**Image credits: All images from Unsplash and Pixabay**
+**Source code by AI Assistant generated content**

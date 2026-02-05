@@ -1,0 +1,29 @@
+# Git attributes - Đảm bảo encoding và line endings nhất quán
+
+# Auto detect text files and normalize line endings
+* text=auto eol=lf
+
+# Force UTF-8 encoding for text files
+*.html text eol=lf encoding=utf-8
+*.css text eol=lf encoding=utf-8
+*.js text eol=lf encoding=utf-8
+*.json text eol=lf encoding=utf-8
+*.md text eol=lf encoding=utf-8
+*.py text eol=lf encoding=utf-8
+*.sql text eol=lf encoding=utf-8
+*.csv text eol=lf encoding=utf-8
+*.toml text eol=lf encoding=utf-8
+*.yml text eol=lf encoding=utf-8
+*.yaml text eol=lf encoding=utf-8
+
+# Binary files - không xử lý
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

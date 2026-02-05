@@ -1,5 +1,29 @@
 {
     "files.encoding": "utf8",
+    "files.autoGuessEncoding": false,
+    "[html]": {
+        "files.encoding": "utf8"
+    },
+    "[json]": {
+        "files.encoding": "utf8"
+    },
+    "[javascript]": {
+        "files.encoding": "utf8"
+    },
+    "[css]": {
+        "files.encoding": "utf8"
+    },
+    "[markdown]": {
+        "files.encoding": "utf8"
+    },
+    "[python]": {
+        "files.encoding": "utf8",
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
     "workbench.iconTheme": "material-icon-theme",
     "editor.formatOnSave": false,
     "editor.tabSize": 4,
@@ -12,20 +36,11 @@
 
     // ============ Python + UV Configuration ============
     // Cross-platform: works on both Windows and Linux
-    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+    // "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
     "python.terminal.activateEnvironment": true,
 
     // Linux override (uncomment if on Linux)
     // "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
-
-    // UV package manager settings
-    "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
-        }
-    },
 
     // Terminal environment for uv
     "terminal.integrated.env.windows": {

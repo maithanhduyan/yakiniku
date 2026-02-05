@@ -1,556 +1,484 @@
 ﻿/**
- * POS System - JavaScript
- * Point of Sale for checkout and payment processing
+ * POS Register App - 焼肉ヅアン
+ * Point of Sale system for restaurant checkout
  */
 
 // ============ Configuration ============
-
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
-    BRANCH_CODE: 'hirama',
-    TAX_RATE: 0.10, // 10% consumption tax
+    WS_BASE: 'ws://localhost:8000/ws',
+    DEFAULT_BRANCH: 'hirama',
+    TAX_RATE: 0.10,
+    CURRENCY: '¥'
 };
 
 // ============ State ============
-
 let state = {
+    branchCode: CONFIG.DEFAULT_BRANCH,
     tables: [],
     selectedTable: null,
     currentOrder: null,
     discount: { type: null, value: 0 },
-    todaySales: 0,
-    todayOrders: 0,
-    paymentMethod: 'cash',
+    ws: null
+};
+
+// ============ DOM Elements ============
+const elements = {
+    tableGrid: document.getElementById('tableGrid'),
+    emptyCheckout: document.getElementById('emptyCheckout'),
+    checkoutContent: document.getElementById('checkoutContent'),
+    selectedTable: document.getElementById('selectedTable'),
+    guestCount: document.getElementById('guestCount'),
+    sessionTime: document.getElementById('sessionTime'),
+    orderItems: document.getElementById('orderItems'),
+    subtotal: document.getElementById('subtotal'),
+    tax: document.getElementById('tax'),
+    discount: document.getElementById('discount'),
+    discountRow: document.getElementById('discountRow'),
+    total: document.getElementById('total'),
+    statTables: document.getElementById('statTables'),
+    statSales: document.getElementById('statSales'),
+    statOrders: document.getElementById('statOrders'),
+    currentTime: document.getElementById('currentTime'),
+    paymentModal: document.getElementById('paymentModal'),
+    paymentTitle: document.getElementById('paymentTitle'),
+    paymentAmount: document.getElementById('paymentAmount'),
+    cashPayment: document.getElementById('cashPayment'),
+    cardPayment: document.getElementById('cardPayment'),
+    receivedAmount: document.getElementById('receivedAmount'),
+    changeAmount: document.getElementById('changeAmount'),
+    discountModal: document.getElementById('discountModal'),
+    successToast: document.getElementById('successToast'),
+    toastMessage: document.getElementById('toastMessage')
 };
 
 // ============ Initialization ============
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Start clock
+    initApp();
+});
+
+function initApp() {
+    console.log('💰 POS Register - 焼肉ヅアン initialized');
+
+    setupEventListeners();
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Load tables
     loadTables();
+    loadDailyStats();
+    connectWebSocket();
+}
 
-    // Setup event listeners
-    setupEventListeners();
+// ============ Event Listeners ============
+function setupEventListeners() {
+    // Close checkout
+    document.getElementById('btnCloseCheckout')?.addEventListener('click', closeCheckout);
 
-    // Refresh tables periodically
-    setInterval(loadTables, 30000);
-});
+    // Payment buttons
+    document.getElementById('btnPayCash')?.addEventListener('click', () => openPaymentModal('cash'));
+    document.getElementById('btnPayCard')?.addEventListener('click', () => openPaymentModal('card'));
+
+    // Payment modal
+    document.getElementById('btnClosePayment')?.addEventListener('click', closePaymentModal);
+    document.getElementById('btnCancelPayment')?.addEventListener('click', closePaymentModal);
+    document.getElementById('btnConfirmPayment')?.addEventListener('click', confirmPayment);
+
+    // Quick amount buttons
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const amount = btn.dataset.amount;
+            if (amount === 'exact') {
+                elements.receivedAmount.value = calculateTotal();
+            } else {
+                elements.receivedAmount.value = parseInt(amount);
+            }
+            updateChange();
+        });
+    });
+
+    // Received amount input
+    elements.receivedAmount?.addEventListener('input', updateChange);
+
+    // Discount
+    document.getElementById('btnDiscount')?.addEventListener('click', openDiscountModal);
+    document.getElementById('btnCloseDiscount')?.addEventListener('click', closeDiscountModal);
+    document.getElementById('btnCancelDiscount')?.addEventListener('click', closeDiscountModal);
+    document.getElementById('btnApplyDiscount')?.addEventListener('click', applyDiscount);
+
+    // Discount options
+    document.querySelectorAll('.discount-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.discount-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (btn.dataset.type === 'custom') {
+                document.getElementById('customDiscount').style.display = 'block';
+            } else {
+                document.getElementById('customDiscount').style.display = 'none';
+            }
+        });
+    });
+
+    // Print receipt
+    document.getElementById('btnPrintReceipt')?.addEventListener('click', printReceipt);
+}
 
 // ============ Clock ============
-
 function updateClock() {
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('ja-JP', {
+    elements.currentTime.textContent = now.toLocaleTimeString('ja-JP', {
         hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+        minute: '2-digit'
     });
-    document.getElementById('currentTime').textContent = timeStr;
 }
 
 // ============ API Functions ============
-
 async function loadTables() {
     try {
-        const response = await fetch(
-            `${CONFIG.API_BASE}/tables?branch_code=${CONFIG.BRANCH_CODE}`
-        );
+        // Mock data for demo
+        state.tables = [
+            { id: 'T1', name: 'T1', capacity: 4, status: 'occupied', guests: 3, startTime: '18:30' },
+            { id: 'T2', name: 'T2', capacity: 4, status: 'empty', guests: 0 },
+            { id: 'T3', name: 'T3', capacity: 6, status: 'occupied', guests: 5, startTime: '19:00' },
+            { id: 'T4', name: 'T4', capacity: 2, status: 'billing', guests: 2, startTime: '17:45' },
+            { id: 'T5', name: 'T5', capacity: 4, status: 'empty', guests: 0 },
+            { id: 'T6', name: 'T6', capacity: 8, status: 'occupied', guests: 7, startTime: '19:30' },
+            { id: 'T7', name: 'T7', capacity: 4, status: 'empty', guests: 0 },
+            { id: 'T8', name: 'T8', capacity: 6, status: 'empty', guests: 0 },
+            { id: 'T9', name: 'T9', capacity: 4, status: 'occupied', guests: 4, startTime: '18:00' },
+            { id: 'T10', name: 'T10', capacity: 10, status: 'empty', guests: 0 }
+        ];
 
-        if (!response.ok) throw new Error('Failed to load tables');
-
-        const tables = await response.json();
-
-        // For development: use demo data if no occupied tables
-        // In production, remove this check
-        const hasOccupied = tables.some(t => t.total_amount > 0);
-        if (!hasOccupied) {
-            loadDemoTables();
-            return;
-        }
-
-        state.tables = tables;
         renderTables();
-        updateStats();
-
+        updateTableStats();
     } catch (error) {
-        console.error('Error loading tables:', error);
-        // Load demo data
-        loadDemoTables();
+        console.error('Failed to load tables:', error);
     }
 }
 
-function loadDemoTables() {
-    state.tables = [
-        { id: 1, table_number: 'T1', status: 'empty', capacity: 4 },
-        { id: 2, table_number: 'T2', status: 'occupied', capacity: 4, total_amount: 5800 },
-        { id: 3, table_number: 'T3', status: 'empty', capacity: 2 },
-        { id: 4, table_number: 'T4', status: 'occupied', capacity: 6, total_amount: 12500 },
-        { id: 5, table_number: 'T5', status: 'billing', capacity: 4, total_amount: 8800 },
-        { id: 6, table_number: 'T6', status: 'empty', capacity: 2 },
-        { id: 7, table_number: 'T7', status: 'occupied', capacity: 4, total_amount: 6200 },
-        { id: 8, table_number: 'T8', status: 'empty', capacity: 6 },
-        { id: 9, table_number: 'T9', status: 'empty', capacity: 4 },
-        { id: 10, table_number: 'T10', status: 'occupied', capacity: 8, total_amount: 18900 },
-    ];
-
-    // Demo daily stats
-    state.todaySales = 156800;
-    state.todayOrders = 23;
-
-    renderTables();
-    updateStats();
+async function loadDailyStats() {
+    // Mock data
+    elements.statSales.textContent = '¥128,500';
+    elements.statOrders.textContent = '23';
 }
 
-async function loadTableOrders(tableId) {
-    try {
-        const response = await fetch(
-            `${CONFIG.API_BASE}/tables/${tableId}/orders?branch_code=${CONFIG.BRANCH_CODE}`
-        );
-
-        if (!response.ok) throw new Error('Failed to load orders');
-
-        return await response.json();
-
-    } catch (error) {
-        console.error('Error loading table orders:', error);
-        // Return demo order
-        return getDemoOrder(tableId);
-    }
-}
-
-function getDemoOrder(tableId) {
-    const table = state.tables.find(t => t.id === tableId);
-    if (!table || table.status === 'empty') return null;
-
-    return {
-        table_number: table.table_number,
-        guest_count: Math.floor(Math.random() * 4) + 2,
-        session_start: new Date(Date.now() - (90 + Math.random() * 60) * 60 * 1000).toISOString(),
-        items: [
-            { name: 'å’Œç‰›ä¸Šãƒãƒ©ãƒŸ', quantity: 2, price: 1800 },
-            { name: 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©', quantity: 1, price: 2200 },
-            { name: 'ã‚«ãƒ«ãƒ“', quantity: 2, price: 1500 },
-            { name: 'ç”Ÿãƒ“ãƒ¼ãƒ«', quantity: 3, price: 600 },
-            { name: 'ãƒ©ã‚¤ã‚¹', quantity: 2, price: 200 },
-        ],
-        subtotal: table.total_amount || 8000,
+async function loadTableOrder(tableId) {
+    // Mock order data
+    const mockOrders = {
+        'T1': {
+            items: [
+                { name: '特選カルビ', quantity: 2, price: 1980 },
+                { name: '上ハラミ', quantity: 1, price: 1680 },
+                { name: '牛タン塩', quantity: 2, price: 1480 },
+                { name: 'ビール（中）', quantity: 3, price: 550 },
+                { name: 'ライス', quantity: 2, price: 300 }
+            ]
+        },
+        'T3': {
+            items: [
+                { name: '焼肉盛り合わせ（3人前）', quantity: 1, price: 5980 },
+                { name: 'サムギョプサル', quantity: 2, price: 1280 },
+                { name: 'キムチ盛り合わせ', quantity: 1, price: 780 },
+                { name: 'チャミスル', quantity: 2, price: 680 }
+            ]
+        },
+        'T4': {
+            items: [
+                { name: '和牛ロース', quantity: 1, price: 2480 },
+                { name: '野菜盛り合わせ', quantity: 1, price: 680 },
+                { name: 'ソフトドリンク', quantity: 2, price: 380 }
+            ]
+        },
+        'T6': {
+            items: [
+                { name: '焼肉食べ放題（90分）', quantity: 7, price: 3980 },
+                { name: '飲み放題（90分）', quantity: 5, price: 1500 }
+            ]
+        },
+        'T9': {
+            items: [
+                { name: '特選5種盛り', quantity: 1, price: 4980 },
+                { name: 'ホルモン盛り', quantity: 1, price: 1580 },
+                { name: '冷麺', quantity: 2, price: 880 },
+                { name: '生ビール', quantity: 4, price: 550 }
+            ]
+        }
     };
+
+    return mockOrders[tableId] || { items: [] };
 }
 
-async function processPayment(tableId, paymentMethod, amount) {
-    try {
-        const response = await fetch(`${CONFIG.API_BASE}/pos/checkout`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                table_id: tableId,
-                payment_method: paymentMethod,
-                amount: amount,
-                branch_code: CONFIG.BRANCH_CODE,
-            })
-        });
-
-        if (!response.ok) throw new Error('Failed to process payment');
-
-        return await response.json();
-
-    } catch (error) {
-        console.error('Error processing payment:', error);
-        // Simulate success for demo
-        return { success: true };
-    }
-}
-
-// ============ Rendering ============
-
+// ============ Render Functions ============
 function renderTables() {
-    const grid = document.getElementById('tableGrid');
-
-    grid.innerHTML = state.tables.map(table => {
-        const statusClass = table.status || 'empty';
-        const statusText = getStatusText(table.status);
-        const isSelected = state.selectedTable?.id === table.id;
-
-        return `
-            <div class="table-card ${statusClass} ${isSelected ? 'selected' : ''}"
-                 data-table-id="${table.id}"
-                 onclick="selectTable(${table.id})">
-                <div class="table-number">${table.table_number}</div>
-                <div class="table-status">${statusText}</div>
-                ${table.total_amount ? `<div class="table-amount">Â¥${table.total_amount.toLocaleString()}</div>` : ''}
-            </div>
-        `;
-    }).join('');
-}
-
-function getStatusText(status) {
-    const texts = {
-        'empty': 'ç©ºå¸­',
-        'occupied': 'ä½¿ç”¨ä¸­',
-        'billing': 'ä¼šè¨ˆä¸­',
-    };
-    return texts[status] || 'ç©ºå¸­';
-}
-
-function renderOrderItems(order) {
-    const container = document.getElementById('orderItems');
-
-    if (!order || !order.items || order.items.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">æ³¨æ–‡ãŒã‚ã‚Šã¾ã›ã‚“</p>';
-        return;
-    }
-
-    container.innerHTML = order.items.map(item => `
-        <div class="order-item">
-            <div class="item-info">
-                <span class="item-quantity">Ã—${item.quantity}</span>
-                <span class="item-name">${item.name}</span>
-            </div>
-            <span class="item-price">Â¥${(item.price * item.quantity).toLocaleString()}</span>
+    elements.tableGrid.innerHTML = state.tables.map(table => `
+        <div class="table-card ${table.status}" data-table-id="${table.id}" onclick="selectTable('${table.id}')">
+            <div class="table-number">${table.name}</div>
+            <div class="table-capacity">${table.capacity}名</div>
+            ${table.status !== 'empty' ? `
+                <div class="table-guests">${table.guests}名様</div>
+                <div class="table-time">${table.startTime}〜</div>
+            ` : ''}
+            <div class="table-status-badge">${getStatusText(table.status)}</div>
         </div>
     `).join('');
 }
 
-function updateOrderSummary() {
-    if (!state.currentOrder) return;
-
-    const subtotal = state.currentOrder.subtotal;
-    const tax = Math.floor(subtotal * CONFIG.TAX_RATE);
-    let discountAmount = 0;
-
-    if (state.discount.type === 'percent') {
-        discountAmount = Math.floor(subtotal * state.discount.value / 100);
-    } else if (state.discount.type === 'amount') {
-        discountAmount = state.discount.value;
-    }
-
-    const total = subtotal + tax - discountAmount;
-
-    document.getElementById('subtotal').textContent = `Â¥${subtotal.toLocaleString()}`;
-    document.getElementById('tax').textContent = `Â¥${tax.toLocaleString()}`;
-    document.getElementById('total').textContent = `Â¥${total.toLocaleString()}`;
-
-    const discountRow = document.getElementById('discountRow');
-    if (discountAmount > 0) {
-        discountRow.style.display = 'flex';
-        document.getElementById('discount').textContent = `-Â¥${discountAmount.toLocaleString()}`;
-    } else {
-        discountRow.style.display = 'none';
-    }
-
-    // Store total for payment
-    state.currentOrder.total = total;
+function getStatusText(status) {
+    const texts = {
+        'empty': '空席',
+        'occupied': '使用中',
+        'billing': '会計中'
+    };
+    return texts[status] || status;
 }
 
-function updateStats() {
-    const occupiedCount = state.tables.filter(t => t.status !== 'empty').length;
-    const totalCount = state.tables.length;
-
-    document.getElementById('statTables').textContent = `${occupiedCount}/${totalCount}`;
-    document.getElementById('statSales').textContent = `Â¥${state.todaySales.toLocaleString()}`;
-    document.getElementById('statOrders').textContent = state.todayOrders;
+function updateTableStats() {
+    const occupied = state.tables.filter(t => t.status !== 'empty').length;
+    const total = state.tables.length;
+    elements.statTables.textContent = `${occupied}/${total}`;
 }
 
-// ============ Table Selection ============
-
+// ============ Checkout Functions ============
 async function selectTable(tableId) {
     const table = state.tables.find(t => t.id === tableId);
-    if (!table) return;
-
-    // Don't allow selecting empty tables
-    if (table.status === 'empty') {
-        showToast('ã“ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã¯ç©ºå¸­ã§ã™', 'info');
+    if (!table || table.status === 'empty') {
+        showToast('このテーブルは空席です');
         return;
     }
 
     state.selectedTable = table;
+    state.currentOrder = await loadTableOrder(tableId);
     state.discount = { type: null, value: 0 };
 
-    // Update table selection UI
-    document.querySelectorAll('.table-card').forEach(card => {
-        card.classList.remove('selected');
-        if (parseInt(card.dataset.tableId) === tableId) {
-            card.classList.add('selected');
-        }
-    });
+    renderCheckout();
 
-    // Load order details
-    const order = await loadTableOrders(tableId);
-    state.currentOrder = order;
-
-    // Show checkout panel
-    showCheckoutPanel(table, order);
+    elements.emptyCheckout.style.display = 'none';
+    elements.checkoutContent.style.display = 'flex';
 }
 
-function showCheckoutPanel(table, order) {
-    document.getElementById('emptyCheckout').style.display = 'none';
-    document.getElementById('checkoutContent').style.display = 'flex';
+function renderCheckout() {
+    const table = state.selectedTable;
+    const order = state.currentOrder;
 
-    // Update header info
-    document.getElementById('selectedTable').textContent = table.table_number;
-    document.getElementById('guestCount').textContent = `${order?.guest_count || 2}åæ§˜`;
+    elements.selectedTable.textContent = table.name;
+    elements.guestCount.textContent = `${table.guests}名様`;
+    elements.sessionTime.textContent = calculateSessionTime(table.startTime);
 
-    // Calculate session time
-    if (order?.session_start) {
-        const start = new Date(order.session_start);
-        const now = new Date();
-        const diffMinutes = Math.floor((now - start) / 60000);
-        const hours = Math.floor(diffMinutes / 60);
-        const mins = diffMinutes % 60;
-        document.getElementById('sessionTime').textContent = `${hours}:${mins.toString().padStart(2, '0')}`;
+    // Render order items
+    elements.orderItems.innerHTML = order.items.map(item => `
+        <div class="order-item">
+            <div class="item-info">
+                <span class="item-name">${item.name}</span>
+                <span class="item-quantity">×${item.quantity}</span>
+            </div>
+            <div class="item-price">¥${(item.price * item.quantity).toLocaleString()}</div>
+        </div>
+    `).join('');
+
+    updateTotals();
+}
+
+function calculateSessionTime(startTime) {
+    if (!startTime) return '--:--';
+
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const start = new Date();
+    start.setHours(hours, minutes, 0);
+
+    const now = new Date();
+    const diff = Math.floor((now - start) / 60000); // minutes
+
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+
+    return `${h}:${m.toString().padStart(2, '0')}`;
+}
+
+function updateTotals() {
+    const subtotal = calculateSubtotal();
+    const discountAmount = calculateDiscountAmount(subtotal);
+    const taxableAmount = subtotal - discountAmount;
+    const tax = Math.floor(taxableAmount * CONFIG.TAX_RATE);
+    const total = taxableAmount + tax;
+
+    elements.subtotal.textContent = `¥${subtotal.toLocaleString()}`;
+    elements.tax.textContent = `¥${tax.toLocaleString()}`;
+
+    if (discountAmount > 0) {
+        elements.discountRow.style.display = 'flex';
+        elements.discount.textContent = `-¥${discountAmount.toLocaleString()}`;
+    } else {
+        elements.discountRow.style.display = 'none';
     }
 
-    // Render items and summary
-    renderOrderItems(order);
-    updateOrderSummary();
+    elements.total.textContent = `¥${total.toLocaleString()}`;
 }
 
-function hideCheckoutPanel() {
-    document.getElementById('emptyCheckout').style.display = 'flex';
-    document.getElementById('checkoutContent').style.display = 'none';
+function calculateSubtotal() {
+    if (!state.currentOrder) return 0;
+    return state.currentOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+}
 
+function calculateDiscountAmount(subtotal) {
+    if (!state.discount.type) return 0;
+
+    if (state.discount.type === 'percent') {
+        return Math.floor(subtotal * (state.discount.value / 100));
+    } else {
+        return state.discount.value;
+    }
+}
+
+function calculateTotal() {
+    const subtotal = calculateSubtotal();
+    const discountAmount = calculateDiscountAmount(subtotal);
+    const taxableAmount = subtotal - discountAmount;
+    const tax = Math.floor(taxableAmount * CONFIG.TAX_RATE);
+    return taxableAmount + tax;
+}
+
+function closeCheckout() {
     state.selectedTable = null;
     state.currentOrder = null;
     state.discount = { type: null, value: 0 };
 
-    document.querySelectorAll('.table-card').forEach(card => {
-        card.classList.remove('selected');
-    });
+    elements.emptyCheckout.style.display = 'flex';
+    elements.checkoutContent.style.display = 'none';
 }
 
-// ============ Payment ============
+// ============ Payment Functions ============
+function openPaymentModal(type) {
+    const total = calculateTotal();
 
-function openPaymentModal(method) {
-    state.paymentMethod = method;
+    elements.paymentAmount.textContent = `¥${total.toLocaleString()}`;
 
-    const modal = document.getElementById('paymentModal');
-    const title = document.getElementById('paymentTitle');
-    const cashSection = document.getElementById('cashPayment');
-    const cardSection = document.getElementById('cardPayment');
-    const amount = state.currentOrder?.total || 0;
-
-    document.getElementById('paymentAmount').textContent = `Â¥${amount.toLocaleString()}`;
-
-    if (method === 'cash') {
-        title.textContent = 'ç¾é‡‘ä¼šè¨ˆ';
-        cashSection.style.display = 'block';
-        cardSection.style.display = 'none';
-        document.getElementById('receivedAmount').value = '';
-        document.getElementById('changeAmount').textContent = 'Â¥0';
+    if (type === 'cash') {
+        elements.paymentTitle.textContent = '現金会計';
+        elements.cashPayment.style.display = 'block';
+        elements.cardPayment.style.display = 'none';
+        elements.receivedAmount.value = '';
+        elements.changeAmount.textContent = '¥0';
     } else {
-        title.textContent = 'ã‚«ãƒ¼ãƒ‰ä¼šè¨ˆ';
-        cashSection.style.display = 'none';
-        cardSection.style.display = 'block';
-        document.getElementById('cardStatus').textContent = 'å¾…æ©Ÿä¸­...';
+        elements.paymentTitle.textContent = 'カード会計';
+        elements.cashPayment.style.display = 'none';
+        elements.cardPayment.style.display = 'block';
     }
 
-    modal.style.display = 'flex';
+    elements.paymentModal.style.display = 'flex';
 }
 
 function closePaymentModal() {
-    document.getElementById('paymentModal').style.display = 'none';
+    elements.paymentModal.style.display = 'none';
 }
 
 function updateChange() {
-    const received = parseInt(document.getElementById('receivedAmount').value) || 0;
-    const total = state.currentOrder?.total || 0;
+    const received = parseInt(elements.receivedAmount.value) || 0;
+    const total = calculateTotal();
     const change = received - total;
 
-    const changeEl = document.getElementById('changeAmount');
-    if (change >= 0) {
-        changeEl.textContent = `Â¥${change.toLocaleString()}`;
-        changeEl.style.color = 'var(--status-success)';
-    } else {
-        changeEl.textContent = `ä¸è¶³: Â¥${Math.abs(change).toLocaleString()}`;
-        changeEl.style.color = 'var(--status-error)';
-    }
-}
-
-function setQuickAmount(amount) {
-    const total = state.currentOrder?.total || 0;
-
-    if (amount === 'exact') {
-        document.getElementById('receivedAmount').value = total;
-    } else {
-        document.getElementById('receivedAmount').value = amount;
-    }
-
-    updateChange();
+    elements.changeAmount.textContent = change >= 0 ? `¥${change.toLocaleString()}` : '¥0';
+    elements.changeAmount.style.color = change >= 0 ? '#22c55e' : '#ef4444';
 }
 
 async function confirmPayment() {
-    if (!state.selectedTable || !state.currentOrder) return;
+    const total = calculateTotal();
+    const received = parseInt(elements.receivedAmount.value) || 0;
 
-    const total = state.currentOrder.total;
-
-    if (state.paymentMethod === 'cash') {
-        const received = parseInt(document.getElementById('receivedAmount').value) || 0;
-        if (received < total) {
-            showToast('é‡‘é¡ãŒä¸è¶³ã—ã¦ã„ã¾ã™', 'error');
-            return;
-        }
+    // Validate cash payment
+    if (elements.cashPayment.style.display !== 'none' && received < total) {
+        showToast('お預かり金額が不足しています', 'error');
+        return;
     }
 
-    // Process payment
-    const result = await processPayment(
-        state.selectedTable.id,
-        state.paymentMethod,
-        total
-    );
+    // Process payment (mock)
+    console.log('Processing payment:', {
+        table: state.selectedTable.id,
+        total: total,
+        received: received,
+        change: received - total
+    });
 
-    if (result.success) {
-        // Update stats
-        state.todaySales += total;
-        state.todayOrders += 1;
-
-        // Update table status
-        const tableIndex = state.tables.findIndex(t => t.id === state.selectedTable.id);
-        if (tableIndex >= 0) {
-            state.tables[tableIndex].status = 'empty';
-            state.tables[tableIndex].total_amount = 0;
-        }
-
-        // Close modal and reset
-        closePaymentModal();
-        hideCheckoutPanel();
-        renderTables();
-        updateStats();
-
-        showToast('ä¼šè¨ˆãŒå®Œäº†ã—ã¾ã—ãŸ');
-    } else {
-        showToast('ä¼šè¨ˆå‡¦ç†ã«å¤±æ•—ã—ã¾ã—ãŸ', 'error');
+    // Update table status
+    const tableIndex = state.tables.findIndex(t => t.id === state.selectedTable.id);
+    if (tableIndex >= 0) {
+        state.tables[tableIndex].status = 'empty';
+        state.tables[tableIndex].guests = 0;
+        state.tables[tableIndex].startTime = null;
     }
+
+    // Update UI
+    renderTables();
+    updateTableStats();
+    closePaymentModal();
+    closeCheckout();
+
+    // Update daily stats (mock increment)
+    const currentSales = parseInt(elements.statSales.textContent.replace(/[¥,]/g, '')) || 0;
+    const currentOrders = parseInt(elements.statOrders.textContent) || 0;
+    elements.statSales.textContent = `¥${(currentSales + total).toLocaleString()}`;
+    elements.statOrders.textContent = (currentOrders + 1).toString();
+
+    showToast('会計が完了しました');
 }
 
-// ============ Discount ============
-
+// ============ Discount Functions ============
 function openDiscountModal() {
-    document.getElementById('discountModal').style.display = 'flex';
-    document.querySelectorAll('.discount-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
+    elements.discountModal.style.display = 'flex';
+    document.querySelectorAll('.discount-option').forEach(b => b.classList.remove('active'));
     document.getElementById('customDiscount').style.display = 'none';
 }
 
 function closeDiscountModal() {
-    document.getElementById('discountModal').style.display = 'none';
-}
-
-function selectDiscount(type, value) {
-    document.querySelectorAll('.discount-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-
-    event.target.classList.add('selected');
-
-    if (type === 'custom') {
-        document.getElementById('customDiscount').style.display = 'block';
-        state.discount = { type: 'amount', value: 0 };
-    } else {
-        document.getElementById('customDiscount').style.display = 'none';
-        state.discount = { type, value: parseInt(value) };
-    }
+    elements.discountModal.style.display = 'none';
 }
 
 function applyDiscount() {
-    const customValue = document.getElementById('customDiscountValue').value;
-    if (customValue && document.getElementById('customDiscount').style.display !== 'none') {
-        state.discount = { type: 'amount', value: parseInt(customValue) };
+    const activeOption = document.querySelector('.discount-option.active');
+    if (!activeOption) {
+        showToast('割引を選択してください', 'error');
+        return;
     }
 
-    updateOrderSummary();
+    if (activeOption.dataset.type === 'custom') {
+        const customValue = parseInt(document.getElementById('customDiscountValue').value) || 0;
+        if (customValue <= 0) {
+            showToast('金額を入力してください', 'error');
+            return;
+        }
+        state.discount = { type: 'amount', value: customValue };
+    } else {
+        state.discount = {
+            type: activeOption.dataset.type,
+            value: parseInt(activeOption.dataset.value)
+        };
+    }
+
+    updateTotals();
     closeDiscountModal();
-    showToast('å‰²å¼•ã‚’é©ç”¨ã—ã¾ã—ãŸ');
+    showToast('割引を適用しました');
 }
 
-// ============ Event Listeners ============
-
-function setupEventListeners() {
-    // Close checkout
-    document.getElementById('btnCloseCheckout').addEventListener('click', hideCheckoutPanel);
-
-    // Payment buttons
-    document.getElementById('btnPayCash').addEventListener('click', () => openPaymentModal('cash'));
-    document.getElementById('btnPayCard').addEventListener('click', () => openPaymentModal('card'));
-
-    // Payment modal
-    document.getElementById('btnClosePayment').addEventListener('click', closePaymentModal);
-    document.getElementById('btnCancelPayment').addEventListener('click', closePaymentModal);
-    document.getElementById('btnConfirmPayment').addEventListener('click', confirmPayment);
-
-    // Cash input
-    document.getElementById('receivedAmount').addEventListener('input', updateChange);
-
-    // Quick amounts
-    document.querySelectorAll('.quick-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const amount = btn.dataset.amount;
-            setQuickAmount(amount === 'exact' ? 'exact' : parseInt(amount));
-        });
-    });
-
-    // Discount
-    document.getElementById('btnDiscount').addEventListener('click', openDiscountModal);
-    document.getElementById('btnCloseDiscount').addEventListener('click', closeDiscountModal);
-    document.getElementById('btnCancelDiscount').addEventListener('click', closeDiscountModal);
-    document.getElementById('btnApplyDiscount').addEventListener('click', applyDiscount);
-
-    document.querySelectorAll('.discount-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            selectDiscount(opt.dataset.type, opt.dataset.value);
-        });
-    });
-
-    // Split bill (placeholder)
-    document.getElementById('btnSplitBill').addEventListener('click', () => {
-        showToast('åˆ†å‰²ä¼šè¨ˆæ©Ÿèƒ½ã¯é–‹ç™ºä¸­ã§ã™', 'info');
-    });
-
-    // Print receipt (placeholder)
-    document.getElementById('btnPrintReceipt').addEventListener('click', () => {
-        showToast('ä¼ç¥¨ã‚’å°åˆ·ã—ã¾ã—ãŸ');
-    });
-
-    // Close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                overlay.style.display = 'none';
-            }
-        });
-    });
+// ============ Utility Functions ============
+function printReceipt() {
+    showToast('伝票を印刷中...');
+    // Implement actual printing logic
 }
-
-// ============ Toast ============
 
 function showToast(message, type = 'success') {
-    const toast = document.getElementById('successToast');
-    const messageEl = document.getElementById('toastMessage');
-    const iconEl = toast.querySelector('.toast-icon');
-
-    messageEl.textContent = message;
-
-    // Set icon and color based on type
-    if (type === 'error') {
-        iconEl.textContent = 'âœ—';
-        toast.style.background = 'var(--status-error)';
-    } else if (type === 'info') {
-        iconEl.textContent = 'â„¹';
-        toast.style.background = 'var(--status-occupied)';
-    } else {
-        iconEl.textContent = 'âœ“';
-        toast.style.background = 'var(--status-success)';
-    }
-
-    toast.classList.add('show');
+    elements.toastMessage.textContent = message;
+    elements.successToast.className = `toast ${type}`;
+    elements.successToast.classList.add('show');
 
     setTimeout(() => {
-        toast.classList.remove('show');
+        elements.successToast.classList.remove('show');
     }, 3000);
 }
 
+// ============ WebSocket ============
+function connectWebSocket() {
+    // WebSocket connection for real-time updates
+    console.log('WebSocket connection placeholder');
+}
 
+// Make selectTable globally accessible
+window.selectTable = selectTable;

@@ -1,607 +1,401 @@
 ﻿/**
- * Table Order App - JavaScript
+ * Table Order App - 焼肉ヅアン
  * iPad table ordering system for Yakiniku JIAN
  */
 
 // ============ Configuration ============
-
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
-    BRANCH_CODE: 'hirama',
-    WS_URL: 'ws://localhost:8000/api/notifications/ws',
+    WS_BASE: 'ws://localhost:8000/ws',
+    DEFAULT_BRANCH: 'hirama',
+    TAX_RATE: 0.10,
+    CURRENCY: '¥'
 };
-
-// Get table info from URL params or localStorage
-const urlParams = new URLSearchParams(window.location.search);
-const TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || 'demo-table-1';
-const SESSION_ID = urlParams.get('session') || localStorage.getItem('session_id') || generateSessionId();
 
 // ============ State ============
-
 let state = {
-    categories: [],
-    menuItems: [],
-    currentCategory: 'meat',
+    branchCode: CONFIG.DEFAULT_BRANCH,
+    tableId: null,
+    tableNumber: 'T1',
+    guestCount: 2,
+    menu: [],
     cart: [],
-    currentItem: null,
-    modalQty: 1,
-    tableNumber: 'T5',
-    guestCount: 4,
-    sessionId: SESSION_ID,
-    orderHistory: [],
-    isOnline: false,
-    wsRetryCount: 0,
-    maxWsRetries: 3
+    currentCategory: 'all',
+    selectedItem: null,
+    quantity: 1,
+    ws: null
 };
 
+// ============ DOM Elements ============
+const elements = {
+    tableNumber: document.getElementById('tableNumber'),
+    guestCount: document.getElementById('guestCount'),
+    categoryNav: document.getElementById('categoryNav'),
+    menuGrid: document.getElementById('menuGrid'),
+    cartBtn: document.getElementById('cartBtn'),
+    cartCount: document.getElementById('cartCount'),
+    cartPanel: document.getElementById('cartPanel'),
+    cartItems: document.getElementById('cartItems'),
+    cartSubtotal: document.getElementById('cartSubtotal'),
+    cartTotal: document.getElementById('cartTotal'),
+    overlay: document.getElementById('overlay'),
+    itemModal: document.getElementById('itemModal'),
+    itemName: document.getElementById('itemName'),
+    itemDescription: document.getElementById('itemDescription'),
+    itemPrice: document.getElementById('itemPrice'),
+    itemImage: document.getElementById('itemImage'),
+    qtyValue: document.getElementById('qtyValue'),
+    confirmModal: document.getElementById('confirmModal'),
+    confirmItems: document.getElementById('confirmItems'),
+    confirmTotal: document.getElementById('confirmTotal'),
+    successModal: document.getElementById('successModal')
+};
+
+// ============ Menu Data (Mock) ============
+const menuData = [
+    // 牛肉
+    { id: 1, name: '特選カルビ', category: 'beef', price: 1980, description: '厳選された上質な牛カルビ。霜降りの脂が絶品。', image: '🥩' },
+    { id: 2, name: '上ハラミ', category: 'beef', price: 1680, description: '柔らかく旨味たっぷりのハラミ。', image: '🥩' },
+    { id: 3, name: '牛タン塩', category: 'beef', price: 1480, description: 'コリコリ食感の牛タン。レモンでさっぱりと。', image: '🥩' },
+    { id: 4, name: '和牛ロース', category: 'beef', price: 2480, description: 'A5ランク和牛の上質なロース。', image: '🥩' },
+    { id: 5, name: '特選5種盛り', category: 'beef', price: 4980, description: 'カルビ、ロース、ハラミ、タン、ホルモンの豪華盛り合わせ。', image: '🍖' },
+
+    // 豚肉
+    { id: 10, name: 'サムギョプサル', category: 'pork', price: 1280, description: '厚切り豚バラ肉。野菜と一緒にどうぞ。', image: '🥓' },
+    { id: 11, name: '豚トロ', category: 'pork', price: 980, description: 'ジューシーな豚トロ。', image: '🥓' },
+
+    // 鶏肉
+    { id: 20, name: '鶏もも', category: 'chicken', price: 780, description: 'プリプリの鶏もも肉。', image: '🍗' },
+    { id: 21, name: 'ぼんじり', category: 'chicken', price: 680, description: 'コラーゲンたっぷり。', image: '🍗' },
+
+    // ホルモン
+    { id: 30, name: 'ホルモン盛り', category: 'hormone', price: 1580, description: 'ミノ、ハチノス、シマチョウの3種盛り。', image: '🫀' },
+    { id: 31, name: 'マルチョウ', category: 'hormone', price: 880, description: '甘みのあるマルチョウ。', image: '🫀' },
+
+    // 海鮮
+    { id: 40, name: 'エビ', category: 'seafood', price: 780, description: 'プリプリの大エビ。', image: '🦐' },
+    { id: 41, name: 'イカ', category: 'seafood', price: 680, description: '新鮮なイカ。', image: '🦑' },
+    { id: 42, name: 'ホタテ', category: 'seafood', price: 880, description: '北海道産ホタテ。', image: '🐚' },
+
+    // 野菜
+    { id: 50, name: '野菜盛り合わせ', category: 'vegetable', price: 680, description: 'キャベツ、玉ねぎ、ピーマン、かぼちゃなど。', image: '🥬' },
+    { id: 51, name: 'キムチ盛り合わせ', category: 'vegetable', price: 780, description: '白菜、カクテキ、オイキムチの3種。', image: '🥗' },
+    { id: 52, name: 'サンチュ', category: 'vegetable', price: 380, description: 'お肉を包んでどうぞ。', image: '🥬' },
+
+    // ご飯・麺
+    { id: 60, name: 'ライス', category: 'rice', price: 300, description: '国産コシヒカリ。', image: '🍚' },
+    { id: 61, name: '大盛りライス', category: 'rice', price: 400, description: '大盛りでお腹いっぱい。', image: '🍚' },
+    { id: 62, name: '冷麺', category: 'rice', price: 880, description: 'さっぱり冷麺。〆にどうぞ。', image: '🍜' },
+    { id: 63, name: 'ビビンバ', category: 'rice', price: 980, description: '石焼ビビンバ。', image: '🍲' },
+
+    // サイドメニュー
+    { id: 70, name: 'ナムル3種', category: 'side', price: 480, description: 'もやし、ほうれん草、大根のナムル。', image: '🥗' },
+    { id: 71, name: 'チヂミ', category: 'side', price: 780, description: 'カリッと焼いたチヂミ。', image: '🥞' },
+    { id: 72, name: '韓国のり', category: 'side', price: 280, description: 'ごま油香る韓国のり。', image: '🍃' },
+
+    // ドリンク
+    { id: 80, name: '生ビール', category: 'drink', price: 550, description: 'キンキンに冷えた生ビール。', image: '🍺' },
+    { id: 81, name: '瓶ビール', category: 'drink', price: 600, description: 'アサヒスーパードライ。', image: '🍺' },
+    { id: 82, name: 'チャミスル', category: 'drink', price: 680, description: '韓国焼酎。', image: '🍶' },
+    { id: 83, name: 'マッコリ', category: 'drink', price: 580, description: '甘くてまろやか。', image: '🥛' },
+    { id: 84, name: 'ハイボール', category: 'drink', price: 480, description: 'さっぱりハイボール。', image: '🥃' },
+    { id: 85, name: 'ソフトドリンク', category: 'drink', price: 380, description: 'コーラ、ウーロン茶、オレンジジュースなど。', image: '🥤' },
+
+    // デザート
+    { id: 90, name: 'バニラアイス', category: 'dessert', price: 380, description: '濃厚バニラ。', image: '🍨' },
+    { id: 91, name: 'シャーベット', category: 'dessert', price: 380, description: '柚子シャーベット。', image: '🍧' }
+];
+
 // ============ Initialization ============
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // Load saved cart
-    loadCartFromStorage();
-
-    // Setup table info
-    setupTableInfo();
-
-    // Load menu
-    await loadMenu();
-
-    // Setup WebSocket for real-time updates
-    setupWebSocket();
-
-    // Update UI
-    updateCartBadge();
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
 });
 
-function generateSessionId() {
-    const id = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('session_id', id);
-    return id;
+function initApp() {
+    console.log('🍖 Table Order - 焼肉ヅアン initialized');
+
+    // Get table info from URL params
+    const params = new URLSearchParams(window.location.search);
+    state.tableId = params.get('table') || 'demo-table-1';
+    state.tableNumber = params.get('number') || 'T1';
+    state.guestCount = parseInt(params.get('guests')) || 2;
+
+    // Update display
+    elements.tableNumber.textContent = state.tableNumber;
+    elements.guestCount.textContent = `${state.guestCount}名様`;
+
+    // Load menu
+    state.menu = menuData;
+    renderMenu();
+
+    setupEventListeners();
+    connectWebSocket();
 }
 
-function setupTableInfo() {
-    const tableNumber = urlParams.get('table_number') || 'T5';
-    const guestCount = parseInt(urlParams.get('guests')) || 4;
-
-    state.tableNumber = tableNumber;
-    state.guestCount = guestCount;
-
-    document.getElementById('tableNumber').textContent = tableNumber;
-    document.getElementById('guestCount').textContent = `${guestCount}åæ§˜`;
-}
-
-// ============ API Functions ============
-
-async function loadMenu() {
-    try {
-        const response = await fetch(`${CONFIG.API_BASE}/menu/categories?branch_code=${CONFIG.BRANCH_CODE}`);
-
-        if (!response.ok) {
-            throw new Error('Failed to load menu');
+// ============ Event Listeners ============
+function setupEventListeners() {
+    // Category navigation
+    elements.categoryNav.addEventListener('click', (e) => {
+        if (e.target.classList.contains('category-btn')) {
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            state.currentCategory = e.target.dataset.category;
+            renderMenu();
         }
-
-        const data = await response.json();
-        state.categories = data.categories;
-
-        renderCategories();
-        selectCategory(state.categories[0]?.category || 'meat');
-
-    } catch (error) {
-        console.error('Error loading menu:', error);
-        // Load demo data if API fails
-        loadDemoMenu();
-    }
-}
-
-function loadDemoMenu() {
-    // Demo data for development
-    state.categories = [
-        {
-            category: 'meat',
-            category_label: 'è‚‰é¡ž',
-            icon: 'ðŸ¥©',
-            items: [
-                { id: '1', name: 'å’Œç‰›ä¸Šãƒãƒ©ãƒŸ', description: 'å£ã®ä¸­ã§ã»ã©ã‘ã‚‹æŸ”ã‚‰ã‹ã•ã¨æ¿ƒåŽšãªå‘³ã‚ã„', price: 1800, image_url: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400', is_popular: true },
-                { id: '2', name: 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©', description: 'è´…æ²¢ãªåŽšåˆ‡ã‚Šã€‚æ­¯ã”ãŸãˆã¨è‚‰æ±ãŒæº¢ã‚Œã¾ã™', price: 2200, image_url: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400', is_popular: true },
-                { id: '3', name: 'ã‚«ãƒ«ãƒ“', description: 'å®šç•ªã®äººæ°—ãƒ¡ãƒ‹ãƒ¥ãƒ¼', price: 1500, image_url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400' },
-                { id: '4', name: 'ãƒ­ãƒ¼ã‚¹', description: 'èµ¤èº«ã®æ—¨å‘³ãŒæ¥½ã—ã‚ã‚‹', price: 1600, image_url: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400' },
-                { id: '5', name: 'ãƒ›ãƒ«ãƒ¢ãƒ³ç››ã‚Šåˆã‚ã›', description: 'æ–°é®®ãªãƒ›ãƒ«ãƒ¢ãƒ³ã‚’ãŸã£ã·ã‚Š', price: 1400, image_url: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400' },
-                { id: '6', name: 'ç‰¹é¸ç››ã‚Šåˆã‚ã›', description: 'æœ¬æ—¥ã®ãŠã™ã™ã‚å¸Œå°‘éƒ¨ä½ã‚’è´…æ²¢ã«', price: 4500, image_url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400', is_popular: true },
-            ]
-        },
-        {
-            category: 'drinks',
-            category_label: 'é£²ç‰©',
-            icon: 'ðŸº',
-            items: [
-                { id: '10', name: 'ç”Ÿãƒ“ãƒ¼ãƒ«', description: 'ã‚­ãƒ³ã‚­ãƒ³ã«å†·ãˆãŸç”Ÿãƒ“ãƒ¼ãƒ«', price: 600, image_url: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400' },
-                { id: '11', name: 'ãƒã‚¤ãƒœãƒ¼ãƒ«', description: 'ã™ã£ãã‚Šçˆ½ã‚„ã‹', price: 500, image_url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400' },
-                { id: '12', name: 'ãƒ¬ãƒ¢ãƒ³ã‚µãƒ¯ãƒ¼', description: 'è‡ªå®¶è£½ãƒ¬ãƒ¢ãƒ³ã‚µãƒ¯ãƒ¼', price: 500, image_url: 'https://images.unsplash.com/photo-1560508180-03f285f67c1a?w=400' },
-                { id: '13', name: 'ã‚¦ãƒ¼ãƒ­ãƒ³èŒ¶', description: 'ã‚½ãƒ•ãƒˆãƒ‰ãƒªãƒ³ã‚¯', price: 300, image_url: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400' },
-            ]
-        },
-        {
-            category: 'salad',
-            category_label: 'ã‚µãƒ©ãƒ€',
-            icon: 'ðŸ¥—',
-            items: [
-                { id: '20', name: 'ãƒãƒ§ãƒ¬ã‚®ã‚µãƒ©ãƒ€', description: 'éŸ“å›½é¢¨ãƒ”ãƒªè¾›ã‚µãƒ©ãƒ€', price: 600, image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400' },
-                { id: '21', name: 'ã‚·ãƒ¼ã‚¶ãƒ¼ã‚µãƒ©ãƒ€', description: 'ãƒ‘ãƒ«ãƒ¡ã‚¶ãƒ³ãƒãƒ¼ã‚ºãŸã£ã·ã‚Š', price: 700, image_url: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400' },
-            ]
-        },
-        {
-            category: 'rice',
-            category_label: 'ã”é£¯ãƒ»éºº',
-            icon: 'ðŸš',
-            items: [
-                { id: '30', name: 'ãƒ©ã‚¤ã‚¹', description: 'å›½ç”£ã‚³ã‚·ãƒ’ã‚«ãƒª', price: 200, image_url: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400' },
-                { id: '31', name: 'ãƒ“ãƒ“ãƒ³ãƒ', description: 'çŸ³ç„¼ãƒ“ãƒ“ãƒ³ãƒ', price: 1200, image_url: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400' },
-                { id: '32', name: 'å†·éºº', description: 'éŸ“å›½å†·éºº', price: 900, image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400' },
-            ]
-        },
-        {
-            category: 'dessert',
-            category_label: 'ãƒ‡ã‚¶ãƒ¼ãƒˆ',
-            icon: 'ðŸ¨',
-            items: [
-                { id: '40', name: 'ãƒãƒ‹ãƒ©ã‚¢ã‚¤ã‚¹', description: 'æ¿ƒåŽšãƒãƒ‹ãƒ©', price: 400, image_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400' },
-                { id: '41', name: 'æä»è±†è…', description: 'æ‰‹ä½œã‚Šæä»è±†è…', price: 450, image_url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400' },
-            ]
-        }
-    ];
-
-    renderCategories();
-    selectCategory('meat');
-}
-
-async function submitOrder() {
-    if (state.cart.length === 0) return;
-
-    const btnOrder = document.getElementById('btnOrder');
-    btnOrder.disabled = true;
-    btnOrder.innerHTML = '<span class="loading-spinner"></span> é€ä¿¡ä¸­...';
-
-    try {
-        const orderData = {
-            table_id: TABLE_ID,
-            session_id: state.sessionId,
-            items: state.cart.map(item => ({
-                menu_item_id: item.id,
-                quantity: item.quantity,
-                notes: item.notes || null
-            }))
-        };
-
-        const response = await fetch(`${CONFIG.API_BASE}/orders/?branch_code=${CONFIG.BRANCH_CODE}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(orderData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Order failed');
-        }
-
-        const result = await response.json();
-
-        // Clear cart
-        state.cart = [];
-        saveCartToStorage();
-        updateCartBadge();
-        closeCart();
-        renderCartItems();
-
-        // Show success
-        showNotification('ã”æ³¨æ–‡ã‚’æ‰¿ã‚Šã¾ã—ãŸï¼', 'success');
-
-        // Add to order history
-        state.orderHistory.push(result);
-
-    } catch (error) {
-        console.error('Order error:', error);
-        showNotification('æ³¨æ–‡ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ã‚‚ã†ä¸€åº¦ãŠè©¦ã—ãã ã•ã„ã€‚', 'error');
-    } finally {
-        btnOrder.disabled = false;
-        btnOrder.textContent = 'æ³¨æ–‡ã‚’ç¢ºå®šã™ã‚‹';
-    }
-}
-
-async function callStaff(callType) {
-    try {
-        const response = await fetch(`${CONFIG.API_BASE}/orders/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                table_id: TABLE_ID,
-                session_id: state.sessionId,
-                call_type: callType
-            })
-        });
-
-        const callLabels = {
-            'assistance': 'ã‚¹ã‚¿ãƒƒãƒ•ã‚’å‘¼ã³ã¾ã—ãŸ',
-            'water': 'ãŠæ°´ã‚’ãŠæŒã¡ã—ã¾ã™',
-            'bill': 'ãŠä¼šè¨ˆã‚’ãŠå¾…ã¡ãã ã•ã„'
-        };
-
-        showNotification(callLabels[callType] || 'ã‚¹ã‚¿ãƒƒãƒ•ã‚’å‘¼ã³ã¾ã—ãŸ', 'success');
-
-    } catch (error) {
-        console.error('Call staff error:', error);
-        showNotification('ã‚¹ã‚¿ãƒƒãƒ•ã‚’å‘¼ã³ã¾ã—ãŸ', 'success'); // Show success anyway for demo
-    }
-}
-
-// ============ WebSocket ============
-
-function setupWebSocket() {
-    // Skip if already exceeded max retries
-    if (state.wsRetryCount >= state.maxWsRetries) {
-        console.log('WebSocket: Max retries exceeded, using offline mode');
-        return;
-    }
-
-    try {
-        const ws = new WebSocket(`${CONFIG.WS_URL}?branch_code=${CONFIG.BRANCH_CODE}&table_id=${TABLE_ID}`);
-
-        ws.onopen = () => {
-            console.log('WebSocket connected');
-            state.wsRetryCount = 0; // Reset retry count on successful connection
-            updateConnectionStatus(true);
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            handleWebSocketMessage(data);
-        };
-
-        ws.onerror = (error) => {
-            console.log('WebSocket error (will retry):', error);
-        };
-
-        ws.onclose = () => {
-            state.wsRetryCount++;
-            updateConnectionStatus(false);
-
-            if (state.wsRetryCount < state.maxWsRetries) {
-                console.log(`WebSocket disconnected, retry ${state.wsRetryCount}/${state.maxWsRetries}...`);
-                setTimeout(setupWebSocket, 3000);
-            } else {
-                console.log('WebSocket: Switching to offline mode');
-                showOfflineNotice();
-            }
-        };
-
-    } catch (error) {
-        console.error('WebSocket setup error:', error);
-        state.wsRetryCount++;
-        if (state.wsRetryCount >= state.maxWsRetries) {
-            showOfflineNotice();
-        }
-    }
-}
-
-function updateConnectionStatus(isOnline) {
-    state.isOnline = isOnline;
-    const statusEl = document.getElementById('connectionStatus');
-    if (statusEl) {
-        if (isOnline) {
-            statusEl.innerHTML = '<span class="status-dot online"></span> ã‚ªãƒ³ãƒ©ã‚¤ãƒ³';
-            statusEl.className = 'connection-status online';
-        } else {
-            statusEl.innerHTML = '<span class="status-dot offline"></span> ã‚ªãƒ•ãƒ©ã‚¤ãƒ³';
-            statusEl.className = 'connection-status offline';
-        }
-    }
-}
-
-function showOfflineNotice() {
-    // Show a non-intrusive notice that real-time updates are unavailable
-    const existingNotice = document.getElementById('offlineNotice');
-    if (existingNotice) return; // Already showing
-
-    const notice = document.createElement('div');
-    notice.id = 'offlineNotice';
-    notice.className = 'offline-notice';
-    notice.innerHTML = `
-        <span>âš ï¸ ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ é€šçŸ¥ã¯ç¾åœ¨åˆ©ç”¨ã§ãã¾ã›ã‚“ã€‚ã”æ³¨æ–‡ã¯é€šå¸¸é€šã‚ŠãŠå—ã‘ã§ãã¾ã™ã€‚</span>
-        <button onclick="this.parentElement.remove()">Ã—</button>
-    `;
-    document.body.appendChild(notice);
-}
-
-function handleWebSocketMessage(data) {
-    switch (data.type) {
-        case 'order_status_changed':
-            if (data.new_status === 'ready') {
-                showNotification(`æ³¨æ–‡ #${data.order_number} ãŒå®Œæˆã—ã¾ã—ãŸï¼`, 'success');
-            }
-            break;
-        case 'menu_updated':
-            loadMenu();
-            break;
-    }
-}
-
-// ============ Rendering ============
-
-function renderCategories() {
-    const container = document.getElementById('categoryList');
-    container.innerHTML = state.categories.map(cat => `
-        <div class="category-item ${cat.category === state.currentCategory ? 'active' : ''}"
-             onclick="selectCategory('${cat.category}')">
-            <span class="category-icon">${cat.icon}</span>
-            <span class="category-label">${cat.category_label}</span>
-        </div>
-    `).join('');
-}
-
-function selectCategory(category) {
-    state.currentCategory = category;
-
-    // Update active state
-    document.querySelectorAll('.category-item').forEach(el => {
-        el.classList.toggle('active', el.querySelector('.category-label').textContent ===
-            state.categories.find(c => c.category === category)?.category_label);
     });
 
-    // Update title
-    const cat = state.categories.find(c => c.category === category);
-    if (cat) {
-        document.getElementById('categoryIcon').textContent = cat.icon;
-        document.getElementById('categoryLabel').textContent = cat.category_label;
-        renderMenuItems(cat.items);
-    }
+    // Cart button
+    elements.cartBtn.addEventListener('click', openCart);
+    document.getElementById('closeCart').addEventListener('click', closeCart);
+    elements.overlay.addEventListener('click', closeCart);
+
+    // Cart actions
+    document.getElementById('btnClearCart').addEventListener('click', clearCart);
+    document.getElementById('btnOrder').addEventListener('click', openConfirmModal);
+
+    // Item modal
+    document.getElementById('btnCloseItem').addEventListener('click', closeItemModal);
+    document.getElementById('qtyMinus').addEventListener('click', () => updateQuantity(-1));
+    document.getElementById('qtyPlus').addEventListener('click', () => updateQuantity(1));
+    document.getElementById('btnAddToCart').addEventListener('click', addToCart);
+
+    // Confirm modal
+    document.getElementById('btnCancelOrder').addEventListener('click', closeConfirmModal);
+    document.getElementById('btnConfirmOrder').addEventListener('click', submitOrder);
+
+    // Success modal
+    document.getElementById('btnCloseSuccess').addEventListener('click', closeSuccessModal);
+
+    // Call staff
+    document.getElementById('callStaffBtn').addEventListener('click', callStaff);
 }
 
-function getImageUrl(imageUrl) {
-    if (!imageUrl) return 'https://via.placeholder.com/400x200?text=No+Image';
-    // If it's a relative path from API, prepend the API base
-    if (imageUrl.startsWith('/images/')) {
-        return CONFIG.API_BASE.replace('/api', '') + imageUrl;
-    }
-    return imageUrl;
-}
+// ============ Menu Functions ============
+function renderMenu() {
+    const filteredMenu = state.currentCategory === 'all'
+        ? state.menu
+        : state.menu.filter(item => item.category === state.currentCategory);
 
-function renderMenuItems(items) {
-    const container = document.getElementById('menuGrid');
-
-    if (!items || items.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted);">ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãŒã‚ã‚Šã¾ã›ã‚“</p>';
-        return;
-    }
-
-    container.innerHTML = items.map(item => {
-        const inCart = state.cart.find(c => c.id === item.id);
-        const cartQty = inCart ? inCart.quantity : 0;
-        const imgUrl = getImageUrl(item.image_url);
-
-        return `
-            <div class="menu-card ${inCart ? 'in-cart' : ''}" onclick="openItemModal('${item.id}')">
-                ${cartQty > 0 ? `<div class="menu-card-cart-indicator">${cartQty}</div>` : ''}
-                <img class="menu-card-image" src="${imgUrl}" alt="${item.name}" loading="lazy"
-                     onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
-                <div class="menu-card-content">
-                    <h3 class="menu-card-name">${item.name}</h3>
-                    <p class="menu-card-description">${item.description || ''}</p>
-                    <div class="menu-card-footer">
-                        <span class="menu-card-price">Â¥${item.price.toLocaleString()}</span>
-                        <div class="menu-card-badges">
-                            ${item.is_popular ? '<span class="badge popular">äººæ°—</span>' : ''}
-                            ${item.is_spicy ? '<span class="badge spicy">è¾›</span>' : ''}
-                        </div>
-                    </div>
-                </div>
+    elements.menuGrid.innerHTML = filteredMenu.map(item => `
+        <div class="menu-item" data-item-id="${item.id}" onclick="openItemModal(${item.id})">
+            <div class="item-image">${item.image}</div>
+            <div class="item-info">
+                <h3 class="item-name">${item.name}</h3>
+                <p class="item-price">¥${item.price.toLocaleString()}</p>
             </div>
-        `;
-    }).join('');
-}
-
-function renderCartItems() {
-    const container = document.getElementById('cartItems');
-
-    if (state.cart.length === 0) {
-        container.innerHTML = '<div class="cart-empty">ã‚«ãƒ¼ãƒˆã¯ç©ºã§ã™</div>';
-        document.getElementById('btnOrder').disabled = true;
-        return;
-    }
-
-    container.innerHTML = state.cart.map((item, index) => `
-        <div class="cart-item">
-            <img class="cart-item-image" src="${getImageUrl(item.image_url)}" alt="${item.name}"
-                 onerror="this.src='https://via.placeholder.com/60?text=No'">
-            <div class="cart-item-info">
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">Â¥${item.price.toLocaleString()}</div>
-                ${item.notes ? `<div style="font-size: 12px; color: var(--text-muted);">${item.notes}</div>` : ''}
-                <div class="cart-item-controls">
-                    <button class="qty-btn" onclick="updateCartQty(${index}, -1)">âˆ’</button>
-                    <span class="qty-value">${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateCartQty(${index}, 1)">+</button>
-                </div>
-            </div>
-            <button class="cart-item-delete" onclick="removeFromCart(${index})">ðŸ—‘</button>
+            <button class="quick-add-btn" onclick="event.stopPropagation(); quickAdd(${item.id})">+</button>
         </div>
     `).join('');
+}
 
-    // Update total
-    const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    document.getElementById('cartTotal').textContent = `Â¥${total.toLocaleString()}`;
-    document.getElementById('btnOrder').disabled = false;
+function openItemModal(itemId) {
+    const item = state.menu.find(i => i.id === itemId);
+    if (!item) return;
+
+    state.selectedItem = item;
+    state.quantity = 1;
+
+    elements.itemName.textContent = item.name;
+    elements.itemDescription.textContent = item.description;
+    elements.itemPrice.textContent = `¥${item.price.toLocaleString()}`;
+    elements.itemImage.textContent = item.image;
+    elements.qtyValue.textContent = '1';
+
+    elements.itemModal.style.display = 'flex';
+}
+
+function closeItemModal() {
+    elements.itemModal.style.display = 'none';
+    state.selectedItem = null;
+    state.quantity = 1;
+}
+
+function updateQuantity(delta) {
+    state.quantity = Math.max(1, Math.min(10, state.quantity + delta));
+    elements.qtyValue.textContent = state.quantity;
+}
+
+function quickAdd(itemId) {
+    const item = state.menu.find(i => i.id === itemId);
+    if (!item) return;
+
+    addItemToCart(item, 1);
+}
+
+function addToCart() {
+    if (!state.selectedItem) return;
+
+    addItemToCart(state.selectedItem, state.quantity);
+    closeItemModal();
+}
+
+function addItemToCart(item, quantity) {
+    const existingIndex = state.cart.findIndex(i => i.id === item.id);
+
+    if (existingIndex >= 0) {
+        state.cart[existingIndex].quantity += quantity;
+    } else {
+        state.cart.push({
+            ...item,
+            quantity: quantity
+        });
+    }
+
+    updateCartUI();
+    showToast(`${item.name} を追加しました`);
 }
 
 // ============ Cart Functions ============
-
 function openCart() {
-    document.getElementById('cartOverlay').classList.add('open');
-    document.getElementById('cartDrawer').classList.add('open');
-    renderCartItems();
+    elements.cartPanel.classList.add('open');
+    elements.overlay.classList.add('show');
+    renderCart();
 }
 
 function closeCart() {
-    document.getElementById('cartOverlay').classList.remove('open');
-    document.getElementById('cartDrawer').classList.remove('open');
+    elements.cartPanel.classList.remove('open');
+    elements.overlay.classList.remove('show');
 }
 
-function addToCart(item, quantity = 1, notes = '') {
-    const existing = state.cart.find(c => c.id === item.id && c.notes === notes);
-
-    if (existing) {
-        existing.quantity += quantity;
+function renderCart() {
+    if (state.cart.length === 0) {
+        elements.cartItems.innerHTML = '<div class="empty-cart">カートは空です</div>';
     } else {
-        state.cart.push({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image_url: item.image_url,
-            quantity: quantity,
-            notes: notes
-        });
+        elements.cartItems.innerHTML = state.cart.map((item, index) => `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <span class="cart-item-name">${item.name}</span>
+                    <span class="cart-item-price">¥${item.price.toLocaleString()}</span>
+                </div>
+                <div class="cart-item-controls">
+                    <button class="qty-btn small" onclick="updateCartItem(${index}, -1)">−</button>
+                    <span class="cart-item-qty">${item.quantity}</span>
+                    <button class="qty-btn small" onclick="updateCartItem(${index}, 1)">+</button>
+                    <button class="remove-btn" onclick="removeCartItem(${index})">×</button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    saveCartToStorage();
-    updateCartBadge();
-
-    // Re-render current category to show cart indicator
-    const cat = state.categories.find(c => c.category === state.currentCategory);
-    if (cat) {
-        renderMenuItems(cat.items);
-    }
+    updateCartTotals();
 }
 
-function updateCartQty(index, delta) {
+function updateCartItem(index, delta) {
     state.cart[index].quantity += delta;
 
     if (state.cart[index].quantity <= 0) {
         state.cart.splice(index, 1);
     }
 
-    saveCartToStorage();
-    updateCartBadge();
-    renderCartItems();
-
-    // Re-render menu
-    const cat = state.categories.find(c => c.category === state.currentCategory);
-    if (cat) {
-        renderMenuItems(cat.items);
-    }
+    renderCart();
+    updateCartUI();
 }
 
-function removeFromCart(index) {
+function removeCartItem(index) {
     state.cart.splice(index, 1);
-    saveCartToStorage();
-    updateCartBadge();
-    renderCartItems();
-
-    // Re-render menu
-    const cat = state.categories.find(c => c.category === state.currentCategory);
-    if (cat) {
-        renderMenuItems(cat.items);
-    }
+    renderCart();
+    updateCartUI();
 }
 
-function updateCartBadge() {
+function clearCart() {
+    state.cart = [];
+    renderCart();
+    updateCartUI();
+}
+
+function updateCartUI() {
     const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-    const badge = document.getElementById('cartBadge');
-    badge.textContent = totalItems;
-    badge.classList.toggle('hidden', totalItems === 0);
+    elements.cartCount.textContent = totalItems;
+    elements.cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
 }
 
-function saveCartToStorage() {
-    localStorage.setItem('table_order_cart', JSON.stringify(state.cart));
+function updateCartTotals() {
+    const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = Math.floor(subtotal * (1 + CONFIG.TAX_RATE));
+
+    elements.cartSubtotal.textContent = `¥${subtotal.toLocaleString()}`;
+    elements.cartTotal.textContent = `¥${total.toLocaleString()}`;
 }
 
-function loadCartFromStorage() {
-    try {
-        const saved = localStorage.getItem('table_order_cart');
-        if (saved) {
-            state.cart = JSON.parse(saved);
-        }
-    } catch (e) {
-        state.cart = [];
-    }
+function getCartTotal() {
+    const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return Math.floor(subtotal * (1 + CONFIG.TAX_RATE));
 }
 
-// ============ Modal Functions ============
-
-function openItemModal(itemId) {
-    // Find item in all categories
-    let item = null;
-    for (const cat of state.categories) {
-        item = cat.items.find(i => i.id === itemId);
-        if (item) break;
+// ============ Order Functions ============
+function openConfirmModal() {
+    if (state.cart.length === 0) {
+        showToast('カートに商品がありません', 'error');
+        return;
     }
 
-    if (!item) return;
+    closeCart();
 
-    state.currentItem = item;
-    state.modalQty = 1;
+    elements.confirmItems.innerHTML = state.cart.map(item => `
+        <div class="confirm-item">
+            <span class="confirm-item-name">${item.name} ×${item.quantity}</span>
+            <span class="confirm-item-price">¥${(item.price * item.quantity).toLocaleString()}</span>
+        </div>
+    `).join('');
 
-    document.getElementById('modalImage').src = getImageUrl(item.image_url);
-    document.getElementById('modalTitle').textContent = item.name;
-    document.getElementById('modalDescription').textContent = item.description || '';
-    document.getElementById('modalPrice').textContent = `Â¥${item.price.toLocaleString()}`;
-    document.getElementById('modalQty').textContent = '1';
-    document.getElementById('modalNotes').value = '';
-
-    document.getElementById('itemModal').classList.add('open');
+    elements.confirmTotal.textContent = `¥${getCartTotal().toLocaleString()}`;
+    elements.confirmModal.style.display = 'flex';
 }
 
-function closeItemModal() {
-    document.getElementById('itemModal').classList.remove('open');
-    state.currentItem = null;
+function closeConfirmModal() {
+    elements.confirmModal.style.display = 'none';
 }
 
-function changeModalQty(delta) {
-    state.modalQty = Math.max(1, state.modalQty + delta);
-    document.getElementById('modalQty').textContent = state.modalQty;
+async function submitOrder() {
+    closeConfirmModal();
+
+    // Show loading
+    showToast('注文を送信中...');
+
+    // Mock API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Show success
+    elements.successModal.style.display = 'flex';
+
+    // Clear cart
+    state.cart = [];
+    updateCartUI();
 }
 
-function addToCartFromModal() {
-    if (!state.currentItem) return;
-
-    const notes = document.getElementById('modalNotes').value.trim();
-    addToCart(state.currentItem, state.modalQty, notes);
-
-    closeItemModal();
-    showNotification(`${state.currentItem.name} ã‚’ã‚«ãƒ¼ãƒˆã«è¿½åŠ ã—ã¾ã—ãŸ`, 'success');
+function closeSuccessModal() {
+    elements.successModal.style.display = 'none';
 }
 
-// ============ Notifications ============
+// ============ Staff Call ============
+function callStaff() {
+    showToast('スタッフを呼びました。しばらくお待ちください。');
 
-function showNotification(message, type = 'success') {
-    const toast = document.getElementById('notificationToast');
-    const icon = document.getElementById('notificationIcon');
-    const msg = document.getElementById('notificationMessage');
+    // Mock API call to notify staff
+    console.log('Calling staff for table:', state.tableNumber);
+}
 
-    icon.textContent = type === 'success' ? 'âœ“' : 'âœ•';
-    msg.textContent = message;
+// ============ Utility Functions ============
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
 
-    toast.className = 'notification-toast ' + type;
-    toast.classList.add('show');
-
+    setTimeout(() => toast.classList.add('show'), 100);
     setTimeout(() => {
         toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
-// ============ Event Listeners ============
+// ============ WebSocket ============
+function connectWebSocket() {
+    console.log('WebSocket connection placeholder');
+}
 
-// Close modal on overlay click
-document.getElementById('itemModal').addEventListener('click', (e) => {
-    if (e.target.id === 'itemModal') {
-        closeItemModal();
-    }
-});
-
-// Keyboard shortcuts (for testing)
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeItemModal();
-        closeCart();
-    }
-});
+// Make functions globally accessible
+window.openItemModal = openItemModal;
+window.quickAdd = quickAdd;
+window.updateCartItem = updateCartItem;
+window.removeCartItem = removeCartItem;

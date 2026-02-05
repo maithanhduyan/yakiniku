@@ -27,7 +27,10 @@ let state = {
     maxWsRetries: 3,
     isLoading: true,
     apiStatus: 'pending', // pending, success, error
-    wsStatus: 'pending'   // pending, success, error
+    wsStatus: 'pending',  // pending, success, error
+    // Pagination
+    currentPage: 1,
+    itemsPerPage: 8  // 2 rows x 4 items on iPad landscape
 };
 
 // ============ Loading State Management ============
@@ -557,28 +560,28 @@ function handleWebSocketMessage(data) {
 function renderCategories() {
     const container = document.getElementById('categoryList');
     container.innerHTML = state.categories.map(cat => `
-        <div class="category-item ${cat.category === state.currentCategory ? 'active' : ''}"
+        <div class="category-tab ${cat.category === state.currentCategory ? 'active' : ''}"
              onclick="selectCategory('${cat.category}')">
-            <span class="category-icon">${cat.icon}</span>
-            <span class="category-label">${cat.category_label}</span>
+            <span class="cat-icon">${cat.icon}</span>
+            <span class="cat-label">${cat.category_label}</span>
         </div>
     `).join('');
 }
 
 function selectCategory(category) {
     state.currentCategory = category;
+    state.currentPage = 1; // Reset to first page
 
     // Update active state
-    document.querySelectorAll('.category-item').forEach(el => {
-        el.classList.toggle('active', el.querySelector('.category-label').textContent ===
-            state.categories.find(c => c.category === category)?.category_label);
+    document.querySelectorAll('.category-tab').forEach(el => {
+        const label = el.querySelector('.cat-label');
+        const cat = state.categories.find(c => c.category === category);
+        el.classList.toggle('active', label && cat && label.textContent === cat.category_label);
     });
 
-    // Update title
+    // Render menu items with pagination
     const cat = state.categories.find(c => c.category === category);
     if (cat) {
-        document.getElementById('categoryIcon').textContent = cat.icon;
-        document.getElementById('categoryLabel').textContent = cat.category_label;
         renderMenuItems(cat.items);
     }
 }
@@ -588,32 +591,108 @@ function renderMenuItems(items) {
 
     if (!items || items.length === 0) {
         container.innerHTML = '<p style="color: var(--text-muted);">メニューがありません</p>';
+        updatePagination(0, 0);
         return;
     }
 
-    container.innerHTML = items.map(item => {
+    // Sort: popular items first
+    const sortedItems = [...items].sort((a, b) => {
+        if (a.is_popular && !b.is_popular) return -1;
+        if (!a.is_popular && b.is_popular) return 1;
+        return 0;
+    });
+
+    // Pagination
+    const totalItems = sortedItems.length;
+    const totalPages = Math.ceil(totalItems / state.itemsPerPage);
+    const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+    const endIndex = startIndex + state.itemsPerPage;
+    const pageItems = sortedItems.slice(startIndex, endIndex);
+
+    container.innerHTML = pageItems.map(item => {
         const inCart = state.cart.find(c => c.id === item.id);
         const cartQty = inCart ? inCart.quantity : 0;
 
         return `
-            <div class="menu-card ${inCart ? 'in-cart' : ''}" onclick="openItemModal('${item.id}')">
+            <div class="menu-card ${inCart ? 'in-cart' : ''}" data-item-id="${item.id}">
                 ${cartQty > 0 ? `<div class="menu-card-cart-indicator">${cartQty}</div>` : ''}
-                <img class="menu-card-image" src="${item.image_url || ''}" alt="${item.name}" loading="lazy"
-                     onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                <div class="menu-card-image-wrap" onclick="openItemModal('${item.id}')">
+                    <img class="menu-card-image" src="${item.image_url || ''}" alt="${item.name}" loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                    ${item.is_popular ? '<span class="popular-badge">🔥 人気</span>' : ''}
+                    ${item.is_spicy ? '<span class="spicy-badge">🌶️</span>' : ''}
+                </div>
                 <div class="menu-card-content">
-                    <h3 class="menu-card-name">${item.name}</h3>
-                    <p class="menu-card-description">${item.description || ''}</p>
+                    <h3 class="menu-card-name" onclick="openItemModal('${item.id}')">${item.name}</h3>
                     <div class="menu-card-footer">
                         <span class="menu-card-price">¥${item.price.toLocaleString()}</span>
-                        <div class="menu-card-badges">
-                            ${item.is_popular ? '<span class="badge popular">人気</span>' : ''}
-                            ${item.is_spicy ? '<span class="badge spicy">辛</span>' : ''}
-                        </div>
+                        <button class="quick-add-btn" onclick="quickAddToCart('${item.id}')" aria-label="追加">
+                            ${cartQty > 0 ? `<span class="quick-add-qty">${cartQty}</span>` : '＋'}
+                        </button>
                     </div>
                 </div>
             </div>
         `;
     }).join('');
+
+    updatePagination(state.currentPage, totalPages);
+}
+
+// Pagination functions
+function updatePagination(currentPage, totalPages) {
+    const pagination = document.getElementById('pagination');
+    const pageInfo = document.getElementById('pageInfo');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+
+    if (totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+    pageInfo.textContent = `${currentPage} / ${totalPages}`;
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
+}
+
+function changePage(delta) {
+    const cat = state.categories.find(c => c.category === state.currentCategory);
+    if (!cat) return;
+
+    const totalPages = Math.ceil(cat.items.length / state.itemsPerPage);
+    const newPage = state.currentPage + delta;
+
+    if (newPage >= 1 && newPage <= totalPages) {
+        state.currentPage = newPage;
+        renderMenuItems(cat.items);
+
+        // Scroll to top of menu
+        document.getElementById('menuSection').scrollTop = 0;
+    }
+}
+
+// Quick add - add 1 item without opening modal
+function quickAddToCart(itemId) {
+    event.stopPropagation();
+
+    let item = null;
+    for (const cat of state.categories) {
+        item = cat.items.find(i => i.id === itemId);
+        if (item) break;
+    }
+    if (!item) return;
+
+    addToCart(item, 1, '');
+
+    // Visual feedback - animate the card
+    const card = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (card) {
+        card.classList.add('item-added');
+        setTimeout(() => card.classList.remove('item-added'), 400);
+    }
+
+    showNotification(`${item.name} を追加`, 'success');
 }
 
 function renderCartItems() {
@@ -721,9 +800,23 @@ function removeFromCart(index) {
 
 function updateCartBadge() {
     const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    // Header badge
     const badge = document.getElementById('cartBadge');
     badge.textContent = totalItems;
     badge.classList.toggle('hidden', totalItems === 0);
+
+    // Floating cart bar
+    const floatingBar = document.getElementById('floatingCartBar');
+    const floatingCount = document.getElementById('floatingCartCount');
+    const floatingTotal = document.getElementById('floatingCartTotal');
+
+    if (floatingBar) {
+        floatingBar.classList.toggle('visible', totalItems > 0);
+        if (floatingCount) floatingCount.textContent = `${totalItems}点`;
+        if (floatingTotal) floatingTotal.textContent = `¥${totalPrice.toLocaleString()}`;
+    }
 }
 
 function saveCartToStorage() {
@@ -796,7 +889,7 @@ function addToCartFromModal() {
 
 // ============ Notifications ============
 
-function showNotification(message, type = 'success') {
+function showNotification(message, type = 'success', duration = 1500) {
     const toast = document.getElementById('notificationToast');
     const icon = document.getElementById('notificationIcon');
     const msg = document.getElementById('notificationMessage');
@@ -809,7 +902,7 @@ function showNotification(message, type = 'success') {
 
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 3000);
+    }, duration);
 }
 
 // ============ Event Listeners ============

@@ -23,56 +23,45 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar - Categories -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">🍖</div>
-            </div>
-            <nav class="category-list" id="categoryList">
-                <!-- Loading skeleton -->
-                <div class="category-skeleton">
-                    <div class="skeleton-item"></div>
-                    <div class="skeleton-item"></div>
-                    <div class="skeleton-item"></div>
-                    <div class="skeleton-item"></div>
-                    <div class="skeleton-item"></div>
+        <!-- Top Header with Table Info & Cart -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="brand-logo">🍖</div>
+                <div class="table-info">
+                    <span class="table-number" id="tableNumber">T5</span>
+                    <span class="guest-count" id="guestCount">4名様</span>
                 </div>
-            </nav>
-            <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid var(--border-color);">
-                <button class="btn-call-staff" onclick="callStaff('assistance')" style="width: 100%; flex-direction: column; font-size: 12px;">
-                    <span style="font-size: 24px;">🔔</span>
-                    呼び出し
+            </div>
+            <div class="header-right">
+                <button class="btn-call-staff" onclick="callStaff('assistance')">
+                    🔔 呼出
+                </button>
+                <button class="btn-call-staff" onclick="callStaff('bill')">
+                    💳 会計
+                </button>
+                <button class="cart-button" onclick="openCart()">
+                    🛒 <span id="cartBadge">0</span>
                 </button>
             </div>
-        </aside>
+        </header>
+
+        <!-- Category Tabs - Horizontal -->
+        <nav class="category-tabs" id="categoryTabs">
+            <div class="category-tabs-scroll" id="categoryList">
+                <!-- Loading skeleton -->
+                <div class="category-skeleton">
+                    <div class="skeleton-tab"></div>
+                    <div class="skeleton-tab"></div>
+                    <div class="skeleton-tab"></div>
+                    <div class="skeleton-tab"></div>
+                </div>
+            </div>
+        </nav>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
-            <header class="app-header">
-                <div class="header-left">
-                    <div class="table-info">
-                        <span class="table-number" id="tableNumber">T5</span>
-                        <span class="guest-count" id="guestCount">4名様</span>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <button class="btn-call-staff" onclick="callStaff('bill')">
-                        💳 お会計
-                    </button>
-                    <button class="cart-button" onclick="openCart()">
-                        🛒 カート
-                        <span class="cart-badge" id="cartBadge">0</span>
-                    </button>
-                </div>
-            </header>
-
             <!-- Menu Section -->
             <section class="menu-section" id="menuSection">
-                <h2 class="menu-title" id="menuTitle">
-                    <span id="categoryIcon">🥩</span>
-                    <span id="categoryLabel">肉類</span>
-                </h2>
                 <div class="menu-grid" id="menuGrid">
                     <!-- Loading skeleton -->
                     <div class="menu-skeleton">
@@ -83,6 +72,13 @@
                         <div class="menu-card-skeleton"></div>
                         <div class="menu-card-skeleton"></div>
                     </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button class="page-btn" id="prevPage" onclick="changePage(-1)">← 前へ</button>
+                    <span class="page-info" id="pageInfo">1 / 1</span>
+                    <button class="page-btn" id="nextPage" onclick="changePage(1)">次へ →</button>
                 </div>
             </section>
         </main>
@@ -158,6 +154,20 @@
                 </span>
             </div>
         </div>
+    </div>
+
+    <!-- Floating Cart Bar -->
+    <div class="floating-cart-bar" id="floatingCartBar" onclick="openCart()">
+        <div class="floating-cart-info">
+            <span class="floating-cart-icon">🛒</span>
+            <span class="floating-cart-count" id="floatingCartCount">0点</span>
+        </div>
+        <div class="floating-cart-total">
+            <span id="floatingCartTotal">¥0</span>
+        </div>
+        <button class="floating-cart-btn">
+            注文へ →
+        </button>
     </div>
 
     <!-- Connection Status Bar -->

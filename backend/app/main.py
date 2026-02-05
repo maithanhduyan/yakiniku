@@ -86,7 +86,7 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# Include routers
+# ============ Legacy Routers (backward compatibility) ============
 from app.routers import bookings, customers, branches, chat, dashboard, notifications, tables, menu, orders
 
 app.include_router(bookings.router, prefix="/api/bookings", tags=["bookings"])
@@ -98,3 +98,24 @@ app.include_router(menu.router, prefix="/api/menu", tags=["menu"])
 app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(dashboard.router, prefix="/admin", tags=["dashboard"])
+
+# ============ Domain Routers (new modular structure) ============
+# Team: web
+from app.domains.booking.router import router as booking_router
+app.include_router(booking_router, prefix="/api/booking", tags=["booking-domain"])
+
+# Team: table-order
+from app.domains.order.router import router as order_router
+app.include_router(order_router, prefix="/api/order", tags=["order-domain"])
+
+# Team: kitchen
+from app.domains.kitchen.router import router as kitchen_router
+app.include_router(kitchen_router, prefix="/api/kitchen", tags=["kitchen-domain"])
+
+# Team: pos
+from app.domains.pos.router import router as pos_router
+app.include_router(pos_router, prefix="/api/pos", tags=["pos-domain"])
+
+# Team: checkin
+from app.domains.checkin.router import router as checkin_router
+app.include_router(checkin_router, prefix="/api/checkin", tags=["checkin-domain"])

@@ -14,6 +14,7 @@ from app.database import Base
 class BookingStatus(str, enum.Enum):
     PENDING = "pending"
     CONFIRMED = "confirmed"
+    CHECKED_IN = "checked_in"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
     NO_SHOW = "no_show"
@@ -41,6 +42,7 @@ class Booking(Base):
     status = Column(String(20), default=BookingStatus.PENDING.value)
     note = Column(String(1000))  # Customer request
     staff_note = Column(String(1000))  # Internal note
+    checked_in_at = Column(DateTime(timezone=True))  # Check-in timestamp
 
     # Metadata
     source = Column(String(50), default="web")  # 'web', 'chat', 'phone'

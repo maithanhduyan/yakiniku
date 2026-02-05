@@ -9,6 +9,35 @@
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "chat.agent.maxRequests": 200,
-    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv",
 
+    // ============ Python + UV Configuration ============
+    // Cross-platform: works on both Windows and Linux
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+    "python.terminal.activateEnvironment": true,
+
+    // Linux override (uncomment if on Linux)
+    // "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+
+    // UV package manager settings
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+
+    // Terminal environment for uv
+    "terminal.integrated.env.windows": {
+        "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
+        "PATH": "${workspaceFolder}/backend/.venv/Scripts;${env:PATH}"
+    },
+    "terminal.integrated.env.linux": {
+        "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
+        "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}"
+    },
+    "terminal.integrated.env.osx": {
+        "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
+        "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}"
+    }
 }

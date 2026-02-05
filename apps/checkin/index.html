@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="チェックイン">
+    <title>チェックイン | 焼肉ジナン</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo">🍖</span>
+                <h1>焼肉ジナン</h1>
+            </div>
+            <div class="header-center">
+                <span class="mode-label" id="modeLabel">QRスキャン</span>
+            </div>
+            <div class="header-right">
+                <span class="time" id="currentTime">--:--</span>
+                <span class="status-dot" id="statusDot"></span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- QR Scan Mode (Default) -->
+            <section id="scanMode" class="mode-panel active">
+                <div class="scan-container">
+                    <div class="scan-frame">
+                        <video id="qrVideo" autoplay playsinline></video>
+                        <div class="scan-overlay">
+                            <div class="scan-box"></div>
+                        </div>
+                    </div>
+                    <p class="scan-instruction">
+                        予約QRコードをスキャンしてください
+                    </p>
+
+                    <!-- Manual input fallback -->
+                    <div class="manual-input">
+                        <button class="btn-secondary" onclick="showManualInput()">
+                            手動入力
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Result Display -->
+            <section id="resultMode" class="mode-panel">
+                <div class="result-container" id="resultContainer">
+                    <!-- Dynamic content -->
+                </div>
+            </section>
+
+            <!-- Dashboard Mode -->
+            <section id="dashboardMode" class="mode-panel">
+                <div class="dashboard-grid">
+                    <!-- Upcoming Bookings -->
+                    <div class="panel bookings-panel">
+                        <h2>📋 本日の予約</h2>
+                        <div class="booking-list" id="bookingList">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+
+                    <!-- Waiting List -->
+                    <div class="panel waiting-panel">
+                        <h2>⏳ 順番待ち</h2>
+                        <div class="waiting-list" id="waitingList">
+                            <!-- Dynamic content -->
+                        </div>
+                        <button class="btn-primary btn-walkin" onclick="showWalkInForm()">
+                            + 順番待ち登録
+                        </button>
+                    </div>
+
+                    <!-- Available Tables -->
+                    <div class="panel tables-panel">
+                        <h2>🪑 空席状況</h2>
+                        <div class="table-grid" id="tableGrid">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="panel stats-panel">
+                        <div class="stat-item">
+                            <span class="stat-value" id="statCheckedIn">0</span>
+                            <span class="stat-label">チェックイン済</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statWaiting">0</span>
+                            <span class="stat-label">順番待ち</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statAvailable">0</span>
+                            <span class="stat-label">空席テーブル</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-mode="scan" onclick="switchMode('scan')">
+                <span class="nav-icon">📷</span>
+                <span class="nav-label">スキャン</span>
+            </button>
+            <button class="nav-btn" data-mode="dashboard" onclick="switchMode('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">ダッシュボード</span>
+            </button>
+            <button class="nav-btn" data-mode="waiting" onclick="showWalkInForm()">
+                <span class="nav-icon">✏️</span>
+                <span class="nav-label">順番登録</span>
+            </button>
+        </nav>
+
+        <!-- Modals -->
+        <!-- Walk-in Registration Modal -->
+        <div id="walkInModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>順番待ち登録</h2>
+                    <button class="modal-close" onclick="closeModal('walkInModal')">&times;</button>
+                </div>
+                <form id="walkInForm" onsubmit="submitWalkIn(event)">
+                    <div class="form-group">
+                        <label>お名前 <span class="required">*</span></label>
+                        <input type="text" id="walkInName" required placeholder="山田">
+                    </div>
+                    <div class="form-group">
+                        <label>人数 <span class="required">*</span></label>
+                        <div class="guest-selector">
+                            <button type="button" onclick="adjustGuests(-1)">−</button>
+                            <span id="guestCount">2</span>
+                            <span>名様</span>
+                            <button type="button" onclick="adjustGuests(1)">+</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>電話番号</label>
+                        <input type="tel" id="walkInPhone" placeholder="090-1234-5678">
+                    </div>
+                    <div class="form-group">
+                        <label>備考</label>
+                        <input type="text" id="walkInNote" placeholder="子供椅子が必要など">
+                    </div>
+                    <button type="submit" class="btn-primary btn-full">登録する</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Manual QR Input Modal -->
+        <div id="manualInputModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>予約コード入力</h2>
+                    <button class="modal-close" onclick="closeModal('manualInputModal')">&times;</button>
+                </div>
+                <form onsubmit="submitManualCode(event)">
+                    <div class="form-group">
+                        <label>予約コード</label>
+                        <input type="text" id="manualCode" placeholder="ABC12345"
+                               style="text-transform: uppercase; font-size: 24px; text-align: center;">
+                    </div>
+                    <button type="submit" class="btn-primary btn-full">確認</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table Assignment Modal -->
+        <div id="assignTableModal" class="modal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>テーブル選択</h2>
+                    <button class="modal-close" onclick="closeModal('assignTableModal')">&times;</button>
+                </div>
+                <div class="assign-info" id="assignInfo">
+                    <!-- Customer info -->
+                </div>
+                <div class="table-selection" id="tableSelection">
+                    <!-- Available tables -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/qr-scanner.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,66 +1,195 @@
 # In-House iPad Applications
+**(UI/UX Design, Business Logic, Backend Structure)**
 
-Đây là tài liệu thiết kế cho 3 ứng dụng iPad trong nhà hàng:
+Đây là tài liệu thiết kế cho **4 ứng dụng iPad** trong nhà hàng:
 
 ## Trạng thái phát triển
 
-| App | Status | Port | Files |
-|-----|--------|------|-------|
-| Table Order | ✅ Created | 8081 | `apps/table-order/` |
-| Kitchen (KDS) | ✅ Created | 8082 | `apps/kitchen/` |
-| POS | ✅ Created | 8083 | `apps/pos/` |
+| App | Status | Port | Files | Team |
+|-----|--------|------|-------|------|
+| Table Order | ✅ Created | 8081 | `apps/table-order/` | table-order |
+| Kitchen (KDS) | ✅ Created | 8082 | `apps/kitchen/` | kitchen |
+| POS | ✅ Created | 8083 | `apps/pos/` | pos |
+| **Check-in** | ✅ **NEW** | 8084 | `apps/checkin/` | checkin |
+
+## Backend Domain Structure (NEW)
+
+Backend được tổ chức theo **domain-driven design**, mỗi team có module riêng:
+
+```
+backend/app/
+├── domains/                    # 🆕 Domain modules by team
+│   ├── shared/                 # Shared models (Branch, MenuItem, Table)
+│   │   ├── models.py
+│   │   └── schemas.py
+│   ├── booking/                # Team: web
+│   │   ├── models.py           # Booking with QR token
+│   │   ├── schemas.py
+│   │   └── router.py           # /api/booking/*
+│   ├── order/                  # Team: table-order
+│   │   ├── models.py           # Order, OrderItem, TableSession
+│   │   ├── schemas.py
+│   │   └── router.py           # /api/order/*
+│   ├── kitchen/                # Team: kitchen
+│   │   └── router.py           # /api/kitchen/*
+│   ├── pos/                    # Team: pos
+│   │   ├── schemas.py
+│   │   └── router.py           # /api/pos/*
+│   └── checkin/                # Team: checkin (NEW)
+│       ├── models.py           # WaitingList, CheckInLog
+│       ├── schemas.py
+│       └── router.py           # /api/checkin/*
+├── routers/                    # Legacy routers (backward compatible)
+├── models/                     # Legacy models
+└── ...
+```
 
 ## Cấu trúc thư mục đã tạo
 
 ```
 yakiniku/
 ├── web/                    # Customer website (giữ nguyên)
-├── backend/                # FastAPI server (giữ nguyên)
+├── backend/                # FastAPI server
 │   ├── app/
+│   │   ├── domains/        # 🆕 Domain-driven modules
+│   │   │   ├── shared/     # Common models
+│   │   │   ├── booking/    # Web booking
+│   │   │   ├── order/      # Table ordering
+│   │   │   ├── kitchen/    # Kitchen display
+│   │   │   ├── pos/        # Point of sale
+│   │   │   └── checkin/    # 🆕 Customer reception
 │   │   ├── models/
-│   │   │   ├── menu.py     # ✅ Menu items model
-│   │   │   └── order.py    # ✅ Orders & TableSession model
 │   │   ├── routers/
-│   │   │   ├── menu.py     # ✅ Menu API
-│   │   │   └── orders.py   # ✅ Orders API
 │   │   └── schemas/
-│   │       ├── menu.py     # ✅ Menu schemas
-│   │       └── order.py    # ✅ Order schemas
 │   └── scripts/
-│       └── seed_menu.py    # ✅ Seed data script
 ├── dashboard/              # Admin panel (giữ nguyên)
-├── apps/                   # 🆕 iPad Applications (PWA)
+├── apps/                   # iPad Applications (PWA)
 │   ├── table-order/        # ✅ iPad đặt món tại bàn
-│   │   ├── index.html
-│   │   ├── css/style.css
-│   │   ├── js/app.js
-│   │   └── manifest.json
-│   ├── kitchen/            # 🔲 iPad Kitchen Display (KDS)
-│   │   ├── index.html
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── manifest.json
-│   └── pos/                # 🔲 iPad POS thanh toán
+│   ├── kitchen/            # ✅ iPad Kitchen Display (KDS)
+│   ├── pos/                # ✅ iPad POS thanh toán
+│   └── checkin/            # 🆕 iPad Check-in / Reception
 │       ├── index.html
-│       ├── css/
-│       ├── js/
+│       ├── css/style.css
+│       ├── js/app.js
 │       └── manifest.json
-├── shared/                 # Shared resources
-│   ├── components/         # 🔲 Shared UI components
-│   ├── api/                # 🔲 Shared API client
-│   └── branding/
+├── shared/
 └── docs/
 ```
 
-## So sánh 3 ứng dụng iPad
+## So sánh 4 ứng dụng iPad
 
-| Tính năng | Table Order | Kitchen (KDS) | POS |
-|-----------|-------------|---------------|-----|
-| **Mục đích** | Khách đặt món | Bếp xem đơn | Thu ngân thanh toán |
-| **Người dùng** | Khách hàng | Đầu bếp | Nhân viên quầy |
-| **Màn hình** | Landscape/Portrait | Landscape | Landscape |
-| **Realtime** | WebSocket | SSE/WebSocket | WebSocket |
-| **Auth** | Table PIN | Staff login | Staff login |
+| Tính năng | Table Order | Kitchen (KDS) | POS | **Check-in** |
+|-----------|-------------|---------------|-----|--------------|
+| **Mục đích** | Khách đặt món | Bếp xem đơn | Thu ngân thanh toán | **Đón khách** |
+| **Người dùng** | Khách hàng | Đầu bếp | Nhân viên quầy | **Staff/Auto** |
+| **Vị trí** | Trên bàn | Trong bếp | Quầy thu ngân | **Cửa vào** |
+| **Màn hình** | Landscape/Portrait | Landscape | Landscape | **Landscape** |
+| **Realtime** | WebSocket | SSE/WebSocket | WebSocket | **Polling** |
+| **Auth** | Table PIN | Staff login | Staff login | **None/Staff** |
+
+---
+
+## 4. 🚪 iPad Check-in (Đón khách) - NEW
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🍖 焼肉ジナン              QRスキャン              19:30  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│                    ┌─────────────────┐                      │
+│                    │                 │                      │
+│                    │   [QR CAMERA]   │                      │
+│                    │                 │                      │
+│                    │   ┌─────────┐   │                      │
+│                    │   │ ▢▢▢▢▢▢ │   │                      │
+│                    │   └─────────┘   │                      │
+│                    │                 │                      │
+│                    └─────────────────┘                      │
+│                                                             │
+│              予約QRコードをスキャンしてください              │
+│                                                             │
+│                      [手動入力]                             │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│   📷 スキャン    │    📊 ダッシュボード    │   ✏️ 順番登録  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Check-in Flow
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   QR Scan    │────▶│  Lookup      │────▶│   Result     │
+│   Camera     │     │  Booking     │     │   Display    │
+└──────────────┘     └──────────────┘     └──────────────┘
+                            │
+                            ▼
+              ┌─────────────────────────────┐
+              │     Has available table?    │
+              └─────────────────────────────┘
+                     │              │
+                    YES            NO
+                     │              │
+                     ▼              ▼
+           ┌─────────────┐  ┌─────────────┐
+           │   Assign    │  │   Add to    │
+           │   Table     │  │   Waiting   │
+           │   Show T5   │  │   Queue #3  │
+           └─────────────┘  └─────────────┘
+```
+
+### Check-in API Endpoints
+
+```python
+# Team: checkin
+POST /api/checkin/scan           # Scan QR, lookup booking, assign table
+POST /api/checkin/walkin         # Register walk-in to waiting list
+GET  /api/checkin/waiting        # Get waiting list
+POST /api/checkin/assign-table   # Manually assign table
+POST /api/checkin/waiting/{id}/call  # Call next customer
+GET  /api/checkin/dashboard      # Dashboard data
+```
+
+### Result Screens
+
+**Success - Table Assigned:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                          🎉                                 │
+│                                                             │
+│                    田中様                                   │
+│                いらっしゃいませ！                            │
+│                                                             │
+│              ┌─────────────────────┐                        │
+│              │   テーブル T5       │                        │
+│              │      窓際席         │                        │
+│              └─────────────────────┘                        │
+│                                                             │
+│              スタッフがご案内いたします                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Need to Wait:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                          ⏳                                 │
+│                                                             │
+│                    田中様                                   │
+│              只今満席のため、少々お待ちください               │
+│                                                             │
+│              ┌─────────────────────┐                        │
+│              │      番号: 3        │                        │
+│              │   待ち時間: 約15分   │                        │
+│              │    2組お待ちです    │                        │
+│              └─────────────────────┘                        │
+│                                                             │
+│              お呼びするまでお待ちください                     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## Thiết kế giao diện
 

@@ -1,0 +1,22 @@
+{
+    "name": "チェックイン",
+    "short_name": "CheckIn",
+    "description": "焼肉ジナン - 受付チェックインシステム",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "landscape",
+    "background_color": "#0a0a0a",
+    "theme_color": "#d4af37",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

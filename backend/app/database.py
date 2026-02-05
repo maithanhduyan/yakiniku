@@ -39,5 +39,10 @@ async def get_db():
 
 async def init_db():
     """Initialize database tables"""
+    # Import all models to ensure they're registered with Base
+    from app.models import booking, branch, chat, customer, menu, order, preference, staff, table
+    # Import domain models
+    from app.domains.checkin import models as checkin_models
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -1,7 +1,9 @@
-/**
- * Check-in App Styles
- * iPad landscape-optimized for customer reception
- */
+
+ /* ============================================
+    Check-in App Styles
+    Mobile-first, touch-optimized for iPad
+    iPad landscape-optimized for customer reception
+    ============================================ */
 
 :root {
     --bg-dark: #0a0a0a;

@@ -101,3 +101,8 @@ Insert into `branches` table with unique `code` and `subdomain`.
 ## Documentation
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Multi-tenant design
 - [BACKEND.md](docs/BACKEND.md) - API & database schema
+
+## Language Usage
+- Tiếng Việt cho tài liệu kỹ thuật nội bộ.
+- English cho code và chú thích.
+- 日本語 cho giao diện người dùng và trải nghiệm khách hàng (đa ngôn ngữ English).

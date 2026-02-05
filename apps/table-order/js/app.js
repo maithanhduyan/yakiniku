@@ -172,7 +172,7 @@ async function submitOrder() {
             }))
         };
 
-        const response = await fetch(`${CONFIG.API_BASE}/orders?branch_code=${CONFIG.BRANCH_CODE}`, {
+        const response = await fetch(`${CONFIG.API_BASE}/orders/?branch_code=${CONFIG.BRANCH_CODE}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -1,607 +1,586 @@
 ﻿/**
- * Kitchen Display System (KDS) - JavaScript
- * Real-time order display for kitchen staff
+ * Kitchen Display System - 焼肉ヅアン
+ * Station-based Layout với Item Timer
+ * Calm Kitchen Design
  */
 
 // ============ Configuration ============
-
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
+    WS_BASE: 'ws://localhost:8000/ws',
     BRANCH_CODE: 'hirama',
-    SSE_URL: 'http://localhost:8000/api/notifications/stream',
-    REFRESH_INTERVAL: 30000, // Refresh orders every 30 seconds
-    TIMER_INTERVAL: 1000,    // Update timers every second
+    REFRESH_INTERVAL: 30000,
+    TIMER_INTERVAL: 1000
 };
 
-// Time thresholds for color coding (in seconds)
-const TIME_THRESHOLDS = {
-    URGENT: 180,   // > 3 minutes = red
-    WARNING: 60,   // > 1 minute = yellow
-    OK: 0,         // < 1 minute = green
+// Time thresholds (seconds) - Default values, can be overridden by backend
+const THRESHOLDS = {
+    WARNING: 180,   // 3 min = yellow
+    URGENT: 300     // 5 min = red
+};
+
+// Station definitions
+const STATIONS = {
+    all: {
+        name: 'すべて',
+        icon: '📋',
+        keywords: []  // All items
+    },
+    meat: {
+        name: '肉',
+        icon: '🥩',
+        keywords: ['カルビ', 'ハラミ', 'タン', 'ロース', 'ホルモン', '牛', '豚', '鶏', 'サガリ', 'ミノ', 'レバー', 'ハツ', 'テッチャン']
+    },
+    side: {
+        name: '他',
+        icon: '🍚',
+        keywords: ['ライス', 'ナムル', 'キムチ', 'サラダ', 'ビビンバ', '麺', '冷麺', 'スープ', '豆腐', 'チヂミ', 'ポテト', '枝豆']
+    },
+    drink: {
+        name: '飲物',
+        icon: '🍺',
+        keywords: ['ビール', 'ハイボール', 'サワー', 'ジュース', '茶', 'コーラ', '酎ハイ', 'ワイン', '日本酒', '焼酎', 'ソフトドリンク']
+    }
 };
 
 // ============ State ============
-
-let state = {
-    orders: [],
-    filter: 'all',
+const state = {
+    items: [],          // All individual items
+    activeStation: 'all',
     isOnline: false,
-    soundEnabled: true,
-    sseRetryCount: 0,
-    maxRetries: 5,
+    soundEnabled: true
+};
+
+// ============ DOM Elements ============
+const elements = {
+    stationLayout: document.getElementById('stationLayout'),
+    emptyState: document.getElementById('emptyState'),
+    currentTime: document.getElementById('currentTime'),
+    connectionStatus: document.getElementById('connectionStatus'),
+    notification: document.getElementById('notification'),
+    notificationText: document.getElementById('notificationText'),
+    soundToggle: document.getElementById('soundToggle'),
+    soundIcon: document.getElementById('soundIcon'),
+    notificationSound: document.getElementById('notificationSound'),
+    thresholdWarning: document.getElementById('thresholdWarning'),
+    thresholdUrgent: document.getElementById('thresholdUrgent'),
+    // Stats
+    statTotal: document.getElementById('statTotal'),
+    statWarning: document.getElementById('statWarning'),
+    statUrgent: document.getElementById('statUrgent'),
+    // Station counts
+    countAll: document.getElementById('countAll'),
+    countMeat: document.getElementById('countMeat'),
+    countSide: document.getElementById('countSide'),
+    countDrink: document.getElementById('countDrink'),
+    // Panels
+    panelAll: document.getElementById('panelAll'),
+    panelMeat: document.getElementById('panelMeat'),
+    panelSide: document.getElementById('panelSide'),
+    panelDrink: document.getElementById('panelDrink'),
+    // Item lists
+    itemsAll: document.getElementById('itemsAll'),
+    itemsMeat: document.getElementById('itemsMeat'),
+    itemsSide: document.getElementById('itemsSide'),
+    itemsDrink: document.getElementById('itemsDrink')
 };
 
 // ============ Initialization ============
+document.addEventListener('DOMContentLoaded', init);
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Start clock
+function init() {
+    console.log('🍳 Kitchen Display - 焼肉ヅアン - Station Mode');
+
+    // Update threshold display
+    elements.thresholdWarning.textContent = THRESHOLDS.WARNING / 60;
+    elements.thresholdUrgent.textContent = THRESHOLDS.URGENT / 60;
+
     updateClock();
     setInterval(updateClock, 1000);
+    setInterval(updateTimers, CONFIG.TIMER_INTERVAL);
 
-    // Start timers
-    setInterval(updateAllTimers, CONFIG.TIMER_INTERVAL);
-
-    // Setup filter buttons
-    setupFilters();
-
-    // Setup sound toggle
-    setupSoundToggle();
-
-    // Load initial orders
+    setupEventListeners();
+    loadConfig();
     loadOrders();
+    connectWebSocket();
 
-    // Setup SSE for real-time updates
-    setupSSE();
-
-    // Periodic refresh as backup
     setInterval(loadOrders, CONFIG.REFRESH_INTERVAL);
-});
-
-// ============ Clock ============
-
-function updateClock() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ja-JP', { hour12: false });
-    document.getElementById('currentTime').textContent = timeStr;
 }
 
-// ============ API Functions ============
+// ============ Event Listeners ============
+function setupEventListeners() {
+    // Station tabs
+    document.querySelectorAll('.station-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            setActiveStation(tab.dataset.station);
+        });
+    });
 
-async function loadOrders() {
+    // Mini panels click to switch
+    document.querySelectorAll('.mini-panel').forEach(panel => {
+        panel.addEventListener('click', (e) => {
+            // Don't switch if clicking on item button
+            if (e.target.closest('.item-done-btn')) return;
+            setActiveStation(panel.dataset.station);
+        });
+    });
+
+    // Sound toggle
+    elements.soundToggle?.addEventListener('click', toggleSound);
+
+    // Fullscreen
+    document.getElementById('fullscreenBtn')?.addEventListener('click', toggleFullscreen);
+}
+
+// ============ Station Management ============
+function setActiveStation(station) {
+    state.activeStation = station;
+
+    // Update tabs
+    document.querySelectorAll('.station-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.station === station);
+    });
+
+    // Update panel layout
+    updatePanelLayout();
+}
+
+function updatePanelLayout() {
+    const active = state.activeStation;
+    const allStations = ['all', 'meat', 'side', 'drink'];
+
+    // Clear layout
+    elements.stationLayout.innerHTML = '';
+
+    // Create main panel for active station
+    const mainPanel = createPanel(active, true);
+    elements.stationLayout.appendChild(mainPanel);
+
+    // Create mini panels container
+    const miniContainer = document.createElement('aside');
+    miniContainer.className = 'mini-panels';
+
+    // Add other stations as mini panels
+    allStations
+        .filter(s => s !== active)
+        .forEach(station => {
+            const miniPanel = createPanel(station, false);
+            miniContainer.appendChild(miniPanel);
+        });
+
+    elements.stationLayout.appendChild(miniContainer);
+
+    // Re-render items
+    renderAllPanels();
+}
+
+function createPanel(station, isMain) {
+    const info = STATIONS[station];
+    const panel = document.createElement('section');
+    panel.className = `station-panel ${isMain ? 'main-panel' : 'mini-panel'}`;
+    panel.dataset.station = station;
+    panel.id = `panel${capitalize(station)}`;
+
+    if (!isMain) {
+        panel.addEventListener('click', (e) => {
+            if (e.target.closest('.item-done-btn')) return;
+            setActiveStation(station);
+        });
+    }
+
+    panel.innerHTML = `
+        <div class="panel-header">
+            <span class="panel-title">${info.icon} ${info.name}</span>
+            <span class="panel-count">0</span>
+        </div>
+        <div class="items-list" id="items${capitalize(station)}"></div>
+    `;
+
+    return panel;
+}
+
+// ============ Clock ============
+function updateClock() {
+    const now = new Date();
+    elements.currentTime.textContent = now.toLocaleTimeString('ja-JP', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// ============ Config from Backend ============
+async function loadConfig() {
     try {
-        const statuses = ['pending', 'confirmed', 'preparing', 'ready'];
-        const response = await fetch(
-            `${CONFIG.API_BASE}/orders/kitchen?branch_code=${CONFIG.BRANCH_CODE}&status=${statuses.join('&status=')}`
-        );
-
-        if (!response.ok) throw new Error('Failed to load orders');
-
-        const orders = await response.json();
-
-        // Use demo data if API returns empty (for development)
-        if (orders.length === 0 && state.orders.length === 0) {
-            loadDemoOrders();
-            updateConnectionStatus(true);
-            return;
+        const response = await fetch(`${CONFIG.API_BASE}/kitchen/config?branch_code=${CONFIG.BRANCH_CODE}`);
+        if (response.ok) {
+            const config = await response.json();
+            if (config.warning_threshold) {
+                THRESHOLDS.WARNING = config.warning_threshold;
+                elements.thresholdWarning.textContent = THRESHOLDS.WARNING / 60;
+            }
+            if (config.urgent_threshold) {
+                THRESHOLDS.URGENT = config.urgent_threshold;
+                elements.thresholdUrgent.textContent = THRESHOLDS.URGENT / 60;
+            }
         }
-
-        state.orders = orders;
-        renderOrders();
-        updateStats();
-        updateConnectionStatus(true);
-
-    } catch (error) {
-        console.error('Error loading orders:', error);
-        updateConnectionStatus(false);
-
-        // Load demo orders if API fails
-        if (state.orders.length === 0) {
-            loadDemoOrders();
-        }
+    } catch (e) {
+        console.log('Using default thresholds');
     }
 }
 
-function loadDemoOrders() {
-    // Demo data for development/testing
-    const now = new Date();
-    state.orders = [
-        {
-            id: 'demo-1',
-            order_number: 1,
-            table_number: 'T5',
-            status: 'pending',
-            created_at: new Date(now - 4 * 60 * 1000).toISOString(), // 4 min ago
-            elapsed_minutes: 4,
-            items: [
-                { id: '1', item_name: 'å’Œç‰›ä¸Šãƒãƒ©ãƒŸ', quantity: 2, status: 'pending', notes: null },
-                { id: '2', item_name: 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©', quantity: 1, status: 'pending', notes: 'ã‚ˆãç„¼ã' },
-                { id: '3', item_name: 'ãƒ©ã‚¤ã‚¹', quantity: 2, status: 'pending', notes: null },
-            ]
-        },
-        {
-            id: 'demo-2',
-            order_number: 2,
-            table_number: 'T3',
-            status: 'preparing',
-            created_at: new Date(now - 2 * 60 * 1000).toISOString(), // 2 min ago
-            elapsed_minutes: 2,
-            items: [
-                { id: '4', item_name: 'ã‚«ãƒ«ãƒ“', quantity: 3, status: 'ready', notes: null },
-                { id: '5', item_name: 'ãƒãƒ§ãƒ¬ã‚®ã‚µãƒ©ãƒ€', quantity: 1, status: 'pending', notes: null },
-            ]
-        },
-        {
-            id: 'demo-3',
-            order_number: 3,
-            table_number: 'T8',
-            status: 'preparing',
-            created_at: new Date(now - 45 * 1000).toISOString(), // 45 sec ago
-            elapsed_minutes: 0.75,
-            items: [
-                { id: '6', item_name: 'ç”Ÿãƒ“ãƒ¼ãƒ«', quantity: 3, status: 'ready', notes: null },
-                { id: '7', item_name: 'ãƒã‚¤ãƒœãƒ¼ãƒ«', quantity: 2, status: 'ready', notes: null },
-            ]
-        },
-        {
-            id: 'demo-4',
-            order_number: 4,
-            table_number: 'T7',
-            status: 'pending',
-            created_at: new Date(now - 5 * 1000).toISOString(), // 5 sec ago (NEW)
-            elapsed_minutes: 0.08,
-            items: [
-                { id: '8', item_name: 'ãƒ“ãƒ“ãƒ³ãƒ', quantity: 1, status: 'pending', notes: null },
-            ]
-        },
-    ];
+// ============ API ============
+async function loadOrders() {
+    try {
+        const response = await fetch(
+            `${CONFIG.API_BASE}/orders/kitchen?branch_code=${CONFIG.BRANCH_CODE}`
+        );
 
-    renderOrders();
+        if (!response.ok) throw new Error('API Error');
+
+        const orders = await response.json();
+        processOrders(orders);
+        setOnline(true);
+    } catch (error) {
+        console.warn('API unavailable, using demo data');
+        if (state.items.length === 0) {
+            loadDemoData();
+        }
+        setOnline(false);
+    }
+}
+
+function processOrders(orders) {
+    // Flatten orders to individual items with order context
+    const items = [];
+
+    orders.forEach(order => {
+        order.items.forEach(item => {
+            if (!item.completed) {
+                items.push({
+                    id: `${order.id}-${item.id}`,
+                    orderId: order.id,
+                    orderNumber: order.orderNumber,
+                    tableNumber: order.tableNumber,
+                    name: item.name,
+                    quantity: item.quantity,
+                    note: item.note,
+                    completed: item.completed || false,
+                    createdAt: order.createdAt,
+                    station: detectStation(item.name)
+                });
+            }
+        });
+    });
+
+    // Sort by time (oldest first)
+    items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+    state.items = items;
+    renderAllPanels();
     updateStats();
 }
 
-async function updateOrderStatus(orderId, newStatus) {
-    try {
-        const response = await fetch(`${CONFIG.API_BASE}/orders/${orderId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
-        });
+function loadDemoData() {
+    const now = Date.now();
 
-        if (!response.ok) throw new Error('Failed to update order');
-
-        // Update local state
-        const order = state.orders.find(o => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-            renderOrders();
-            updateStats();
+    const demoOrders = [
+        {
+            id: 'order-1',
+            orderNumber: 101,
+            tableNumber: 'T3',
+            createdAt: new Date(now - 4 * 60 * 1000).toISOString(),
+            items: [
+                { id: 'i1', name: '特選カルビ', quantity: 2 },
+                { id: 'i2', name: '上ハラミ', quantity: 1, note: 'よく焼き' },
+                { id: 'i3', name: 'ライス', quantity: 2 }
+            ]
+        },
+        {
+            id: 'order-2',
+            orderNumber: 102,
+            tableNumber: 'T7',
+            createdAt: new Date(now - 2 * 60 * 1000).toISOString(),
+            items: [
+                { id: 'i4', name: '牛タン塩', quantity: 2 },
+                { id: 'i5', name: 'ナムル盛り', quantity: 1 },
+                { id: 'i6', name: '生ビール', quantity: 3 }
+            ]
+        },
+        {
+            id: 'order-3',
+            orderNumber: 103,
+            tableNumber: 'T5',
+            createdAt: new Date(now - 6 * 60 * 1000).toISOString(),
+            items: [
+                { id: 'i7', name: 'ハイボール', quantity: 2 },
+                { id: 'i8', name: 'コーラ', quantity: 1 }
+            ]
+        },
+        {
+            id: 'order-4',
+            orderNumber: 104,
+            tableNumber: 'T1',
+            createdAt: new Date(now - 30 * 1000).toISOString(),
+            items: [
+                { id: 'i9', name: 'ビビンバ', quantity: 1 },
+                { id: 'i10', name: '冷麺', quantity: 1 },
+                { id: 'i11', name: '生ビール', quantity: 2 }
+            ]
         }
+    ];
 
-        showToast(`æ³¨æ–‡ã‚’ã€Œ${getStatusLabel(newStatus)}ã€ã«æ›´æ–°ã—ã¾ã—ãŸ`, 'success');
-
-    } catch (error) {
-        console.error('Error updating order:', error);
-
-        // Update locally anyway for demo
-        const order = state.orders.find(o => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-            renderOrders();
-            updateStats();
-        }
-        showToast(`æ³¨æ–‡ã‚’ã€Œ${getStatusLabel(newStatus)}ã€ã«æ›´æ–°ã—ã¾ã—ãŸ`, 'success');
-    }
+    processOrders(demoOrders);
+    setOnline(true);
 }
 
-async function updateItemStatus(itemId, orderId, isCompleted) {
-    const newStatus = isCompleted ? 'ready' : 'pending';
-
-    try {
-        await fetch(`${CONFIG.API_BASE}/orders/items/${itemId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
-        });
-    } catch (error) {
-        console.error('Error updating item:', error);
-    }
-
-    // Update local state regardless of API result
-    const order = state.orders.find(o => o.id === orderId);
-    if (order) {
-        const item = order.items.find(i => i.id === itemId);
-        if (item) {
-            item.status = newStatus;
-            renderOrders();
+// ============ Station Detection ============
+function detectStation(itemName) {
+    for (const [station, info] of Object.entries(STATIONS)) {
+        if (station === 'all') continue;
+        if (info.keywords.some(kw => itemName.includes(kw))) {
+            return station;
         }
     }
+    return 'side'; // Default to side dishes
 }
 
-// ============ SSE (Server-Sent Events) ============
-
-function setupSSE() {
-    if (state.sseRetryCount >= state.maxRetries) {
-        console.log('SSE: Max retries exceeded');
-        updateConnectionStatus(false);
-        return;
-    }
-
+// ============ WebSocket ============
+function connectWebSocket() {
     try {
-        const eventSource = new EventSource(
-            `${CONFIG.SSE_URL}?branch_code=${CONFIG.BRANCH_CODE}`
-        );
+        const ws = new WebSocket(`${CONFIG.WS_BASE}/kitchen?branch=${CONFIG.BRANCH_CODE}`);
 
-        eventSource.onopen = () => {
-            console.log('SSE connected');
-            state.sseRetryCount = 0;
-            updateConnectionStatus(true);
+        ws.onopen = () => {
+            console.log('WebSocket connected');
+            setOnline(true);
         };
 
-        eventSource.onmessage = (event) => {
+        ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                handleSSEMessage(data);
-            } catch (e) {
-                // Heartbeat or non-JSON message
-            }
+                handleWSMessage(data);
+            } catch (e) {}
         };
 
-        eventSource.onerror = () => {
-            eventSource.close();
-            state.sseRetryCount++;
-            updateConnectionStatus(false);
-
-            if (state.sseRetryCount < state.maxRetries) {
-                console.log(`SSE error, retry ${state.sseRetryCount}/${state.maxRetries}...`);
-                setTimeout(setupSSE, 3000);
-            }
+        ws.onclose = () => {
+            setOnline(false);
+            setTimeout(connectWebSocket, 5000);
         };
 
+        ws.onerror = () => setOnline(false);
     } catch (error) {
-        console.error('SSE setup error:', error);
-        updateConnectionStatus(false);
+        console.warn('WebSocket not available');
     }
 }
 
-function handleSSEMessage(data) {
-    switch (data.type) {
-        case 'new_order':
-            // Play sound and reload orders
-            playNotificationSound();
-            showToast(`ðŸ†• ãƒ†ãƒ¼ãƒ–ãƒ« ${data.table_number} ã‹ã‚‰æ–°è¦æ³¨æ–‡ï¼`, 'new');
-            loadOrders();
-            break;
-
-        case 'order_status_changed':
-            loadOrders();
-            break;
-
-        case 'staff_call':
-            showToast(`ðŸ”” ${data.table_number}: ${data.call_type_label}`, 'call');
-            playNotificationSound();
-            break;
+function handleWSMessage(data) {
+    if (data.type === 'new_order') {
+        showNotification(`テーブル ${data.tableNumber} から新規注文`);
+        playSound();
+        loadOrders();
+    } else if (data.type === 'order_update' || data.type === 'config_update') {
+        loadOrders();
+        if (data.type === 'config_update') loadConfig();
     }
 }
 
 // ============ Rendering ============
+function renderAllPanels() {
+    const stations = ['all', 'meat', 'side', 'drink'];
 
-function renderOrders() {
-    const container = document.getElementById('ordersContainer');
-    const emptyState = document.getElementById('emptyState');
-
-    // Filter orders
-    let filteredOrders = state.orders;
-    if (state.filter !== 'all') {
-        filteredOrders = state.orders.filter(order => {
-            return order.items.some(item => matchesFilter(item, state.filter));
-        });
-    }
-
-    // Sort by elapsed time (oldest first for FIFO)
-    filteredOrders.sort((a, b) => {
-        const timeA = new Date(a.created_at).getTime();
-        const timeB = new Date(b.created_at).getTime();
-        return timeA - timeB;
+    stations.forEach(station => {
+        renderPanel(station);
     });
 
-    if (filteredOrders.length === 0) {
-        emptyState.classList.remove('hidden');
-        container.innerHTML = '';
-        container.appendChild(emptyState);
-        return;
-    }
-
-    emptyState.classList.add('hidden');
-
-    container.innerHTML = filteredOrders.map(order => renderOrderCard(order)).join('');
-
-    // Setup event listeners
-    setupCardEventListeners();
+    // Update empty state
+    const hasItems = state.items.length > 0;
+    elements.emptyState.classList.toggle('show', !hasItems);
 }
 
-function renderOrderCard(order) {
-    const elapsedSeconds = getElapsedSeconds(order.created_at);
-    const timerClass = getTimerClass(elapsedSeconds, order.status);
-    const statusClass = getStatusClass(elapsedSeconds, order.status);
-    const timerDisplay = formatTimer(elapsedSeconds);
-    const timerIcon = getTimerIcon(elapsedSeconds, order.status);
+function renderPanel(station) {
+    const container = document.getElementById(`items${capitalize(station)}`);
+    if (!container) return;
 
-    const itemsHtml = order.items.map(item => `
-        <div class="order-item ${item.status === 'ready' ? 'completed' : ''}" data-item-id="${item.id}">
-            <div class="item-checkbox ${item.status === 'ready' ? 'checked' : ''}"
-                 onclick="toggleItem('${item.id}', '${order.id}')"></div>
-            <div class="item-details">
-                <div class="item-name">${item.item_name}</div>
-                ${item.notes ? `<div class="item-notes">â€» ${item.notes}</div>` : ''}
-            </div>
-            <div class="item-quantity">Ã—${item.quantity}</div>
-        </div>
-    `).join('');
+    // Filter items for this station
+    let items;
+    if (station === 'all') {
+        items = state.items;
+    } else {
+        items = state.items.filter(item => item.station === station);
+    }
 
-    const actionButton = getActionButton(order);
+    // Update panel count
+    const panel = container.closest('.station-panel');
+    if (panel) {
+        const countEl = panel.querySelector('.panel-count');
+        if (countEl) countEl.textContent = items.length;
+    }
+
+    // Update tab count
+    const countId = `count${capitalize(station)}`;
+    const countTab = document.getElementById(countId);
+    if (countTab) countTab.textContent = items.length;
+
+    // Render items
+    container.innerHTML = items.map(item => renderItemRow(item, station !== state.activeStation)).join('');
+}
+
+function renderItemRow(item, compact = false) {
+    const elapsed = getElapsedSeconds(item.createdAt);
+    const statusClass = getStatusClass(elapsed);
+    const minutes = Math.floor(elapsed / 60);
 
     return `
-        <div class="order-card status-${statusClass}" data-order-id="${order.id}">
-            <div class="card-header">
-                <div class="card-table">
-                    <span class="table-number">${order.table_number}</span>
-                    <span class="order-number">#${order.order_number}</span>
-                </div>
-                <div class="card-timer ${timerClass}">
-                    <span class="timer-icon">${timerIcon}</span>
-                    <span class="timer-value">${timerDisplay}</span>
-                </div>
+        <div class="item-row ${statusClass} ${item.completed ? 'completed' : ''}"
+             data-item-id="${item.id}">
+            <div class="item-info">
+                <div class="item-name">${item.name}</div>
+                ${item.note ? `<div class="item-note">※ ${item.note}</div>` : ''}
             </div>
-            <div class="card-items">
-                ${itemsHtml}
-            </div>
-            <div class="card-actions">
-                ${actionButton}
-            </div>
+            <div class="item-quantity">×${item.quantity}</div>
+            <div class="item-table">${item.tableNumber}</div>
+            <div class="item-timer">${minutes}分</div>
+            <button class="item-done-btn" onclick="completeItem('${item.id}')" title="完了">
+                ✓
+            </button>
         </div>
     `;
 }
 
-function getActionButton(order) {
-    switch (order.status) {
-        case 'pending':
-            return `<button class="card-btn btn-start" onclick="startOrder('${order.id}')">èª¿ç†é–‹å§‹</button>`;
-        case 'confirmed':
-        case 'preparing':
-            return `<button class="card-btn btn-complete" onclick="completeOrder('${order.id}')">å®Œäº†</button>`;
-        case 'ready':
-            return `<button class="card-btn btn-served" onclick="serveOrder('${order.id}')">æä¾›æ¸ˆã¿</button>`;
-        default:
-            return '';
-    }
-}
-
-function setupCardEventListeners() {
-    // Additional event listeners can be added here
-}
-
-// ============ Order Actions ============
-
-function startOrder(orderId) {
-    updateOrderStatus(orderId, 'preparing');
-}
-
-function completeOrder(orderId) {
-    updateOrderStatus(orderId, 'ready');
-}
-
-function serveOrder(orderId) {
-    updateOrderStatus(orderId, 'served');
-    // Remove from display after short delay
-    setTimeout(() => {
-        state.orders = state.orders.filter(o => o.id !== orderId);
-        renderOrders();
-        updateStats();
-    }, 500);
-}
-
-function toggleItem(itemId, orderId) {
-    const order = state.orders.find(o => o.id === orderId);
-    if (!order) return;
-
-    const item = order.items.find(i => i.id === itemId);
+// ============ Item Actions ============
+function completeItem(itemId) {
+    const item = state.items.find(i => i.id === itemId);
     if (!item) return;
 
-    const isCompleted = item.status !== 'ready';
-    updateItemStatus(itemId, orderId, isCompleted);
+    // Mark as completed with animation
+    const row = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (row) {
+        row.classList.add('removing');
+    }
+
+    setTimeout(() => {
+        // Remove from state
+        state.items = state.items.filter(i => i.id !== itemId);
+
+        // Re-render
+        renderAllPanels();
+        updateStats();
+
+        // Send to API
+        sendItemComplete(item);
+    }, 300);
+}
+
+async function sendItemComplete(item) {
+    try {
+        await fetch(`${CONFIG.API_BASE}/orders/${item.orderId}/items/${item.id.split('-')[1]}/complete`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (e) {
+        // Silently fail - local state already updated
+    }
 }
 
 // ============ Timer Functions ============
-
 function getElapsedSeconds(createdAt) {
-    const created = new Date(createdAt).getTime();
-    const now = Date.now();
-    return Math.floor((now - created) / 1000);
+    return Math.floor((Date.now() - new Date(createdAt).getTime()) / 1000);
 }
 
-function formatTimer(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+function getStatusClass(seconds) {
+    if (seconds >= THRESHOLDS.URGENT) return 'status-urgent';
+    if (seconds >= THRESHOLDS.WARNING) return 'status-warning';
+    return '';
 }
 
-function getTimerClass(seconds, status) {
-    if (status === 'ready') return 'ok';
-    if (seconds < 10) return 'new';
-    if (seconds < TIME_THRESHOLDS.WARNING) return 'ok';
-    if (seconds < TIME_THRESHOLDS.URGENT) return 'warning';
-    return 'urgent';
-}
+function updateTimers() {
+    document.querySelectorAll('.item-row').forEach(row => {
+        const itemId = row.dataset.itemId;
+        const item = state.items.find(i => i.id === itemId);
+        if (!item) return;
 
-function getStatusClass(seconds, status) {
-    if (status === 'ready') return 'done';
-    if (seconds < 10) return 'new';
-    if (seconds < TIME_THRESHOLDS.WARNING) return 'ok';
-    if (seconds < TIME_THRESHOLDS.URGENT) return 'warning';
-    return 'urgent';
-}
+        const elapsed = getElapsedSeconds(item.createdAt);
+        const minutes = Math.floor(elapsed / 60);
+        const statusClass = getStatusClass(elapsed);
 
-function getTimerIcon(seconds, status) {
-    if (status === 'ready') return 'âœ“';
-    if (seconds < 10) return 'âšª';
-    if (seconds < TIME_THRESHOLDS.WARNING) return 'ðŸŸ¢';
-    if (seconds < TIME_THRESHOLDS.URGENT) return 'ðŸŸ¡';
-    return 'ðŸ”´';
-}
-
-function updateAllTimers() {
-    document.querySelectorAll('.order-card').forEach(card => {
-        const orderId = card.dataset.orderId;
-        const order = state.orders.find(o => o.id === orderId);
-        if (!order) return;
-
-        const elapsedSeconds = getElapsedSeconds(order.created_at);
-        const timerValue = card.querySelector('.timer-value');
-        const timerEl = card.querySelector('.card-timer');
-        const timerIcon = card.querySelector('.timer-icon');
-
-        if (timerValue) {
-            timerValue.textContent = formatTimer(elapsedSeconds);
-        }
-
+        // Update timer display
+        const timerEl = row.querySelector('.item-timer');
         if (timerEl) {
-            timerEl.className = `card-timer ${getTimerClass(elapsedSeconds, order.status)}`;
+            timerEl.textContent = `${minutes}分`;
         }
 
-        if (timerIcon) {
-            timerIcon.textContent = getTimerIcon(elapsedSeconds, order.status);
+        // Update status class
+        row.classList.remove('status-warning', 'status-urgent');
+        if (statusClass) {
+            row.classList.add(statusClass);
         }
-
-        // Update card status class
-        card.className = `order-card status-${getStatusClass(elapsedSeconds, order.status)}`;
     });
+
+    // Update stats
+    updateStats();
 }
 
 // ============ Stats ============
-
 function updateStats() {
-    const newCount = state.orders.filter(o => o.status === 'pending').length;
-    const preparingCount = state.orders.filter(o =>
-        o.status === 'confirmed' || o.status === 'preparing'
-    ).length;
-    const readyCount = state.orders.filter(o => o.status === 'ready').length;
+    const total = state.items.length;
+    let warning = 0;
+    let urgent = 0;
 
-    document.getElementById('statNew').textContent = newCount;
-    document.getElementById('statPreparing').textContent = preparingCount;
-    document.getElementById('statReady').textContent = readyCount;
-}
-
-// ============ Filters ============
-
-function setupFilters() {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            state.filter = btn.dataset.filter;
-            renderOrders();
-        });
+    state.items.forEach(item => {
+        const elapsed = getElapsedSeconds(item.createdAt);
+        if (elapsed >= THRESHOLDS.URGENT) {
+            urgent++;
+        } else if (elapsed >= THRESHOLDS.WARNING) {
+            warning++;
+        }
     });
-}
 
-function matchesFilter(item, filter) {
-    const itemName = item.item_name.toLowerCase();
-
-    switch (filter) {
-        case 'meat':
-            return ['ãƒãƒ©ãƒŸ', 'ã‚¿ãƒ³', 'ã‚«ãƒ«ãƒ“', 'ãƒ­ãƒ¼ã‚¹', 'ãƒ›ãƒ«ãƒ¢ãƒ³', 'ç››ã‚Šåˆã‚ã›']
-                .some(meat => itemName.includes(meat.toLowerCase()));
-        case 'drinks':
-            return ['ãƒ“ãƒ¼ãƒ«', 'ãƒã‚¤ãƒœãƒ¼ãƒ«', 'ã‚µãƒ¯ãƒ¼', 'èŒ¶', 'ã‚³ãƒ¼ãƒ©', 'ã‚¸ãƒ¥ãƒ¼ã‚¹']
-                .some(drink => itemName.includes(drink.toLowerCase()));
-        case 'other':
-            return !matchesFilter(item, 'meat') && !matchesFilter(item, 'drinks');
-        default:
-            return true;
-    }
-}
-
-// ============ Sound ============
-
-function setupSoundToggle() {
-    const btn = document.getElementById('soundToggle');
-    btn.addEventListener('click', () => {
-        state.soundEnabled = !state.soundEnabled;
-        btn.classList.toggle('muted', !state.soundEnabled);
-        btn.textContent = state.soundEnabled ? 'ðŸ””' : 'ðŸ”•';
-    });
-}
-
-function playNotificationSound() {
-    if (!state.soundEnabled) return;
-
-    const audio = document.getElementById('newOrderSound');
-    if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => {
-            // Auto-play blocked, user interaction required
-        });
-    }
+    elements.statTotal.textContent = total;
+    elements.statWarning.textContent = warning;
+    elements.statUrgent.textContent = urgent;
 }
 
 // ============ UI Helpers ============
-
-function updateConnectionStatus(isOnline) {
+function setOnline(isOnline) {
     state.isOnline = isOnline;
-    const statusEl = document.getElementById('connectionStatus');
+    elements.connectionStatus.className = `connection-status ${isOnline ? 'online' : 'offline'}`;
+    elements.connectionStatus.querySelector('.status-text').textContent =
+        isOnline ? 'オンライン' : 'オフライン';
+}
 
-    if (isOnline) {
-        statusEl.innerHTML = '<span class="status-dot"></span><span>ã‚ªãƒ³ãƒ©ã‚¤ãƒ³</span>';
-        statusEl.className = 'connection-status online';
+function showNotification(text) {
+    elements.notificationText.textContent = text;
+    elements.notification.classList.add('show');
+
+    setTimeout(() => {
+        elements.notification.classList.remove('show');
+    }, 4000);
+}
+
+function toggleSound() {
+    state.soundEnabled = !state.soundEnabled;
+    elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
+    elements.soundIcon.textContent = state.soundEnabled ? '🔔' : '🔕';
+}
+
+function playSound() {
+    if (!state.soundEnabled) return;
+    try {
+        elements.notificationSound.currentTime = 0;
+        elements.notificationSound.play();
+    } catch (e) {}
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
     } else {
-        statusEl.innerHTML = '<span class="status-dot"></span><span>ã‚ªãƒ•ãƒ©ã‚¤ãƒ³</span>';
-        statusEl.className = 'connection-status offline';
+        document.exitFullscreen();
     }
 }
 
-function getStatusLabel(status) {
-    const labels = {
-        'pending': 'æ–°è¦',
-        'confirmed': 'ç¢ºèªæ¸ˆã¿',
-        'preparing': 'èª¿ç†ä¸­',
-        'ready': 'å®Œäº†',
-        'served': 'æä¾›æ¸ˆã¿',
-    };
-    return labels[status] || status;
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function showToast(message, type = 'info') {
-    // Remove existing toast
-    const existing = document.querySelector('.notification-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'notification-toast';
-
-    const icons = {
-        'new': 'ðŸ†•',
-        'success': 'âœ“',
-        'call': 'ðŸ””',
-        'info': 'â„¹ï¸',
-    };
-
-    toast.innerHTML = `
-        <span class="toast-icon">${icons[type] || icons.info}</span>
-        <span class="toast-message">${message}</span>
-    `;
-
-    document.body.appendChild(toast);
-
-    // Trigger animation
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    // Auto-hide
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-
+// Global functions for onclick handlers
+window.completeItem = completeItem;

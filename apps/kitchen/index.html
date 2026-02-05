@@ -8,17 +8,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="焼肉ヅアン - キッチンディスプレイシステム">
 
-    <title>キッチン | 焼肉ヅアン KDS</title>
+    <title>キッチン | 焼肉ヅアン</title>
 
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-
-    <!-- Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -29,58 +24,129 @@
                 <div class="logo">🍳 キッチン</div>
                 <div class="connection-status" id="connectionStatus">
                     <span class="status-dot"></span>
-                    <span>接続中...</span>
+                    <span class="status-text">接続中</span>
                 </div>
             </div>
 
             <div class="header-stats">
-                <div class="stat-item new">
-                    <span class="stat-count" id="statNew">0</span>
-                    <span class="stat-label">新規</span>
+                <div class="stat-item">
+                    <span class="stat-count" id="statTotal">0</span>
+                    <span class="stat-label">合計</span>
                 </div>
-                <div class="stat-item preparing">
-                    <span class="stat-count" id="statPreparing">0</span>
-                    <span class="stat-label">調理中</span>
+                <div class="stat-item warning">
+                    <span class="stat-count" id="statWarning">0</span>
+                    <span class="stat-label">3分超</span>
                 </div>
-                <div class="stat-item ready">
-                    <span class="stat-count" id="statReady">0</span>
-                    <span class="stat-label">完了</span>
+                <div class="stat-item urgent">
+                    <span class="stat-count" id="statUrgent">0</span>
+                    <span class="stat-label">5分超</span>
                 </div>
             </div>
 
             <div class="header-right">
-                <div class="filter-buttons" id="filterButtons">
-                    <button class="filter-btn active" data-filter="all">全て</button>
-                    <button class="filter-btn" data-filter="meat">🥩 肉</button>
-                    <button class="filter-btn" data-filter="drinks">🍺 飲物</button>
-                    <button class="filter-btn" data-filter="other">🍚 他</button>
-                </div>
-                <div class="current-time" id="currentTime">00:00:00</div>
+                <div class="current-time" id="currentTime">00:00</div>
             </div>
         </header>
 
-        <!-- Main Content - Order Cards -->
-        <main class="orders-container" id="ordersContainer">
-            <!-- Orders will be loaded dynamically -->
+        <!-- Station Selector -->
+        <nav class="station-selector">
+            <button class="station-tab active" data-station="all">
+                <span class="station-icon">📋</span>
+                <span class="station-name">すべて</span>
+                <span class="station-count" id="countAll">0</span>
+            </button>
+            <button class="station-tab" data-station="meat">
+                <span class="station-icon">🥩</span>
+                <span class="station-name">肉</span>
+                <span class="station-count" id="countMeat">0</span>
+            </button>
+            <button class="station-tab" data-station="side">
+                <span class="station-icon">🍚</span>
+                <span class="station-name">他</span>
+                <span class="station-count" id="countSide">0</span>
+            </button>
+            <button class="station-tab" data-station="drink">
+                <span class="station-icon">🍺</span>
+                <span class="station-name">飲物</span>
+                <span class="station-count" id="countDrink">0</span>
+            </button>
+        </nav>
+
+        <!-- Main Content - Station Panels -->
+        <main class="main-content">
+            <div class="station-layout" id="stationLayout">
+                <!-- Main Station Panel (Active) -->
+                <section class="station-panel main-panel" data-station="all" id="panelAll">
+                    <div class="panel-header">
+                        <span class="panel-title">📋 すべて</span>
+                        <span class="panel-count">0</span>
+                    </div>
+                    <div class="items-list" id="itemsAll"></div>
+                </section>
+
+                <!-- Mini Panels (Other Stations) -->
+                <aside class="mini-panels">
+                    <section class="station-panel mini-panel" data-station="meat" id="panelMeat">
+                        <div class="panel-header">
+                            <span class="panel-title">🥩 肉</span>
+                            <span class="panel-count">0</span>
+                        </div>
+                        <div class="items-list" id="itemsMeat"></div>
+                    </section>
+
+                    <section class="station-panel mini-panel" data-station="side" id="panelSide">
+                        <div class="panel-header">
+                            <span class="panel-title">🍚 他</span>
+                            <span class="panel-count">0</span>
+                        </div>
+                        <div class="items-list" id="itemsSide"></div>
+                    </section>
+
+                    <section class="station-panel mini-panel" data-station="drink" id="panelDrink">
+                        <div class="panel-header">
+                            <span class="panel-title">🍺 飲物</span>
+                            <span class="panel-count">0</span>
+                        </div>
+                        <div class="items-list" id="itemsDrink"></div>
+                    </section>
+                </aside>
+            </div>
+
+            <!-- Empty State -->
             <div class="empty-state" id="emptyState">
-                <div class="empty-icon">👨‍🍳</div>
-                <h2>注文待ち</h2>
-                <p>新しい注文が入ると自動的に表示されます</p>
+                <div class="empty-icon">☕</div>
+                <h2>注文を待っています</h2>
+                <p>新しい注文が入ると表示されます</p>
             </div>
         </main>
 
-        <!-- Sound Toggle -->
-        <button class="sound-toggle" id="soundToggle" title="通知音">
-            🔔
-        </button>
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-info">
+                <span class="threshold-info">⏱ 警告: <span id="thresholdWarning">3</span>分 / 緊急: <span id="thresholdUrgent">5</span>分</span>
+            </div>
+            <div class="control-group">
+                <button class="control-btn" id="soundToggle" title="通知音">
+                    <span id="soundIcon">🔔</span>
+                </button>
+                <button class="control-btn" id="fullscreenBtn" title="全画面">
+                    <span>⛶</span>
+                </button>
+            </div>
+        </footer>
     </div>
 
-    <!-- Audio for notifications -->
-    <audio id="newOrderSound" preload="auto">
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span class="notification-icon">📋</span>
+        <span class="notification-text" id="notificationText">新しい注文</span>
+    </div>
+
+    <!-- Audio -->
+    <audio id="notificationSound" preload="auto">
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleRsKRrPq9qVzGxNW" type="audio/wav">
     </audio>
 
-    <!-- Scripts -->
     <script src="js/app.js"></script>
 </body>
 </html>

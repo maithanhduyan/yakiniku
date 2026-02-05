@@ -33,6 +33,8 @@
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "chat.agent.maxRequests": 200,
+    "liveServer.settings.host": "127.0.0.1",
+    "liveServer.settings.port": 5500,
 
     // ============ Python + UV Configuration ============
     // Cross-platform: works on both Windows and Linux

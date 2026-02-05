@@ -22,21 +22,21 @@ const CONFIG = {
 
     // Status labels
     STATUS_LABELS: {
-        confirmed: 'ç¢ºå®š',
-        pending: 'ä¿ç•™ä¸­',
-        cancelled: 'ã‚­ãƒ£ãƒ³ã‚»ãƒ«',
-        completed: 'å®Œäº†',
-        available: 'ç©ºå¸­',
-        occupied: 'ä½¿ç”¨ä¸­',
-        reserved: 'äºˆç´„æ¸ˆ'
+        confirmed: '確定',
+        pending: '保留中',
+        cancelled: 'キャンセル',
+        completed: '完了',
+        available: '空席',
+        occupied: '使用中',
+        reserved: '予約済'
     },
 
     // Table types
     TABLE_TYPES: {
-        counter: 'ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼',
-        table: 'ãƒ†ãƒ¼ãƒ–ãƒ«',
-        private: 'å€‹å®¤',
-        tatami: 'åº§æ•·'
+        counter: 'カウンター',
+        table: 'テーブル',
+        private: '個室',
+        tatami: '座敷'
     }
 };
 

@@ -15,21 +15,21 @@ const Toast = {
 
     show(type, title, message, duration = CONFIG.TOAST_DURATION) {
         const icons = {
-            success: 'âœ“',
-            error: 'âœ•',
-            warning: 'âš ',
-            info: 'â„¹'
+            success: '✓',
+            error: '✕',
+            warning: '⚠',
+            info: 'ℹ'
         };
 
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.innerHTML = `
-            <span class="toast-icon">${icons[type] || 'â„¹'}</span>
+            <span class="toast-icon">${icons[type] || 'ℹ'}</span>
             <div class="toast-content">
                 <div class="toast-title">${title}</div>
                 ${message ? `<div class="toast-message">${message}</div>` : ''}
             </div>
-            <button class="toast-close">âœ•</button>
+            <button class="toast-close">✕</button>
         `;
 
         // Close button handler
@@ -131,8 +131,8 @@ const Modal = {
     confirm(title, message, onConfirm) {
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" id="modalCancel">ã‚­ãƒ£ãƒ³ã‚»ãƒ«</button>
-            <button class="btn btn-danger" id="modalConfirm">ç¢ºèª</button>
+            <button class="btn btn-secondary" id="modalCancel">キャンセル</button>
+            <button class="btn btn-danger" id="modalConfirm">確認</button>
         `;
 
         this.open({ title, content: `<p>${message}</p>`, footer });
@@ -221,10 +221,10 @@ const Format = {
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
 
-        if (minutes < 1) return 'ãŸã£ãŸä»Š';
-        if (minutes < 60) return `${minutes}åˆ†å‰`;
-        if (hours < 24) return `${hours}æ™‚é–“å‰`;
-        if (days < 7) return `${days}æ—¥å‰`;
+        if (minutes < 1) return 'たった今';
+        if (minutes < 60) return `${minutes}分前`;
+        if (hours < 24) return `${hours}時間前`;
+        if (days < 7) return `${days}日前`;
         return this.date(datetimeStr);
     },
 
@@ -237,7 +237,7 @@ const Format = {
     },
 
     guests(count) {
-        return `${count}å`;
+        return `${count}名`;
     },
 
     phone(phone) {
@@ -282,6 +282,3 @@ function initComponents() {
     Toast.init();
     Modal.init();
 }
-
-
-

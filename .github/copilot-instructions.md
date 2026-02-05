@@ -108,3 +108,12 @@ Insert into `branches` table with unique `code` and `subdomain`.
 - Tiếng Việt cho tài liệu kỹ thuật nội bộ.
 - English cho code và chú thích.
 - 日本語 cho giao diện người dùng và trải nghiệm khách hàng (đa ngôn ngữ English).
+
+## Playwright Test
+- run backend first.
+- web: http://127.0.0.1:5500/apps/web/
+- checkin: http://127.0.0.1:5500/apps/checkin/
+- table-order: http://127.0.0.1:5500/apps/table-order/
+- kitchen: http://127.0.0.1:5500/apps/kitchen/
+- pos: http://127.0.0.1:5500/apps/pos/
+- dashboard: http://127.0.0.1:5500/apps/dashboard/

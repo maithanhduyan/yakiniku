@@ -35,7 +35,7 @@ const HomePage = {
                 <div class="grid-2">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">æœ¬æ—¥ã®äºˆç´„</h3>
+                            <h3 class="card-title">本日の予約</h3>
                             <span class="text-muted">${Format.date(new Date())}</span>
                         </div>
                         <div class="card-body" id="todayBookings">
@@ -45,7 +45,7 @@ const HomePage = {
 
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">ãƒ†ãƒ¼ãƒ–ãƒ«çŠ¶æ³</h3>
+                            <h3 class="card-title">テーブル状況</h3>
                         </div>
                         <div class="card-body" id="tableOverview">
                             ${this.renderTableOverview()}
@@ -55,7 +55,7 @@ const HomePage = {
 
                 <div class="card" style="margin-top: 20px;">
                     <div class="card-header">
-                        <h3 class="card-title">æœ€è¿‘ã®ã‚¢ã‚¯ãƒ†ã‚£ãƒ“ãƒ†ã‚£</h3>
+                        <h3 class="card-title">最近のアクティビティ</h3>
                     </div>
                     <div class="card-body" id="recentActivity">
                         ${this.renderRecentActivity()}
@@ -76,24 +76,24 @@ const HomePage = {
         return `
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="icon">ðŸ“…</div>
+                    <div class="icon">📅</div>
                     <div class="value">${stats.todayBookings || this.bookings.length}</div>
-                    <div class="label">æœ¬æ—¥ã®äºˆç´„</div>
+                    <div class="label">本日の予約</div>
                 </div>
                 <div class="stat-card">
-                    <div class="icon">â³</div>
+                    <div class="icon">⏳</div>
                     <div class="value">${stats.pendingBookings || this.bookings.filter(b => b.status === 'pending').length}</div>
-                    <div class="label">ä¿ç•™ä¸­</div>
+                    <div class="label">保留中</div>
                 </div>
                 <div class="stat-card">
-                    <div class="icon">ðŸª‘</div>
+                    <div class="icon">🪑</div>
                     <div class="value">${stats.availableTables || '-'}</div>
-                    <div class="label">ç©ºããƒ†ãƒ¼ãƒ–ãƒ«</div>
+                    <div class="label">空きテーブル</div>
                 </div>
                 <div class="stat-card">
-                    <div class="icon">ðŸ‘¥</div>
+                    <div class="icon">👥</div>
                     <div class="value">${stats.totalGuests || this.bookings.reduce((sum, b) => sum + b.guests, 0)}</div>
-                    <div class="label">æœ¬æ—¥ã®æ¥å®¢æ•°</div>
+                    <div class="label">本日の来客数</div>
                 </div>
             </div>
         `;
@@ -101,7 +101,7 @@ const HomePage = {
 
     renderTodayBookings() {
         if (this.bookings.length === 0) {
-            return EmptyState.render('ðŸ“…', 'äºˆç´„ãªã—', 'æœ¬æ—¥ã®äºˆç´„ã¯ã‚ã‚Šã¾ã›ã‚“');
+            return EmptyState.render('📅', '予約なし', '本日の予約はありません');
         }
 
         const sorted = [...this.bookings].sort((a, b) => a.time.localeCompare(b.time));
@@ -113,17 +113,17 @@ const HomePage = {
                         <div class="timeline-time">${Format.time(booking.time)}</div>
                         <div class="timeline-content">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong>${booking.guest_name || 'åå‰ãªã—'}</strong>
+                                <strong>${booking.guest_name || '名前なし'}</strong>
                                 ${Badge.create(booking.status)}
                             </div>
                             <div class="text-muted" style="font-size: 0.85rem; margin-top: 4px;">
-                                ${Format.guests(booking.guests)} ${booking.note ? `ãƒ»${booking.note.substring(0, 30)}...` : ''}
+                                ${Format.guests(booking.guests)} ${booking.note ? `・${booking.note.substring(0, 30)}...` : ''}
                             </div>
                         </div>
                     </div>
                 `).join('')}
             </div>
-            ${sorted.length > 8 ? `<div class="text-center" style="margin-top: 12px;"><a href="#" data-page="bookings">ã™ã¹ã¦è¦‹ã‚‹ â†’</a></div>` : ''}
+            ${sorted.length > 8 ? `<div class="text-center" style="margin-top: 12px;"><a href="#" data-page="bookings">すべて見る →</a></div>` : ''}
         `;
     },
 
@@ -133,20 +133,20 @@ const HomePage = {
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">-</div>
-                        <div class="text-muted">ç©ºå¸­</div>
+                        <div class="text-muted">空席</div>
                     </div>
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">-</div>
-                        <div class="text-muted">ä½¿ç”¨ä¸­</div>
+                        <div class="text-muted">使用中</div>
                     </div>
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">-</div>
-                        <div class="text-muted">äºˆç´„æ¸ˆ</div>
+                        <div class="text-muted">予約済</div>
                     </div>
                 </div>
             </div>
             <div style="margin-top: 16px; text-align: center;">
-                <a href="#" data-page="tables" class="btn btn-secondary btn-sm">ãƒ†ãƒ¼ãƒ–ãƒ«ç®¡ç† â†’</a>
+                <a href="#" data-page="tables" class="btn btn-secondary btn-sm">テーブル管理 →</a>
             </div>
         `;
     },
@@ -154,7 +154,7 @@ const HomePage = {
     renderRecentActivity() {
         return `
             <div class="text-muted text-center" style="padding: 20px;">
-                WebSocketæŽ¥ç¶šå¾Œã«ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã§è¡¨ç¤ºã•ã‚Œã¾ã™
+                WebSocket接続後にリアルタイムで表示されます
             </div>
         `;
     },
@@ -166,7 +166,7 @@ const HomePage = {
         ws.on('booking:created', (booking) => {
             this.bookings.push(booking);
             document.getElementById('todayBookings').innerHTML = this.renderTodayBookings();
-            Toast.info('æ–°è¦äºˆç´„', `${booking.guest_name}æ§˜ ${Format.time(booking.time)}`);
+            Toast.info('新規予約', `\${booking.guest_name}様 ${Format.time(booking.time)}`);
         });
 
         ws.on('booking:updated', (booking) => {
@@ -178,6 +178,3 @@ const HomePage = {
         });
     }
 };
-
-
-

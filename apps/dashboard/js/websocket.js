@@ -200,10 +200,10 @@ class WebSocketManager {
         const textEl = statusEl.querySelector('.status-text');
         if (textEl) {
             const texts = {
-                connecting: 'æŽ¥ç¶šä¸­...',
-                connected: 'æŽ¥ç¶šæ¸ˆã¿',
-                disconnected: 'åˆ‡æ–­',
-                failed: 'æŽ¥ç¶šå¤±æ•—'
+                connecting: '接続中...',
+                connected: '接続済み',
+                disconnected: '切断',
+                failed: '接続失敗'
             };
             textEl.textContent = texts[status] || status;
         }
@@ -238,6 +238,3 @@ class WebSocketManager {
 
 // Create singleton instance
 const ws = new WebSocketManager();
-
-
-

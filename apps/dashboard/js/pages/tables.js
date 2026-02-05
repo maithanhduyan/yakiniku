@@ -17,7 +17,7 @@ const TablesPage = {
             this.tables = await api.getTables();
         } catch (error) {
             console.error('Failed to load tables:', error);
-            Toast.error('ã‚¨ãƒ©ãƒ¼', 'ãƒ†ãƒ¼ãƒ–ãƒ«ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ');
+            Toast.error('エラー', 'テーブルの読み込みに失敗しました');
             this.tables = [];
         }
     },
@@ -33,24 +33,24 @@ const TablesPage = {
                 <!-- Summary -->
                 <div class="stats-grid" style="margin-bottom: 24px;">
                     <div class="stat-card">
-                        <div class="icon" style="color: var(--success);">ðŸŸ¢</div>
+                        <div class="icon" style="color: var(--success);">🟢</div>
                         <div class="value">${this.tables.filter(t => t.status === 'available').length}</div>
-                        <div class="label">ç©ºå¸­</div>
+                        <div class="label">空席</div>
                     </div>
                     <div class="stat-card">
-                        <div class="icon" style="color: var(--danger);">ðŸ”´</div>
+                        <div class="icon" style="color: var(--danger);">🔴</div>
                         <div class="value">${this.tables.filter(t => t.status === 'occupied').length}</div>
-                        <div class="label">ä½¿ç”¨ä¸­</div>
+                        <div class="label">使用中</div>
                     </div>
                     <div class="stat-card">
-                        <div class="icon" style="color: var(--warning);">ðŸŸ¡</div>
+                        <div class="icon" style="color: var(--warning);">🟡</div>
                         <div class="value">${this.tables.filter(t => t.status === 'reserved').length}</div>
-                        <div class="label">äºˆç´„æ¸ˆ</div>
+                        <div class="label">予約済</div>
                     </div>
                     <div class="stat-card">
-                        <div class="icon">ðŸª‘</div>
+                        <div class="icon">🪑</div>
                         <div class="value">${this.tables.length}</div>
-                        <div class="label">ç·ãƒ†ãƒ¼ãƒ–ãƒ«æ•°</div>
+                        <div class="label">総テーブル数</div>
                     </div>
                 </div>
 
@@ -58,8 +58,8 @@ const TablesPage = {
                 ${Object.entries(zones).map(([zone, tables]) => `
                     <div class="card" style="margin-bottom: 20px;">
                         <div class="card-header">
-                            <h3 class="card-title">${zone || 'ãã®ä»–'}</h3>
-                            <span class="text-muted">${tables.length}ãƒ†ãƒ¼ãƒ–ãƒ«</span>
+                            <h3 class="card-title">${zone || 'その他'}</h3>
+                            <span class="text-muted">${tables.length}テーブル</span>
                         </div>
                         <div class="card-body">
                             <div class="table-grid">
@@ -96,7 +96,7 @@ const TablesPage = {
                 <div class="table-number">${table.table_number}</div>
                 <div class="table-info">
                     <div>${Format.tableType(table.table_type)}</div>
-                    <div>${table.max_capacity}åã¾ã§</div>
+                    <div>${table.max_capacity}名まで</div>
                     <div class="text-muted" style="margin-top: 4px;">${Format.status(status)}</div>
                 </div>
             </div>
@@ -118,41 +118,41 @@ const TablesPage = {
 
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" onclick="Modal.close()">é–‰ã˜ã‚‹</button>
+            <button class="btn btn-secondary" onclick="Modal.close()">閉じる</button>
             ${table.status === 'available' ?
-                `<button class="btn btn-danger" id="occupyBtn">ä½¿ç”¨é–‹å§‹</button>` :
+                `<button class="btn btn-danger" id="occupyBtn">使用開始</button>` :
                 table.status === 'occupied' ?
-                `<button class="btn btn-success" id="releaseBtn">ä½¿ç”¨çµ‚äº†</button>` :
+                `<button class="btn btn-success" id="releaseBtn">使用終了</button>` :
                 ''
             }
         `;
 
         Modal.open({
-            title: `ãƒ†ãƒ¼ãƒ–ãƒ« ${table.table_number}`,
+            title: `テーブル ${table.table_number}`,
             content: `
                 <div class="table-detail">
                     <div class="detail-row">
-                        <label>ã‚¿ã‚¤ãƒ—</label>
+                        <label>タイプ</label>
                         <span>${Format.tableType(table.table_type)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>å®šå“¡</label>
-                        <span>${table.max_capacity}å</span>
+                        <label>定員</label>
+                        <span>${table.max_capacity}名</span>
                     </div>
                     <div class="detail-row">
-                        <label>ã‚¾ãƒ¼ãƒ³</label>
+                        <label>ゾーン</label>
                         <span>${table.zone || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>çª“å´</label>
-                        <span>${table.has_window ? 'ã¯ã„' : 'ã„ã„ãˆ'}</span>
+                        <label>窓側</label>
+                        <span>${table.has_window ? 'はい' : 'いいえ'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹</label>
+                        <label>ステータス</label>
                         ${Badge.create(table.status || 'available')}
                     </div>
                     <div class="detail-row">
-                        <label>å‚™è€ƒ</label>
+                        <label>備考</label>
                         <span>${table.notes || '-'}</span>
                     </div>
                 </div>
@@ -180,12 +180,12 @@ const TablesPage = {
     async updateTableStatus(id, status) {
         try {
             await api.updateTableStatus(id, status);
-            Toast.success('æ›´æ–°å®Œäº†', 'ãƒ†ãƒ¼ãƒ–ãƒ«ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’æ›´æ–°ã—ã¾ã—ãŸ');
+            Toast.success('更新完了', 'テーブルステータスを更新しました');
             await this.loadData();
             this.render();
             this.setupEventListeners();
         } catch (error) {
-            Toast.error('ã‚¨ãƒ©ãƒ¼', error.message);
+            Toast.error('エラー', error.message);
         }
     },
 
@@ -199,6 +199,3 @@ const TablesPage = {
         });
     }
 };
-
-
-

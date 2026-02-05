@@ -25,7 +25,7 @@ const BookingsPage = {
             });
         } catch (error) {
             console.error('Failed to load bookings:', error);
-            Toast.error('ã‚¨ãƒ©ãƒ¼', 'äºˆç´„ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ');
+            Toast.error('エラー', '予約の読み込みに失敗しました');
             this.bookings = [];
         }
     },
@@ -48,15 +48,15 @@ const BookingsPage = {
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <select class="form-select" id="filterStatus" style="width: 150px;">
-                                    <option value="">ã™ã¹ã¦ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹</option>
-                                    <option value="confirmed" ${this.filters.status === 'confirmed' ? 'selected' : ''}>ç¢ºå®š</option>
-                                    <option value="pending" ${this.filters.status === 'pending' ? 'selected' : ''}>ä¿ç•™ä¸­</option>
-                                    <option value="cancelled" ${this.filters.status === 'cancelled' ? 'selected' : ''}>ã‚­ãƒ£ãƒ³ã‚»ãƒ«</option>
+                                    <option value="">すべてのステータス</option>
+                                    <option value="confirmed" ${this.filters.status === 'confirmed' ? 'selected' : ''}>確定</option>
+                                    <option value="pending" ${this.filters.status === 'pending' ? 'selected' : ''}>保留中</option>
+                                    <option value="cancelled" ${this.filters.status === 'cancelled' ? 'selected' : ''}>キャンセル</option>
                                 </select>
                             </div>
-                            <button class="btn btn-secondary btn-sm" id="refreshBtn">æ›´æ–°</button>
+                            <button class="btn btn-secondary btn-sm" id="refreshBtn">更新</button>
                             <div style="margin-left: auto;">
-                                <button class="btn btn-primary" id="newBookingBtn">+ æ–°è¦äºˆç´„</button>
+                                <button class="btn btn-primary" id="newBookingBtn">+ 新規予約</button>
                             </div>
                         </div>
                     </div>
@@ -74,7 +74,7 @@ const BookingsPage = {
 
     renderTable() {
         if (this.bookings.length === 0) {
-            return EmptyState.render('ðŸ“…', 'äºˆç´„ãŒã‚ã‚Šã¾ã›ã‚“', 'é¸æŠžã—ãŸæ—¥ä»˜ã®äºˆç´„ã¯ã‚ã‚Šã¾ã›ã‚“', 'äºˆç´„ã‚’è¿½åŠ ');
+            return EmptyState.render('📅', '予約がありません', '選択した日付の予約はありません', '予約を追加');
         }
 
         const sorted = [...this.bookings].sort((a, b) => a.time.localeCompare(b.time));
@@ -83,13 +83,13 @@ const BookingsPage = {
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>æ™‚é–“</th>
-                        <th>ãŠå®¢æ§˜å</th>
-                        <th>äººæ•°</th>
-                        <th>é›»è©±ç•ªå·</th>
-                        <th>ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹</th>
-                        <th>å‚™è€ƒ</th>
-                        <th>æ“ä½œ</th>
+                        <th>時間</th>
+                        <th>お客様名</th>
+                        <th>人数</th>
+                        <th>電話番号</th>
+                        <th>ステータス</th>
+                        <th>備考</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,12 +103,12 @@ const BookingsPage = {
                             <td class="text-muted">${booking.note ? booking.note.substring(0, 30) + '...' : '-'}</td>
                             <td>
                                 <div style="display: flex; gap: 6px;">
-                                    <button class="btn btn-sm btn-secondary view-btn" data-id="${booking.id}">è©³ç´°</button>
+                                    <button class="btn btn-sm btn-secondary view-btn" data-id="${booking.id}">詳細</button>
                                     ${booking.status === 'pending' ?
-                                        `<button class="btn btn-sm btn-primary confirm-btn" data-id="${booking.id}">ç¢ºå®š</button>` :
+                                        `<button class="btn btn-sm btn-primary confirm-btn" data-id="${booking.id}">確定</button>` :
                                         ''}
                                     ${booking.status !== 'cancelled' ?
-                                        `<button class="btn btn-sm btn-icon cancel-btn" data-id="${booking.id}" title="ã‚­ãƒ£ãƒ³ã‚»ãƒ«">âœ•</button>` :
+                                        `<button class="btn btn-sm btn-icon cancel-btn" data-id="${booking.id}" title="キャンセル">✕</button>` :
                                         ''}
                                 </div>
                             </td>
@@ -139,7 +139,7 @@ const BookingsPage = {
             await this.loadData();
             document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
             this.attachTableListeners();
-            Toast.success('æ›´æ–°å®Œäº†', 'äºˆç´„ãƒªã‚¹ãƒˆã‚’æ›´æ–°ã—ã¾ã—ãŸ');
+            Toast.success('更新完了', '予約リストを更新しました');
         });
 
         document.getElementById('newBookingBtn').addEventListener('click', () => {
@@ -165,7 +165,7 @@ const BookingsPage = {
         // Cancel buttons
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                Modal.confirm('ã‚­ãƒ£ãƒ³ã‚»ãƒ«ç¢ºèª', 'ã“ã®äºˆç´„ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã—ã¾ã™ã‹ï¼Ÿ', async () => {
+                Modal.confirm('キャンセル確認', 'この予約をキャンセルしますか？', async () => {
                     await this.cancelBooking(btn.dataset.id);
                 });
             });
@@ -177,43 +177,43 @@ const BookingsPage = {
         if (!booking) return;
 
         Modal.open({
-            title: 'äºˆç´„è©³ç´°',
+            title: '予約詳細',
             content: `
                 <div class="booking-detail">
                     <div class="detail-row">
-                        <label>äºˆç´„ID</label>
+                        <label>予約ID</label>
                         <span>${booking.id}</span>
                     </div>
                     <div class="detail-row">
-                        <label>æ—¥æ™‚</label>
+                        <label>日時</label>
                         <span>${Format.date(booking.date)} ${Format.time(booking.time)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ãŠå®¢æ§˜å</label>
+                        <label>お客様名</label>
                         <span>${booking.guest_name || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>äººæ•°</label>
+                        <label>人数</label>
                         <span>${Format.guests(booking.guests)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>é›»è©±ç•ªå·</label>
+                        <label>電話番号</label>
                         <span>${Format.phone(booking.guest_phone)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ãƒ¡ãƒ¼ãƒ«</label>
+                        <label>メール</label>
                         <span>${booking.guest_email || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹</label>
+                        <label>ステータス</label>
                         ${Badge.create(booking.status)}
                     </div>
                     <div class="detail-row">
-                        <label>äºˆç´„çµŒè·¯</label>
+                        <label>予約経路</label>
                         <span>${booking.source || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>å‚™è€ƒ</label>
+                        <label>備考</label>
                         <span>${booking.note || '-'}</span>
                     </div>
                 </div>
@@ -230,40 +230,40 @@ const BookingsPage = {
     showNewBookingModal() {
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" id="modalCancel">ã‚­ãƒ£ãƒ³ã‚»ãƒ«</button>
-            <button class="btn btn-primary" id="modalSave">ä¿å­˜</button>
+            <button class="btn btn-secondary" id="modalCancel">キャンセル</button>
+            <button class="btn btn-primary" id="modalSave">保存</button>
         `;
 
         Modal.open({
-            title: 'æ–°è¦äºˆç´„',
+            title: '新規予約',
             content: `
                 <form id="bookingForm">
                     <div class="form-group">
-                        <label class="form-label">æ—¥ä»˜ *</label>
+                        <label class="form-label">日付 *</label>
                         <input type="date" class="form-input" name="date" value="${this.filters.date}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">æ™‚é–“ *</label>
+                        <label class="form-label">時間 *</label>
                         <input type="time" class="form-input" name="time" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">äººæ•° *</label>
+                        <label class="form-label">人数 *</label>
                         <input type="number" class="form-input" name="guests" min="1" max="50" value="2" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ãŠå®¢æ§˜å</label>
+                        <label class="form-label">お客様名</label>
                         <input type="text" class="form-input" name="guest_name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">é›»è©±ç•ªå·</label>
+                        <label class="form-label">電話番号</label>
                         <input type="tel" class="form-input" name="guest_phone">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ãƒ¡ãƒ¼ãƒ«</label>
+                        <label class="form-label">メール</label>
                         <input type="email" class="form-input" name="guest_email">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">å‚™è€ƒ</label>
+                        <label class="form-label">備考</label>
                         <textarea class="form-textarea" name="note" rows="3"></textarea>
                     </div>
                 </form>
@@ -279,19 +279,19 @@ const BookingsPage = {
             const data = Object.fromEntries(formData.entries());
 
             if (!data.date || !data.time || !data.guests) {
-                Toast.error('å…¥åŠ›ã‚¨ãƒ©ãƒ¼', 'å¿…é ˆé …ç›®ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„');
+                Toast.error('入力エラー', '必須項目を入力してください');
                 return;
             }
 
             try {
                 await api.createBooking(data);
                 Modal.close();
-                Toast.success('äºˆç´„ä½œæˆ', 'äºˆç´„ã‚’ä½œæˆã—ã¾ã—ãŸ');
+                Toast.success('予約作成', '予約を作成しました');
                 await this.loadData();
                 document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
                 this.attachTableListeners();
             } catch (error) {
-                Toast.error('ã‚¨ãƒ©ãƒ¼', error.message);
+                Toast.error('エラー', error.message);
             }
         });
     },
@@ -299,24 +299,24 @@ const BookingsPage = {
     async confirmBooking(id) {
         try {
             await api.confirmBooking(id);
-            Toast.success('ç¢ºå®šå®Œäº†', 'äºˆç´„ã‚’ç¢ºå®šã—ã¾ã—ãŸ');
+            Toast.success('確定完了', '予約を確定しました');
             await this.loadData();
             document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
             this.attachTableListeners();
         } catch (error) {
-            Toast.error('ã‚¨ãƒ©ãƒ¼', error.message);
+            Toast.error('エラー', error.message);
         }
     },
 
     async cancelBooking(id) {
         try {
             await api.cancelBooking(id);
-            Toast.success('ã‚­ãƒ£ãƒ³ã‚»ãƒ«å®Œäº†', 'äºˆç´„ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã—ã¾ã—ãŸ');
+            Toast.success('キャンセル完了', '予約をキャンセルしました');
             await this.loadData();
             document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
             this.attachTableListeners();
         } catch (error) {
-            Toast.error('ã‚¨ãƒ©ãƒ¼', error.message);
+            Toast.error('エラー', error.message);
         }
     },
 
@@ -336,6 +336,3 @@ const BookingsPage = {
         });
     }
 };
-
-
-

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tables Router - Table management and AI optimization API
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -91,7 +91,7 @@ class InsightResponse(BaseModel):
 
 @router.get("/", response_model=List[TableResponse])
 async def list_tables(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     include_inactive: bool = Query(default=False),
     db: AsyncSession = Depends(get_db),
 ):
@@ -132,7 +132,7 @@ async def list_tables(
 @router.post("/", response_model=TableResponse, status_code=201)
 async def create_table(
     table: TableCreate,
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new table"""
@@ -264,7 +264,7 @@ async def delete_table(
 
 @router.get("/optimization/summary", response_model=List[SlotSummaryResponse])
 async def get_slot_summary(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     target_date: date = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
@@ -292,7 +292,7 @@ async def get_slot_summary(
 
 @router.get("/optimization/insights", response_model=List[InsightResponse])
 async def get_ai_insights(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     target_date: date = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
@@ -318,7 +318,7 @@ async def get_ai_insights(
 
 @router.get("/optimization/check")
 async def check_table_availability(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     booking_date: date = Query(...),
     time_slot: str = Query(...),
     guests: int = Query(...),
@@ -408,7 +408,7 @@ async def assign_table_to_booking(
 
 @router.post("/seed", status_code=201)
 async def seed_tables(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -424,16 +424,16 @@ async def seed_tables(
 
     tables_config = [
         # 4-seat regular tables
-        {"table_number": "A1", "name": "窓際席A", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "A2", "name": "窓際席B", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "B1", "name": "中央席A", "max_capacity": 4, "zone": "B"},
-        {"table_number": "B2", "name": "中央席B", "max_capacity": 4, "zone": "B"},
+        {"table_number": "A1", "name": "çª“éš›å¸­A", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "A2", "name": "çª“éš›å¸­B", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "B1", "name": "ä¸­å¤®å¸­A", "max_capacity": 4, "zone": "B"},
+        {"table_number": "B2", "name": "ä¸­å¤®å¸­B", "max_capacity": 4, "zone": "B"},
         # 6-seat tables
-        {"table_number": "C1", "name": "グループ席A", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C2", "name": "グループ席B", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C3", "name": "グループ席C", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C1", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­A", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C2", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­B", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C3", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­C", "max_capacity": 6, "zone": "C"},
         # VIP room
-        {"table_number": "VIP1", "name": "個室", "max_capacity": 8, "zone": "VIP",
+        {"table_number": "VIP1", "name": "å€‹å®¤", "max_capacity": 8, "zone": "VIP",
          "table_type": "private", "priority": 10},
     ]
 
@@ -461,3 +461,4 @@ async def seed_tables(
         "seeded": True,
         "tables": created,
     }
+

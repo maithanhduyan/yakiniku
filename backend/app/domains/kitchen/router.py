@@ -1,4 +1,4 @@
-"""
+﻿"""
 Kitchen Router - Kitchen Display System APIs
 Team: kitchen
 """
@@ -18,7 +18,7 @@ router = APIRouter()
 
 @router.get("/orders")
 async def get_kitchen_orders(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     status: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
@@ -189,10 +189,11 @@ def format_wait_time(seconds: float) -> str:
 def get_urgency_level(seconds: float) -> str:
     """Get urgency level based on wait time"""
     if seconds < 60:
-        return "new"      # ⚪ < 1 min
+        return "new"      # âšª < 1 min
     elif seconds < 180:
-        return "normal"   # 🟢 1-3 min
+        return "normal"   # ðŸŸ¢ 1-3 min
     elif seconds < 300:
-        return "warning"  # 🟡 3-5 min
+        return "warning"  # ðŸŸ¡ 3-5 min
     else:
-        return "urgent"   # 🔴 > 5 min
+        return "urgent"   # ðŸ”´ > 5 min
+

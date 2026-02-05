@@ -1,7 +1,9 @@
-# Yakiniku Jinan - AI Agent Instructions
+# Yakiniku.io - AI Agent Instructions
 
 ## Project Overview
-Multi-tenant Japanese Yakiniku (BBQ) restaurant platform with booking widget, AI chat, and restaurant dashboard. **Mobile-first design** for customer website.
+Multi-tenant Japanese Yakiniku (BBQ) restaurant management platform with booking widget, AI chat, and restaurant dashboard. **Mobile-first design** for customer website.
+
+**Domain**: `yakiniku.io` - Platform for managing Yakiniku restaurant chains.
 
 ## Architecture (Multi-Tenant Ready)
 

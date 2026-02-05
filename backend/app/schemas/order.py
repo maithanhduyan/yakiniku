@@ -1,4 +1,4 @@
-"""
+﻿"""
 Order Schemas - Pydantic models for orders
 """
 from pydantic import BaseModel
@@ -120,3 +120,4 @@ class StaffCallRequest(BaseModel):
     session_id: str
     call_type: str = "assistance"  # assistance, water, bill, etc.
     message: Optional[str] = None
+

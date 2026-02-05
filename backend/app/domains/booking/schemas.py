@@ -1,4 +1,4 @@
-"""
+﻿"""
 Booking Schemas
 """
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class BookingStatusEnum(str, Enum):
 
 
 class BookingCreate(BaseModel):
-    branch_code: str = "jinan"
+    branch_code: str = "hirama"
     date: date
     time: str = Field(..., pattern=r"^\d{2}:\d{2}$")  # "18:00"
     guests: int = Field(..., ge=1, le=20)
@@ -72,3 +72,4 @@ class BookingListResponse(BaseModel):
     bookings: list[BookingResponse]
     total: int
     date: Optional[date] = None
+

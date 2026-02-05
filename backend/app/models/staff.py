@@ -1,4 +1,4 @@
-"""
+﻿"""
 Staff Model - Restaurant employees
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Enum as SQLEnum
@@ -29,7 +29,7 @@ class Staff(Base):
     # Identity
     employee_id = Column(String(20), unique=True, nullable=False)  # S001, S002...
     name = Column(String(255), nullable=False)
-    name_kana = Column(String(255))  # フリガナ
+    name_kana = Column(String(255))  # ãƒ•ãƒªã‚¬ãƒŠ
 
     # Contact
     phone = Column(String(20))
@@ -46,3 +46,4 @@ class Staff(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+

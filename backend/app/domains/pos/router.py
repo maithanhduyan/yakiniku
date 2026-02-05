@@ -1,4 +1,4 @@
-"""
+﻿"""
 POS Router - Point of Sale APIs
 Team: pos
 """
@@ -26,7 +26,7 @@ TAX_RATE = Decimal("0.10")  # 10% tax
 
 @router.get("/tables", response_model=POSDashboard)
 async def get_pos_tables(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
     """Get all tables with current status for POS overview"""
@@ -269,3 +269,4 @@ async def close_table(
     await db.commit()
 
     return {"message": "Table closed", "table_id": table_id}
+

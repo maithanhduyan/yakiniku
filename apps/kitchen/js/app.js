@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Kitchen Display System (KDS) - JavaScript
  * Real-time order display for kitchen staff
  */
@@ -7,7 +7,7 @@
 
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
-    BRANCH_CODE: 'jinan',
+    BRANCH_CODE: 'hirama',
     SSE_URL: 'http://localhost:8000/api/notifications/stream',
     REFRESH_INTERVAL: 30000, // Refresh orders every 30 seconds
     TIMER_INTERVAL: 1000,    // Update timers every second
@@ -113,9 +113,9 @@ function loadDemoOrders() {
             created_at: new Date(now - 4 * 60 * 1000).toISOString(), // 4 min ago
             elapsed_minutes: 4,
             items: [
-                { id: '1', item_name: '和牛上ハラミ', quantity: 2, status: 'pending', notes: null },
-                { id: '2', item_name: '厚切り上タン塩', quantity: 1, status: 'pending', notes: 'よく焼き' },
-                { id: '3', item_name: 'ライス', quantity: 2, status: 'pending', notes: null },
+                { id: '1', item_name: 'å’Œç‰›ä¸Šãƒãƒ©ãƒŸ', quantity: 2, status: 'pending', notes: null },
+                { id: '2', item_name: 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©', quantity: 1, status: 'pending', notes: 'ã‚ˆãç„¼ã' },
+                { id: '3', item_name: 'ãƒ©ã‚¤ã‚¹', quantity: 2, status: 'pending', notes: null },
             ]
         },
         {
@@ -126,8 +126,8 @@ function loadDemoOrders() {
             created_at: new Date(now - 2 * 60 * 1000).toISOString(), // 2 min ago
             elapsed_minutes: 2,
             items: [
-                { id: '4', item_name: 'カルビ', quantity: 3, status: 'ready', notes: null },
-                { id: '5', item_name: 'チョレギサラダ', quantity: 1, status: 'pending', notes: null },
+                { id: '4', item_name: 'ã‚«ãƒ«ãƒ“', quantity: 3, status: 'ready', notes: null },
+                { id: '5', item_name: 'ãƒãƒ§ãƒ¬ã‚®ã‚µãƒ©ãƒ€', quantity: 1, status: 'pending', notes: null },
             ]
         },
         {
@@ -138,8 +138,8 @@ function loadDemoOrders() {
             created_at: new Date(now - 45 * 1000).toISOString(), // 45 sec ago
             elapsed_minutes: 0.75,
             items: [
-                { id: '6', item_name: '生ビール', quantity: 3, status: 'ready', notes: null },
-                { id: '7', item_name: 'ハイボール', quantity: 2, status: 'ready', notes: null },
+                { id: '6', item_name: 'ç”Ÿãƒ“ãƒ¼ãƒ«', quantity: 3, status: 'ready', notes: null },
+                { id: '7', item_name: 'ãƒã‚¤ãƒœãƒ¼ãƒ«', quantity: 2, status: 'ready', notes: null },
             ]
         },
         {
@@ -150,7 +150,7 @@ function loadDemoOrders() {
             created_at: new Date(now - 5 * 1000).toISOString(), // 5 sec ago (NEW)
             elapsed_minutes: 0.08,
             items: [
-                { id: '8', item_name: 'ビビンバ', quantity: 1, status: 'pending', notes: null },
+                { id: '8', item_name: 'ãƒ“ãƒ“ãƒ³ãƒ', quantity: 1, status: 'pending', notes: null },
             ]
         },
     ];
@@ -177,7 +177,7 @@ async function updateOrderStatus(orderId, newStatus) {
             updateStats();
         }
 
-        showToast(`注文を「${getStatusLabel(newStatus)}」に更新しました`, 'success');
+        showToast(`æ³¨æ–‡ã‚’ã€Œ${getStatusLabel(newStatus)}ã€ã«æ›´æ–°ã—ã¾ã—ãŸ`, 'success');
 
     } catch (error) {
         console.error('Error updating order:', error);
@@ -189,7 +189,7 @@ async function updateOrderStatus(orderId, newStatus) {
             renderOrders();
             updateStats();
         }
-        showToast(`注文を「${getStatusLabel(newStatus)}」に更新しました`, 'success');
+        showToast(`æ³¨æ–‡ã‚’ã€Œ${getStatusLabel(newStatus)}ã€ã«æ›´æ–°ã—ã¾ã—ãŸ`, 'success');
     }
 }
 
@@ -268,7 +268,7 @@ function handleSSEMessage(data) {
         case 'new_order':
             // Play sound and reload orders
             playNotificationSound();
-            showToast(`🆕 テーブル ${data.table_number} から新規注文！`, 'new');
+            showToast(`ðŸ†• ãƒ†ãƒ¼ãƒ–ãƒ« ${data.table_number} ã‹ã‚‰æ–°è¦æ³¨æ–‡ï¼`, 'new');
             loadOrders();
             break;
 
@@ -277,7 +277,7 @@ function handleSSEMessage(data) {
             break;
 
         case 'staff_call':
-            showToast(`🔔 ${data.table_number}: ${data.call_type_label}`, 'call');
+            showToast(`ðŸ”” ${data.table_number}: ${data.call_type_label}`, 'call');
             playNotificationSound();
             break;
     }
@@ -332,9 +332,9 @@ function renderOrderCard(order) {
                  onclick="toggleItem('${item.id}', '${order.id}')"></div>
             <div class="item-details">
                 <div class="item-name">${item.item_name}</div>
-                ${item.notes ? `<div class="item-notes">※ ${item.notes}</div>` : ''}
+                ${item.notes ? `<div class="item-notes">â€» ${item.notes}</div>` : ''}
             </div>
-            <div class="item-quantity">×${item.quantity}</div>
+            <div class="item-quantity">Ã—${item.quantity}</div>
         </div>
     `).join('');
 
@@ -365,12 +365,12 @@ function renderOrderCard(order) {
 function getActionButton(order) {
     switch (order.status) {
         case 'pending':
-            return `<button class="card-btn btn-start" onclick="startOrder('${order.id}')">調理開始</button>`;
+            return `<button class="card-btn btn-start" onclick="startOrder('${order.id}')">èª¿ç†é–‹å§‹</button>`;
         case 'confirmed':
         case 'preparing':
-            return `<button class="card-btn btn-complete" onclick="completeOrder('${order.id}')">完了</button>`;
+            return `<button class="card-btn btn-complete" onclick="completeOrder('${order.id}')">å®Œäº†</button>`;
         case 'ready':
-            return `<button class="card-btn btn-served" onclick="serveOrder('${order.id}')">提供済み</button>`;
+            return `<button class="card-btn btn-served" onclick="serveOrder('${order.id}')">æä¾›æ¸ˆã¿</button>`;
         default:
             return '';
     }
@@ -442,11 +442,11 @@ function getStatusClass(seconds, status) {
 }
 
 function getTimerIcon(seconds, status) {
-    if (status === 'ready') return '✓';
-    if (seconds < 10) return '⚪';
-    if (seconds < TIME_THRESHOLDS.WARNING) return '🟢';
-    if (seconds < TIME_THRESHOLDS.URGENT) return '🟡';
-    return '🔴';
+    if (status === 'ready') return 'âœ“';
+    if (seconds < 10) return 'âšª';
+    if (seconds < TIME_THRESHOLDS.WARNING) return 'ðŸŸ¢';
+    if (seconds < TIME_THRESHOLDS.URGENT) return 'ðŸŸ¡';
+    return 'ðŸ”´';
 }
 
 function updateAllTimers() {
@@ -509,10 +509,10 @@ function matchesFilter(item, filter) {
 
     switch (filter) {
         case 'meat':
-            return ['ハラミ', 'タン', 'カルビ', 'ロース', 'ホルモン', '盛り合わせ']
+            return ['ãƒãƒ©ãƒŸ', 'ã‚¿ãƒ³', 'ã‚«ãƒ«ãƒ“', 'ãƒ­ãƒ¼ã‚¹', 'ãƒ›ãƒ«ãƒ¢ãƒ³', 'ç››ã‚Šåˆã‚ã›']
                 .some(meat => itemName.includes(meat.toLowerCase()));
         case 'drinks':
-            return ['ビール', 'ハイボール', 'サワー', '茶', 'コーラ', 'ジュース']
+            return ['ãƒ“ãƒ¼ãƒ«', 'ãƒã‚¤ãƒœãƒ¼ãƒ«', 'ã‚µãƒ¯ãƒ¼', 'èŒ¶', 'ã‚³ãƒ¼ãƒ©', 'ã‚¸ãƒ¥ãƒ¼ã‚¹']
                 .some(drink => itemName.includes(drink.toLowerCase()));
         case 'other':
             return !matchesFilter(item, 'meat') && !matchesFilter(item, 'drinks');
@@ -528,7 +528,7 @@ function setupSoundToggle() {
     btn.addEventListener('click', () => {
         state.soundEnabled = !state.soundEnabled;
         btn.classList.toggle('muted', !state.soundEnabled);
-        btn.textContent = state.soundEnabled ? '🔔' : '🔕';
+        btn.textContent = state.soundEnabled ? 'ðŸ””' : 'ðŸ”•';
     });
 }
 
@@ -551,21 +551,21 @@ function updateConnectionStatus(isOnline) {
     const statusEl = document.getElementById('connectionStatus');
 
     if (isOnline) {
-        statusEl.innerHTML = '<span class="status-dot"></span><span>オンライン</span>';
+        statusEl.innerHTML = '<span class="status-dot"></span><span>ã‚ªãƒ³ãƒ©ã‚¤ãƒ³</span>';
         statusEl.className = 'connection-status online';
     } else {
-        statusEl.innerHTML = '<span class="status-dot"></span><span>オフライン</span>';
+        statusEl.innerHTML = '<span class="status-dot"></span><span>ã‚ªãƒ•ãƒ©ã‚¤ãƒ³</span>';
         statusEl.className = 'connection-status offline';
     }
 }
 
 function getStatusLabel(status) {
     const labels = {
-        'pending': '新規',
-        'confirmed': '確認済み',
-        'preparing': '調理中',
-        'ready': '完了',
-        'served': '提供済み',
+        'pending': 'æ–°è¦',
+        'confirmed': 'ç¢ºèªæ¸ˆã¿',
+        'preparing': 'èª¿ç†ä¸­',
+        'ready': 'å®Œäº†',
+        'served': 'æä¾›æ¸ˆã¿',
     };
     return labels[status] || status;
 }
@@ -579,10 +579,10 @@ function showToast(message, type = 'info') {
     toast.className = 'notification-toast';
 
     const icons = {
-        'new': '🆕',
-        'success': '✓',
-        'call': '🔔',
-        'info': 'ℹ️',
+        'new': 'ðŸ†•',
+        'success': 'âœ“',
+        'call': 'ðŸ””',
+        'info': 'â„¹ï¸',
     };
 
     toast.innerHTML = `
@@ -603,3 +603,5 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
+
+

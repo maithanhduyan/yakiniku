@@ -1,4 +1,4 @@
-"""
+﻿"""
 Check-in Models
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text
@@ -10,11 +10,11 @@ from app.database import Base
 
 
 class WaitingStatus(str, enum.Enum):
-    WAITING = "waiting"         # Đang đợi
-    CALLED = "called"           # Đã gọi
-    SEATED = "seated"           # Đã ngồi
-    CANCELLED = "cancelled"     # Hủy (khách bỏ về)
-    NO_SHOW = "no_show"         # Không đến
+    WAITING = "waiting"         # Äang Ä‘á»£i
+    CALLED = "called"           # ÄÃ£ gá»i
+    SEATED = "seated"           # ÄÃ£ ngá»“i
+    CANCELLED = "cancelled"     # Há»§y (khÃ¡ch bá» vá»)
+    NO_SHOW = "no_show"         # KhÃ´ng Ä‘áº¿n
 
 
 class WaitingList(Base):
@@ -30,7 +30,7 @@ class WaitingList(Base):
     guest_count = Column(Integer, nullable=False)
 
     # Queue management
-    queue_number = Column(Integer, nullable=False)  # Số thứ tự
+    queue_number = Column(Integer, nullable=False)  # Sá»‘ thá»© tá»±
     status = Column(String(20), default=WaitingStatus.WAITING.value, index=True)
 
     # Estimated wait time
@@ -73,3 +73,4 @@ class CheckInLog(Base):
     event_data = Column(Text)  # JSON string for additional data
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+

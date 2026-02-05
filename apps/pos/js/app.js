@@ -1,4 +1,4 @@
-/**
+﻿/**
  * POS System - JavaScript
  * Point of Sale for checkout and payment processing
  */
@@ -7,7 +7,7 @@
 
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
-    BRANCH_CODE: 'jinan',
+    BRANCH_CODE: 'hirama',
     TAX_RATE: 0.10, // 10% consumption tax
 };
 
@@ -131,11 +131,11 @@ function getDemoOrder(tableId) {
         guest_count: Math.floor(Math.random() * 4) + 2,
         session_start: new Date(Date.now() - (90 + Math.random() * 60) * 60 * 1000).toISOString(),
         items: [
-            { name: '和牛上ハラミ', quantity: 2, price: 1800 },
-            { name: '厚切り上タン塩', quantity: 1, price: 2200 },
-            { name: 'カルビ', quantity: 2, price: 1500 },
-            { name: '生ビール', quantity: 3, price: 600 },
-            { name: 'ライス', quantity: 2, price: 200 },
+            { name: 'å’Œç‰›ä¸Šãƒãƒ©ãƒŸ', quantity: 2, price: 1800 },
+            { name: 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©', quantity: 1, price: 2200 },
+            { name: 'ã‚«ãƒ«ãƒ“', quantity: 2, price: 1500 },
+            { name: 'ç”Ÿãƒ“ãƒ¼ãƒ«', quantity: 3, price: 600 },
+            { name: 'ãƒ©ã‚¤ã‚¹', quantity: 2, price: 200 },
         ],
         subtotal: table.total_amount || 8000,
     };
@@ -181,7 +181,7 @@ function renderTables() {
                  onclick="selectTable(${table.id})">
                 <div class="table-number">${table.table_number}</div>
                 <div class="table-status">${statusText}</div>
-                ${table.total_amount ? `<div class="table-amount">¥${table.total_amount.toLocaleString()}</div>` : ''}
+                ${table.total_amount ? `<div class="table-amount">Â¥${table.total_amount.toLocaleString()}</div>` : ''}
             </div>
         `;
     }).join('');
@@ -189,28 +189,28 @@ function renderTables() {
 
 function getStatusText(status) {
     const texts = {
-        'empty': '空席',
-        'occupied': '使用中',
-        'billing': '会計中',
+        'empty': 'ç©ºå¸­',
+        'occupied': 'ä½¿ç”¨ä¸­',
+        'billing': 'ä¼šè¨ˆä¸­',
     };
-    return texts[status] || '空席';
+    return texts[status] || 'ç©ºå¸­';
 }
 
 function renderOrderItems(order) {
     const container = document.getElementById('orderItems');
 
     if (!order || !order.items || order.items.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">注文がありません</p>';
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">æ³¨æ–‡ãŒã‚ã‚Šã¾ã›ã‚“</p>';
         return;
     }
 
     container.innerHTML = order.items.map(item => `
         <div class="order-item">
             <div class="item-info">
-                <span class="item-quantity">×${item.quantity}</span>
+                <span class="item-quantity">Ã—${item.quantity}</span>
                 <span class="item-name">${item.name}</span>
             </div>
-            <span class="item-price">¥${(item.price * item.quantity).toLocaleString()}</span>
+            <span class="item-price">Â¥${(item.price * item.quantity).toLocaleString()}</span>
         </div>
     `).join('');
 }
@@ -230,14 +230,14 @@ function updateOrderSummary() {
 
     const total = subtotal + tax - discountAmount;
 
-    document.getElementById('subtotal').textContent = `¥${subtotal.toLocaleString()}`;
-    document.getElementById('tax').textContent = `¥${tax.toLocaleString()}`;
-    document.getElementById('total').textContent = `¥${total.toLocaleString()}`;
+    document.getElementById('subtotal').textContent = `Â¥${subtotal.toLocaleString()}`;
+    document.getElementById('tax').textContent = `Â¥${tax.toLocaleString()}`;
+    document.getElementById('total').textContent = `Â¥${total.toLocaleString()}`;
 
     const discountRow = document.getElementById('discountRow');
     if (discountAmount > 0) {
         discountRow.style.display = 'flex';
-        document.getElementById('discount').textContent = `-¥${discountAmount.toLocaleString()}`;
+        document.getElementById('discount').textContent = `-Â¥${discountAmount.toLocaleString()}`;
     } else {
         discountRow.style.display = 'none';
     }
@@ -251,7 +251,7 @@ function updateStats() {
     const totalCount = state.tables.length;
 
     document.getElementById('statTables').textContent = `${occupiedCount}/${totalCount}`;
-    document.getElementById('statSales').textContent = `¥${state.todaySales.toLocaleString()}`;
+    document.getElementById('statSales').textContent = `Â¥${state.todaySales.toLocaleString()}`;
     document.getElementById('statOrders').textContent = state.todayOrders;
 }
 
@@ -263,7 +263,7 @@ async function selectTable(tableId) {
 
     // Don't allow selecting empty tables
     if (table.status === 'empty') {
-        showToast('このテーブルは空席です', 'info');
+        showToast('ã“ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã¯ç©ºå¸­ã§ã™', 'info');
         return;
     }
 
@@ -292,7 +292,7 @@ function showCheckoutPanel(table, order) {
 
     // Update header info
     document.getElementById('selectedTable').textContent = table.table_number;
-    document.getElementById('guestCount').textContent = `${order?.guest_count || 2}名様`;
+    document.getElementById('guestCount').textContent = `${order?.guest_count || 2}åæ§˜`;
 
     // Calculate session time
     if (order?.session_start) {
@@ -333,19 +333,19 @@ function openPaymentModal(method) {
     const cardSection = document.getElementById('cardPayment');
     const amount = state.currentOrder?.total || 0;
 
-    document.getElementById('paymentAmount').textContent = `¥${amount.toLocaleString()}`;
+    document.getElementById('paymentAmount').textContent = `Â¥${amount.toLocaleString()}`;
 
     if (method === 'cash') {
-        title.textContent = '現金会計';
+        title.textContent = 'ç¾é‡‘ä¼šè¨ˆ';
         cashSection.style.display = 'block';
         cardSection.style.display = 'none';
         document.getElementById('receivedAmount').value = '';
-        document.getElementById('changeAmount').textContent = '¥0';
+        document.getElementById('changeAmount').textContent = 'Â¥0';
     } else {
-        title.textContent = 'カード会計';
+        title.textContent = 'ã‚«ãƒ¼ãƒ‰ä¼šè¨ˆ';
         cashSection.style.display = 'none';
         cardSection.style.display = 'block';
-        document.getElementById('cardStatus').textContent = '待機中...';
+        document.getElementById('cardStatus').textContent = 'å¾…æ©Ÿä¸­...';
     }
 
     modal.style.display = 'flex';
@@ -362,10 +362,10 @@ function updateChange() {
 
     const changeEl = document.getElementById('changeAmount');
     if (change >= 0) {
-        changeEl.textContent = `¥${change.toLocaleString()}`;
+        changeEl.textContent = `Â¥${change.toLocaleString()}`;
         changeEl.style.color = 'var(--status-success)';
     } else {
-        changeEl.textContent = `不足: ¥${Math.abs(change).toLocaleString()}`;
+        changeEl.textContent = `ä¸è¶³: Â¥${Math.abs(change).toLocaleString()}`;
         changeEl.style.color = 'var(--status-error)';
     }
 }
@@ -390,7 +390,7 @@ async function confirmPayment() {
     if (state.paymentMethod === 'cash') {
         const received = parseInt(document.getElementById('receivedAmount').value) || 0;
         if (received < total) {
-            showToast('金額が不足しています', 'error');
+            showToast('é‡‘é¡ãŒä¸è¶³ã—ã¦ã„ã¾ã™', 'error');
             return;
         }
     }
@@ -420,9 +420,9 @@ async function confirmPayment() {
         renderTables();
         updateStats();
 
-        showToast('会計が完了しました');
+        showToast('ä¼šè¨ˆãŒå®Œäº†ã—ã¾ã—ãŸ');
     } else {
-        showToast('会計処理に失敗しました', 'error');
+        showToast('ä¼šè¨ˆå‡¦ç†ã«å¤±æ•—ã—ã¾ã—ãŸ', 'error');
     }
 }
 
@@ -464,7 +464,7 @@ function applyDiscount() {
 
     updateOrderSummary();
     closeDiscountModal();
-    showToast('割引を適用しました');
+    showToast('å‰²å¼•ã‚’é©ç”¨ã—ã¾ã—ãŸ');
 }
 
 // ============ Event Listeners ============
@@ -507,12 +507,12 @@ function setupEventListeners() {
 
     // Split bill (placeholder)
     document.getElementById('btnSplitBill').addEventListener('click', () => {
-        showToast('分割会計機能は開発中です', 'info');
+        showToast('åˆ†å‰²ä¼šè¨ˆæ©Ÿèƒ½ã¯é–‹ç™ºä¸­ã§ã™', 'info');
     });
 
     // Print receipt (placeholder)
     document.getElementById('btnPrintReceipt').addEventListener('click', () => {
-        showToast('伝票を印刷しました');
+        showToast('ä¼ç¥¨ã‚’å°åˆ·ã—ã¾ã—ãŸ');
     });
 
     // Close modals on overlay click
@@ -536,13 +536,13 @@ function showToast(message, type = 'success') {
 
     // Set icon and color based on type
     if (type === 'error') {
-        iconEl.textContent = '✗';
+        iconEl.textContent = 'âœ—';
         toast.style.background = 'var(--status-error)';
     } else if (type === 'info') {
-        iconEl.textContent = 'ℹ';
+        iconEl.textContent = 'â„¹';
         toast.style.background = 'var(--status-occupied)';
     } else {
-        iconEl.textContent = '✓';
+        iconEl.textContent = 'âœ“';
         toast.style.background = 'var(--status-success)';
     }
 
@@ -552,3 +552,5 @@ function showToast(message, type = 'success') {
         toast.classList.remove('show');
     }, 3000);
 }
+
+

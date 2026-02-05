@@ -1,4 +1,4 @@
-"""
+﻿"""
 Branch Model - Multi-tenant support
 """
 from sqlalchemy import Column, String, Integer, Time, Boolean, JSON, DateTime
@@ -14,9 +14,9 @@ class Branch(Base):
     __tablename__ = "branches"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    code = Column(String(50), unique=True, nullable=False, index=True)  # 'jinan', 'shibuya'
-    name = Column(String(255), nullable=False)  # '焼肉ジナン 平間本店'
-    subdomain = Column(String(100))  # 'jinan', 'shibuya'
+    code = Column(String(50), unique=True, nullable=False, index=True)  # 'hirama', 'shibuya'
+    name = Column(String(255), nullable=False)  # 'Yakiniku å¹³é–“æœ¬åº—'
+    subdomain = Column(String(100))  # 'hirama', 'shibuya'
 
     # Contact
     phone = Column(String(20))

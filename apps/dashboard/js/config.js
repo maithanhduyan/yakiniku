@@ -1,5 +1,6 @@
-/**
+﻿/**
  * Dashboard Configuration
+ * Yakiniku.io Platform
  */
 const CONFIG = {
     // API endpoints
@@ -7,7 +8,7 @@ const CONFIG = {
     WS_URL: 'ws://localhost:8000/ws',
 
     // Default branch
-    DEFAULT_BRANCH: 'jinan',
+    DEFAULT_BRANCH: 'hirama',
 
     // Reconnect settings
     WS_RECONNECT_INTERVAL: 3000,
@@ -21,21 +22,21 @@ const CONFIG = {
 
     // Status labels
     STATUS_LABELS: {
-        confirmed: '確定',
-        pending: '保留中',
-        cancelled: 'キャンセル',
-        completed: '完了',
-        available: '空席',
-        occupied: '使用中',
-        reserved: '予約済'
+        confirmed: 'ç¢ºå®š',
+        pending: 'ä¿ç•™ä¸­',
+        cancelled: 'ã‚­ãƒ£ãƒ³ã‚»ãƒ«',
+        completed: 'å®Œäº†',
+        available: 'ç©ºå¸­',
+        occupied: 'ä½¿ç”¨ä¸­',
+        reserved: 'äºˆç´„æ¸ˆ'
     },
 
     // Table types
     TABLE_TYPES: {
-        counter: 'カウンター',
-        table: 'テーブル',
-        private: '個室',
-        tatami: '座敷'
+        counter: 'ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼',
+        table: 'ãƒ†ãƒ¼ãƒ–ãƒ«',
+        private: 'å€‹å®¤',
+        tatami: 'åº§æ•·'
     }
 };
 

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Menu Model - Menu items and categories
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Numeric
@@ -10,13 +10,13 @@ from app.database import Base
 
 
 class MenuCategory(str, enum.Enum):
-    MEAT = "meat"           # 肉類
-    DRINKS = "drinks"       # 飲物
-    SALAD = "salad"         # サラダ
-    RICE = "rice"           # ご飯・麺
-    SIDE = "side"           # サイドメニュー
-    DESSERT = "dessert"     # デザート
-    SET = "set"             # セットメニュー
+    MEAT = "meat"           # è‚‰é¡ž
+    DRINKS = "drinks"       # é£²ç‰©
+    SALAD = "salad"         # ã‚µãƒ©ãƒ€
+    RICE = "rice"           # ã”é£¯ãƒ»éºº
+    SIDE = "side"           # ã‚µã‚¤ãƒ‰ãƒ¡ãƒ‹ãƒ¥ãƒ¼
+    DESSERT = "dessert"     # ãƒ‡ã‚¶ãƒ¼ãƒˆ
+    SET = "set"             # ã‚»ãƒƒãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼
 
 
 class MenuItem(Base):
@@ -27,9 +27,9 @@ class MenuItem(Base):
     branch_code = Column(String(50), nullable=False, index=True)
 
     # Item identity
-    name = Column(String(100), nullable=False)          # 上ハラミ
+    name = Column(String(100), nullable=False)          # ä¸Šãƒãƒ©ãƒŸ
     name_en = Column(String(100))                       # Premium Harami
-    description = Column(Text)                          # 説明
+    description = Column(Text)                          # èª¬æ˜Ž
 
     # Category & Display
     category = Column(String(30), nullable=False, index=True)  # meat, drinks, etc.
@@ -37,7 +37,7 @@ class MenuItem(Base):
     display_order = Column(Integer, default=0)          # Sort order in menu
 
     # Pricing
-    price = Column(Numeric(10, 0), nullable=False)      # ¥1,800
+    price = Column(Numeric(10, 0), nullable=False)      # Â¥1,800
     tax_rate = Column(Numeric(4, 2), default=10.0)      # 10%
 
     # Image
@@ -50,8 +50,8 @@ class MenuItem(Base):
     # Flags
     is_available = Column(Boolean, default=True)        # Currently available
     is_popular = Column(Boolean, default=False)         # Show as recommended
-    is_spicy = Column(Boolean, default=False)           # 辛い
-    is_vegetarian = Column(Boolean, default=False)      # ベジタリアン
+    is_spicy = Column(Boolean, default=False)           # è¾›ã„
+    is_vegetarian = Column(Boolean, default=False)      # ãƒ™ã‚¸ã‚¿ãƒªã‚¢ãƒ³
     allergens = Column(String(200))                     # egg, milk, wheat, etc.
 
     # Timestamps
@@ -59,4 +59,5 @@ class MenuItem(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     def __repr__(self):
-        return f"<MenuItem {self.name} ¥{self.price}>"
+        return f"<MenuItem {self.name} Â¥{self.price}>"
+

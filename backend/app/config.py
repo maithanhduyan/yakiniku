@@ -1,4 +1,4 @@
-"""
+﻿"""
 Application Configuration
 """
 from pydantic_settings import BaseSettings
@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     ]
 
     # Multi-tenant
-    DEFAULT_BRANCH: str = "jinan"
+    DEFAULT_BRANCH: str = "hirama"
 
     class Config:
         env_file = ".env"
@@ -47,3 +47,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

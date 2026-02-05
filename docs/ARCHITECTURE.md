@@ -1,6 +1,8 @@
-# System Architecture - Yakiniku Chain
+# System Architecture - Yakiniku.io Platform
 
-> Kiến trúc mở rộng cho chuỗi nhà hàng (Multi-Tenant)
+> Kiến trúc mở rộng cho nền tảng quản lý chuỗi nhà hàng Yakiniku (Multi-Tenant)
+
+**Domain**: `yakiniku.io` - Platform for managing Yakiniku restaurant chains.
 
 ---
 
@@ -16,12 +18,12 @@
          │                               │                               │
          ▼                               ▼                               ▼
 ┌─────────────────┐           ┌─────────────────┐           ┌─────────────────┐
-│   web/          │           │   backend/      │           │   dashboard/    │
-│   (Static)      │           │   (FastAPI)     │           │   (Admin)       │
+│   apps/web      │           │   backend/      │           │   apps/dashboard│
+│   (Static)      │           │   (FastAPI)     │           │   (Admin SPA)   │
 │                 │           │                 │           │                 │
-│ jinan.com       │           │ api.jinan.com   │           │ admin.jinan.com │
-│ shibuya.jinan.  │           │                 │           │                 │
-│ shinjuku.jinan. │           │                 │           │                 │
+│ hirama.io       │           │ api.yakiniku.io │           │ dashboard.io    │
+│ shibuya.io      │           │                 │           │                 │
+│ shinjuku.io     │           │                 │           │                 │
 └────────┬────────┘           └────────┬────────┘           └────────┬────────┘
          │                             │                             │
          └─────────────────────────────┼─────────────────────────────┘
@@ -48,14 +50,14 @@
 
 ```sql
 -- Shared database, separate schemas
-CREATE SCHEMA branch_jinan;      -- Hiraama original
+CREATE SCHEMA branch_JIAN;      -- Hiraama original
 CREATE SCHEMA branch_shibuya;    -- Shibuya branch
 CREATE SCHEMA branch_shinjuku;   -- Shinjuku branch
 
 -- Each schema has identical tables
-branch_jinan.customers
-branch_jinan.bookings
-branch_jinan.preferences
+branch_JIAN.customers
+branch_JIAN.bookings
+branch_JIAN.preferences
 ```
 
 **Pros:**
@@ -71,7 +73,7 @@ branch_jinan.preferences
 
 ```
 ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│  db_jinan       │  │  db_shibuya     │  │  db_shinjuku    │
+│  db_JIAN       │  │  db_shibuya     │  │  db_shinjuku    │
 │  PostgreSQL     │  │  PostgreSQL     │  │  PostgreSQL     │
 └─────────────────┘  └─────────────────┘  └─────────────────┘
          │                   │                    │
@@ -103,9 +105,9 @@ branch_jinan.preferences
 -- Central config table (shared DB)
 CREATE TABLE branches (
     id UUID PRIMARY KEY,
-    code VARCHAR(50) UNIQUE,      -- 'jinan', 'shibuya'
-    name VARCHAR(255),            -- '焼肉ジナン 平間本店'
-    subdomain VARCHAR(100),       -- 'jinan', 'shibuya'
+    code VARCHAR(50) UNIQUE,      -- 'hirama', 'shibuya'
+    name VARCHAR(255),            -- 'Yakiniku 平間本店'
+    subdomain VARCHAR(100),       -- 'hirama', 'shibuya'
 
     -- Contact
     phone VARCHAR(20),
@@ -161,19 +163,19 @@ class BranchConfig:
 ### Option A: Subdomain-based (Recommended)
 
 ```
-jinan.yakiniku.com      → Branch: jinan (本店)
-shibuya.yakiniku.com    → Branch: shibuya
-admin.yakiniku.com      → Dashboard (all branches)
-api.yakiniku.com        → Backend API
+hirama.yakiniku.io      → Branch: hirama (平間本店)
+shibuya.yakiniku.io     → Branch: shibuya
+dashboard.yakiniku.io   → Dashboard (all branches)
+api.yakiniku.io         → Backend API
 ```
 
 ### Option B: Path-based
 
 ```
-yakiniku.com/jinan      → Branch: jinan
-yakiniku.com/shibuya    → Branch: shibuya
-yakiniku.com/admin      → Dashboard
-yakiniku.com/api        → Backend API
+yakiniku.io/hirama      → Branch: hirama
+yakiniku.io/shibuya     → Branch: shibuya
+yakiniku.io/dashboard   → Dashboard
+yakiniku.io/api         → Backend API
 ```
 
 ### Nginx Config (Subdomain)
@@ -181,7 +183,7 @@ yakiniku.com/api        → Backend API
 ```nginx
 # Web - per branch
 server {
-    server_name ~^(?<branch>.+)\.yakiniku\.com$;
+    server_name ~^(?<branch>.+)\.yakiniku\.io$;
 
     location / {
         root /var/www/web;
@@ -192,7 +194,7 @@ server {
 
 # API - single backend
 server {
-    server_name api.yakiniku.com;
+    server_name api.yakiniku.io;
 
     location / {
         proxy_pass http://backend:8000;
@@ -202,10 +204,10 @@ server {
 
 # Dashboard - single admin
 server {
-    server_name admin.yakiniku.com;
+    server_name dashboard.yakiniku.io;
 
     location / {
-        proxy_pass http://dashboard:3000;
+        proxy_pass http://dashboard:8081;
     }
 }
 ```
@@ -225,7 +227,7 @@ async def get_current_branch(request: Request) -> str:
 
     # From subdomain
     host = request.headers.get("host", "")
-    if ".yakiniku.com" in host:
+    if ".yakiniku.io" in host:
         branch = host.split(".")[0]
         return branch
 
@@ -290,7 +292,7 @@ class User:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  🏢 焼肉ジナン Dashboard              [平間本店 ▼] [Logout]│
+│  🏢 Yakiniku.io Dashboard            [平間本店 ▼] [Logout]│
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐       │
@@ -430,9 +432,9 @@ volumes:
 │                    Kubernetes Cluster                    │
 ├─────────────────────────────────────────────────────────┤
 │  Ingress Controller (Traefik)                           │
-│  ├── *.yakiniku.com → web-deployment                   │
-│  ├── api.yakiniku.com → backend-deployment             │
-│  └── admin.yakiniku.com → dashboard-deployment         │
+│  ├── *.yakiniku.io → web-deployment                    │
+│  ├── api.yakiniku.io → backend-deployment              │
+│  └── dashboard.yakiniku.io → dashboard-deployment      │
 ├─────────────────────────────────────────────────────────┤
 │  Deployments:                                           │
 │  ├── web (3 replicas, static files)                    │

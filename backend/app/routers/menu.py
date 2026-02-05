@@ -1,4 +1,4 @@
-"""
+﻿"""
 Menu Router - Menu items API for table ordering
 """
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,19 +15,19 @@ router = APIRouter()
 
 # Category labels and icons for UI
 CATEGORY_INFO = {
-    "meat": {"label": "肉類", "icon": "🥩"},
-    "drinks": {"label": "飲物", "icon": "🍺"},
-    "salad": {"label": "サラダ", "icon": "🥗"},
-    "rice": {"label": "ご飯・麺", "icon": "🍚"},
-    "side": {"label": "サイドメニュー", "icon": "🍟"},
-    "dessert": {"label": "デザート", "icon": "🍨"},
-    "set": {"label": "セットメニュー", "icon": "🍱"},
+    "meat": {"label": "è‚‰é¡ž", "icon": "ðŸ¥©"},
+    "drinks": {"label": "é£²ç‰©", "icon": "ðŸº"},
+    "salad": {"label": "ã‚µãƒ©ãƒ€", "icon": "ðŸ¥—"},
+    "rice": {"label": "ã”é£¯ãƒ»éºº", "icon": "ðŸš"},
+    "side": {"label": "ã‚µã‚¤ãƒ‰ãƒ¡ãƒ‹ãƒ¥ãƒ¼", "icon": "ðŸŸ"},
+    "dessert": {"label": "ãƒ‡ã‚¶ãƒ¼ãƒˆ", "icon": "ðŸ¨"},
+    "set": {"label": "ã‚»ãƒƒãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼", "icon": "ðŸ±"},
 }
 
 
 @router.get("", response_model=List[MenuItemResponse])
 async def get_menu_items(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     category: str = None,
     available_only: bool = True,
     db: AsyncSession = Depends(get_db)
@@ -51,7 +51,7 @@ async def get_menu_items(
 
 @router.get("/categories", response_model=MenuResponse)
 async def get_menu_by_category(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
     """Get menu items grouped by category"""
@@ -68,7 +68,7 @@ async def get_menu_by_category(
     for item in items:
         cat = item.category
         if cat not in categories_dict:
-            info = CATEGORY_INFO.get(cat, {"label": cat, "icon": "📦"})
+            info = CATEGORY_INFO.get(cat, {"label": cat, "icon": "ðŸ“¦"})
             categories_dict[cat] = {
                 "category": cat,
                 "category_label": info["label"],
@@ -93,7 +93,7 @@ async def get_menu_by_category(
 
 @router.get("/popular", response_model=List[MenuItemResponse])
 async def get_popular_items(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     limit: int = 6,
     db: AsyncSession = Depends(get_db)
 ):
@@ -123,3 +123,4 @@ async def get_menu_item(
         raise HTTPException(status_code=404, detail="Menu item not found")
 
     return item
+

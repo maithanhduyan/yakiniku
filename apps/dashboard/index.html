@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>焼肉じなん - ダッシュボード</title>
+    <title>ç„¼è‚‰ã˜ãªã‚“ - ãƒ€ãƒƒã‚·ãƒ¥ãƒœãƒ¼ãƒ‰</title>
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,8 +14,8 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="brand">
-                    <span class="brand-icon">🍖</span>
-                    <span class="brand-text">焼肉じなん</span>
+                    <span class="brand-icon">ðŸ–</span>
+                    <span class="brand-text">ç„¼è‚‰ã˜ãªã‚“</span>
                 </div>
                 <button class="sidebar-toggle" id="sidebarToggle">
                     <span></span>
@@ -24,42 +24,42 @@
 
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" data-page="home">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">ホーム</span>
+                    <span class="nav-icon">ðŸ“Š</span>
+                    <span class="nav-text">ãƒ›ãƒ¼ãƒ </span>
                 </a>
                 <a href="#" class="nav-item" data-page="bookings">
-                    <span class="nav-icon">📅</span>
-                    <span class="nav-text">予約管理</span>
+                    <span class="nav-icon">ðŸ“…</span>
+                    <span class="nav-text">äºˆç´„ç®¡ç†</span>
                     <span class="nav-badge" id="bookingsBadge"></span>
                 </a>
                 <a href="#" class="nav-item" data-page="tables">
-                    <span class="nav-icon">🪑</span>
-                    <span class="nav-text">テーブル</span>
+                    <span class="nav-icon">ðŸª‘</span>
+                    <span class="nav-text">ãƒ†ãƒ¼ãƒ–ãƒ«</span>
                 </a>
                 <a href="#" class="nav-item" data-page="customers">
-                    <span class="nav-icon">👥</span>
-                    <span class="nav-text">顧客</span>
+                    <span class="nav-icon">ðŸ‘¥</span>
+                    <span class="nav-text">é¡§å®¢</span>
                 </a>
                 <a href="#" class="nav-item" data-page="analytics">
-                    <span class="nav-icon">📈</span>
-                    <span class="nav-text">分析</span>
+                    <span class="nav-icon">ðŸ“ˆ</span>
+                    <span class="nav-text">åˆ†æž</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
                 <div class="branch-selector">
-                    <label>支店</label>
+                    <label>æ”¯åº—</label>
                     <select id="branchSelect">
-                        <option value="jinan">じなん本店</option>
-                        <option value="shinjuku">新宿店</option>
-                        <option value="yaesu">八重洲店</option>
-                        <option value="shinagawa">品川店</option>
-                        <option value="yokohama">横浜店</option>
+                        <option value="hirama">ã˜ãªã‚“æœ¬åº—</option>
+                        <option value="shinjuku">æ–°å®¿åº—</option>
+                        <option value="yaesu">å…«é‡æ´²åº—</option>
+                        <option value="shinagawa">å“å·åº—</option>
+                        <option value="yokohama">æ¨ªæµœåº—</option>
                     </select>
                 </div>
                 <div class="connection-status" id="connectionStatus">
                     <span class="status-dot"></span>
-                    <span class="status-text">接続中...</span>
+                    <span class="status-text">æŽ¥ç¶šä¸­...</span>
                 </div>
             </div>
         </aside>
@@ -69,17 +69,17 @@
             <!-- Header -->
             <header class="main-header">
                 <div class="header-left">
-                    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-                    <h1 class="page-title" id="pageTitle">ホーム</h1>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">â˜°</button>
+                    <h1 class="page-title" id="pageTitle">ãƒ›ãƒ¼ãƒ </h1>
                 </div>
                 <div class="header-right">
                     <div class="header-date" id="currentDate"></div>
                     <button class="notification-btn" id="notificationBtn">
-                        🔔
+                        ðŸ””
                         <span class="notification-badge" id="notificationBadge"></span>
                     </button>
                     <div class="user-menu">
-                        <span class="user-name">田中 店長</span>
+                        <span class="user-name">ç”°ä¸­ åº—é•·</span>
                     </div>
                 </div>
             </header>
@@ -93,8 +93,8 @@
         <!-- Notification Panel -->
         <aside class="notification-panel" id="notificationPanel">
             <div class="panel-header">
-                <h3>通知</h3>
-                <button class="close-btn" id="closeNotifications">✕</button>
+                <h3>é€šçŸ¥</h3>
+                <button class="close-btn" id="closeNotifications">âœ•</button>
             </div>
             <div class="notification-list" id="notificationList">
                 <!-- Notifications loaded dynamically -->
@@ -110,7 +110,7 @@
         <div class="modal" id="modal">
             <div class="modal-header">
                 <h3 class="modal-title" id="modalTitle"></h3>
-                <button class="modal-close" id="modalClose">✕</button>
+                <button class="modal-close" id="modalClose">âœ•</button>
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer" id="modalFooter"></div>
@@ -129,3 +129,4 @@
     <script src="js/app.js"></script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-"""
-Yakiniku Jinan - Backend API
+﻿"""
+Yakiniku JIAN - Backend API
 Multi-tenant restaurant booking system
 """

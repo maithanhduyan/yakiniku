@@ -51,7 +51,7 @@ description = "Point of sale"
 
 [production]
 # Base domain for production
-base_domain = "yakiniku-jp"
+base_domain = "yakiniku.io"
 
 # Apps Configuration with subdomains
 [production.apps.web]
@@ -100,12 +100,12 @@ dev_origins = [
 
 # Production origins
 prod_origins = [
-    "https://yakiniku-jp",
-    "https://dashboard.yakiniku-jp",
-    "https://order.yakiniku-jp",
-    "https://kitchen.yakiniku-jp",
-    "https://checkin.yakiniku-jp",
-    "https://pos.yakiniku-jp",
+    "https://yakiniku.io",
+    "https://dashboard.yakiniku.io",
+    "https://order.yakiniku.io",
+    "https://kitchen.yakiniku.io",
+    "https://checkin.yakiniku.io",
+    "https://pos.yakiniku.io",
 ]
 
 # ==================================

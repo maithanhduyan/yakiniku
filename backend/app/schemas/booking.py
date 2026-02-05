@@ -1,4 +1,4 @@
-"""
+﻿"""
 Booking Schemas
 """
 from pydantic import BaseModel, Field
@@ -24,7 +24,7 @@ class BookingCreate(BaseModel):
     guest_phone: str = Field(..., min_length=10, max_length=20)
     guest_email: Optional[str] = None
     note: Optional[str] = None
-    branch_code: str = "jinan"
+    branch_code: str = "hirama"
 
 
 class BookingUpdate(BaseModel):
@@ -51,3 +51,4 @@ class BookingResponse(BaseModel):
     created_at: str
 
     model_config = {"from_attributes": True}
+

@@ -1,6 +1,6 @@
 code,name,name_kana,address,phone,email,opening_time,closing_time,is_active,default_booking_duration,max_party_size,cancellation_hours,created_at
-jinan,焼肉ジナン 平間本店,ヤキニクジナン ヒラマホンテン,川崎市中原区中丸子571-13,044-520-3729,info@yakiniku-jp,17:00:00,24:00:00,true,120,20,24,2020-01-01 00:00:00
-shinjuku,焼肉ジナン 新宿店,ヤキニクジナン シンジュクテン,新宿区西新宿1-13-8 B1F,03-5909-7729,shinjuku@yakiniku-jp,17:00:00,25:00:00,true,120,30,24,2022-03-15 00:00:00
-yaesu,焼肉ジナン 八重洲店,ヤキニクジナン ヤエステン,中央区八重洲1-5-10 1F,03-3271-7729,yaesu@yakiniku-jp,11:30:00,23:00:00,true,90,16,12,2023-06-01 00:00:00
-shinagawa,焼肉ジナン 品川店,ヤキニクジナン シナガワテン,品川区二葉1-16-17,03-6417-7729,shinagawa@yakiniku-jp,17:00:00,24:00:00,true,120,20,24,2023-09-01 00:00:00
-yokohama,焼肉ジナン 横浜関内店,ヤキニクジナン ヨコハマカンナイテン,横浜市中区住吉町5-65-2 1F,045-264-7729,yokohama@yakiniku-jp,17:00:00,24:00:00,true,120,24,24,2024-01-15 00:00:00
+hirama,Yakiniku 平間本店,ヤキニク ヒラマホンテン,川崎市中原区中丸子571-13,044-520-3729,info@yakiniku.io,17:00:00,24:00:00,true,120,20,24,2020-01-01 00:00:00
+shinjuku,Yakiniku 新宿店,ヤキニク シンジュクテン,新宿区西新宿1-13-8 B1F,03-5909-7729,shinjuku@yakiniku.io,17:00:00,25:00:00,true,120,30,24,2022-03-15 00:00:00
+yaesu,Yakiniku 八重洲店,ヤキニク ヤエステン,中央区八重洲1-5-10 1F,03-3271-7729,yaesu@yakiniku.io,11:30:00,23:00:00,true,90,16,12,2023-06-01 00:00:00
+shinagawa,Yakiniku 品川店,ヤキニク シナガワテン,品川区二蒉1-16-17,03-6417-7729,shinagawa@yakiniku.io,17:00:00,24:00:00,true,120,20,24,2023-09-01 00:00:00
+yokohama,Yakiniku 横浜関内店,ヤキニク ヨコハマカンナイテン,横浜市中区住吉町5-65-2 1F,045-264-7729,yokohama@yakiniku.io,17:00:00,24:00:00,true,120,24,24,2024-01-15 00:00:00

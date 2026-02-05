@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dashboard Main Application
  * Handles routing, navigation, and initialization
  */
@@ -17,7 +17,7 @@ class DashboardApp {
      * Initialize the application
      */
     async init() {
-        console.log('🍖 Dashboard initializing...');
+        console.log('ðŸ– Dashboard initializing...');
 
         // Initialize components
         initComponents();
@@ -43,7 +43,7 @@ class DashboardApp {
         // Load initial page
         await this.navigateTo('home');
 
-        console.log('✓ Dashboard ready');
+        console.log('âœ“ Dashboard ready');
     }
 
     /**
@@ -86,10 +86,10 @@ class DashboardApp {
 
         // Update page title
         const titles = {
-            home: 'ホーム',
-            bookings: '予約管理',
-            tables: 'テーブル',
-            customers: '顧客'
+            home: 'ãƒ›ãƒ¼ãƒ ',
+            bookings: 'äºˆç´„ç®¡ç†',
+            tables: 'ãƒ†ãƒ¼ãƒ–ãƒ«',
+            customers: 'é¡§å®¢'
         };
         document.getElementById('pageTitle').textContent = titles[page] || page;
 
@@ -105,7 +105,7 @@ class DashboardApp {
         } catch (error) {
             console.error(`Failed to load page ${page}:`, error);
             document.getElementById('pageContent').innerHTML =
-                EmptyState.render('❌', 'エラー', 'ページの読み込みに失敗しました');
+                EmptyState.render('âŒ', 'ã‚¨ãƒ©ãƒ¼', 'ãƒšãƒ¼ã‚¸ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ');
         }
     }
 
@@ -218,7 +218,7 @@ class DashboardApp {
             ws.changeBranch(branch);
 
             // Reload current page
-            Toast.info('支店変更', `${branchSelect.options[branchSelect.selectedIndex].text}に切り替えました`);
+            Toast.info('æ”¯åº—å¤‰æ›´', `${branchSelect.options[branchSelect.selectedIndex].text}ã«åˆ‡ã‚Šæ›¿ãˆã¾ã—ãŸ`);
             await this.navigateTo(this.currentPage);
         });
     }
@@ -276,3 +276,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+
+

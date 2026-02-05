@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Check-in App - JavaScript
  * Customer reception and seating management
  */
@@ -7,7 +7,7 @@
 
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
-    BRANCH_CODE: 'jinan',
+    BRANCH_CODE: 'hirama',
     SCAN_INTERVAL: 100,      // ms between scans
     RESULT_DISPLAY_TIME: 8000,  // ms to show result
     REFRESH_INTERVAL: 30000,    // ms to refresh dashboard
@@ -55,9 +55,9 @@ function switchMode(mode) {
 
     // Update mode label
     const labels = {
-        'scan': 'QRスキャン',
-        'dashboard': 'ダッシュボード',
-        'result': '結果'
+        'scan': 'QRã‚¹ã‚­ãƒ£ãƒ³',
+        'dashboard': 'ãƒ€ãƒƒã‚·ãƒ¥ãƒœãƒ¼ãƒ‰',
+        'result': 'çµæžœ'
     };
     document.getElementById('modeLabel').textContent = labels[mode] || '';
 
@@ -146,7 +146,7 @@ async function processQRCode(token) {
         console.error('Scan error:', error);
         showResult({
             success: false,
-            message: 'エラーが発生しました。\nスタッフにお声がけください。'
+            message: 'ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸã€‚\nã‚¹ã‚¿ãƒƒãƒ•ã«ãŠå£°ãŒã‘ãã ã•ã„ã€‚'
         });
     }
 }
@@ -160,13 +160,13 @@ function showResult(result) {
         // Success - show table assignment
         container.innerHTML = `
             <div class="animate-in">
-                <div class="result-icon">🎉</div>
+                <div class="result-icon">ðŸŽ‰</div>
                 <div class="result-message">${escapeHtml(result.message)}</div>
                 <div class="result-table-info">
-                    <div class="result-table-number">テーブル ${escapeHtml(result.table_number)}</div>
+                    <div class="result-table-number">ãƒ†ãƒ¼ãƒ–ãƒ« ${escapeHtml(result.table_number)}</div>
                     ${result.table_zone ? `<div class="result-table-zone">${escapeHtml(result.table_zone)}</div>` : ''}
                 </div>
-                <div class="result-submessage">スタッフがご案内いたします</div>
+                <div class="result-submessage">ã‚¹ã‚¿ãƒƒãƒ•ãŒã”æ¡ˆå†…ã„ãŸã—ã¾ã™</div>
             </div>
         `;
 
@@ -177,16 +177,16 @@ function showResult(result) {
         // Need to wait
         container.innerHTML = `
             <div class="animate-in">
-                <div class="result-icon">⏳</div>
+                <div class="result-icon">â³</div>
                 <div class="result-message">${escapeHtml(result.message)}</div>
                 <div class="result-waiting-info">
-                    ${result.queue_number ? `<div class="result-queue-number">番号: ${result.queue_number}</div>` : ''}
+                    ${result.queue_number ? `<div class="result-queue-number">ç•ªå·: ${result.queue_number}</div>` : ''}
                     <div class="result-wait-time">
-                        待ち時間目安: 約${result.estimated_wait_minutes || 15}分
-                        ${result.waiting_ahead ? `<br>${result.waiting_ahead}組お待ちです` : ''}
+                        å¾…ã¡æ™‚é–“ç›®å®‰: ç´„${result.estimated_wait_minutes || 15}åˆ†
+                        ${result.waiting_ahead ? `<br>${result.waiting_ahead}çµ„ãŠå¾…ã¡ã§ã™` : ''}
                     </div>
                 </div>
-                <div class="result-submessage">お呼びするまでお待ちください</div>
+                <div class="result-submessage">ãŠå‘¼ã³ã™ã‚‹ã¾ã§ãŠå¾…ã¡ãã ã•ã„</div>
             </div>
         `;
 
@@ -194,11 +194,11 @@ function showResult(result) {
         // Error or not found
         container.innerHTML = `
             <div class="animate-in">
-                <div class="result-icon">❌</div>
+                <div class="result-icon">âŒ</div>
                 <div class="result-message">${escapeHtml(result.message)}</div>
                 <div class="result-actions">
                     <button class="btn-primary btn-large" onclick="switchMode('scan')">
-                        もう一度スキャン
+                        ã‚‚ã†ä¸€åº¦ã‚¹ã‚­ãƒ£ãƒ³
                     </button>
                 </div>
             </div>
@@ -219,8 +219,8 @@ function showSuccessAnimation(tableNumber) {
     const overlay = document.createElement('div');
     overlay.className = 'success-animation';
     overlay.innerHTML = `
-        <div class="checkmark">✓</div>
-        <div class="message">テーブル ${escapeHtml(tableNumber)}</div>
+        <div class="checkmark">âœ“</div>
+        <div class="message">ãƒ†ãƒ¼ãƒ–ãƒ« ${escapeHtml(tableNumber)}</div>
     `;
 
     document.body.appendChild(overlay);
@@ -264,8 +264,8 @@ function renderDashboard() {
     if (data.upcoming_bookings.length === 0) {
         bookingList.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">📅</div>
-                <p>本日の予約はありません</p>
+                <div class="empty-state-icon">ðŸ“…</div>
+                <p>æœ¬æ—¥ã®äºˆç´„ã¯ã‚ã‚Šã¾ã›ã‚“</p>
             </div>
         `;
     } else {
@@ -273,8 +273,8 @@ function renderDashboard() {
             <div class="booking-item" onclick="selectBookingForAssign('${b.id}')">
                 <div class="booking-time">${escapeHtml(b.time)}</div>
                 <div class="booking-info">
-                    <div class="booking-name">${escapeHtml(b.guest_name)}様</div>
-                    <div class="booking-guests">${b.guest_count}名</div>
+                    <div class="booking-name">${escapeHtml(b.guest_name)}æ§˜</div>
+                    <div class="booking-guests">${b.guest_count}å</div>
                 </div>
                 <span class="booking-status ${b.status}">${getStatusLabel(b.status)}</span>
             </div>
@@ -286,8 +286,8 @@ function renderDashboard() {
     if (data.waiting_list.length === 0) {
         waitingList.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">👥</div>
-                <p>順番待ちはいません</p>
+                <div class="empty-state-icon">ðŸ‘¥</div>
+                <p>é †ç•ªå¾…ã¡ã¯ã„ã¾ã›ã‚“</p>
             </div>
         `;
     } else {
@@ -295,14 +295,14 @@ function renderDashboard() {
             <div class="waiting-item ${w.status === 'called' ? 'called' : ''}">
                 <div class="waiting-number">${w.queue_number}</div>
                 <div class="waiting-info">
-                    <div class="waiting-name">${escapeHtml(w.customer_name)}様</div>
-                    <div class="waiting-guests">${w.guest_count}名</div>
+                    <div class="waiting-name">${escapeHtml(w.customer_name)}æ§˜</div>
+                    <div class="waiting-guests">${w.guest_count}å</div>
                 </div>
                 <div class="waiting-actions">
                     ${w.status === 'waiting' ? `
-                        <button class="btn-call" onclick="callWaiting('${w.id}')">呼出</button>
+                        <button class="btn-call" onclick="callWaiting('${w.id}')">å‘¼å‡º</button>
                     ` : ''}
-                    <button class="btn-seat" onclick="selectWaitingForAssign('${w.id}')">案内</button>
+                    <button class="btn-seat" onclick="selectWaitingForAssign('${w.id}')">æ¡ˆå†…</button>
                 </div>
             </div>
         `).join('');
@@ -313,7 +313,7 @@ function renderDashboard() {
     tableGrid.innerHTML = data.available_tables.map(t => `
         <div class="table-item available" onclick="quickAssignTable('${t.id}')">
             <div class="table-number">${escapeHtml(t.table_number)}</div>
-            <div class="table-capacity">${t.capacity}名</div>
+            <div class="table-capacity">${t.capacity}å</div>
         </div>
     `).join('');
 
@@ -327,13 +327,13 @@ function renderDemoDashboard() {
     // Demo data for development
     state.dashboardData = {
         upcoming_bookings: [
-            { id: '1', time: '17:00', guest_name: '田中', guest_count: 4, status: 'confirmed' },
-            { id: '2', time: '17:30', guest_name: '佐藤', guest_count: 2, status: 'pending' },
-            { id: '3', time: '18:00', guest_name: '鈴木', guest_count: 6, status: 'confirmed' },
+            { id: '1', time: '17:00', guest_name: 'ç”°ä¸­', guest_count: 4, status: 'confirmed' },
+            { id: '2', time: '17:30', guest_name: 'ä½è—¤', guest_count: 2, status: 'pending' },
+            { id: '3', time: '18:00', guest_name: 'éˆ´æœ¨', guest_count: 6, status: 'confirmed' },
         ],
         waiting_list: [
-            { id: 'w1', queue_number: 1, customer_name: '山田', guest_count: 3, status: 'called' },
-            { id: 'w2', queue_number: 2, customer_name: '高橋', guest_count: 2, status: 'waiting' },
+            { id: 'w1', queue_number: 1, customer_name: 'å±±ç”°', guest_count: 3, status: 'called' },
+            { id: 'w2', queue_number: 2, customer_name: 'é«˜æ©‹', guest_count: 2, status: 'waiting' },
         ],
         available_tables: [
             { id: 't1', table_number: 'T1', capacity: 4 },
@@ -352,9 +352,9 @@ function renderDemoDashboard() {
 
 function getStatusLabel(status) {
     const labels = {
-        'pending': '未確認',
-        'confirmed': '確認済',
-        'checked_in': 'チェックイン済'
+        'pending': 'æœªç¢ºèª',
+        'confirmed': 'ç¢ºèªæ¸ˆ',
+        'checked_in': 'ãƒã‚§ãƒƒã‚¯ã‚¤ãƒ³æ¸ˆ'
     };
     return labels[status] || status;
 }
@@ -399,7 +399,7 @@ async function submitWalkIn(event) {
         showResult({
             success: true,
             need_to_wait: true,
-            message: `${data.customer_name}様\n登録完了しました`,
+            message: `${data.customer_name}æ§˜\nç™»éŒ²å®Œäº†ã—ã¾ã—ãŸ`,
             queue_number: result.queue_number,
             estimated_wait_minutes: result.estimated_wait_minutes,
             waiting_ahead: result.waiting_ahead
@@ -412,7 +412,7 @@ async function submitWalkIn(event) {
 
     } catch (error) {
         console.error('Walk-in error:', error);
-        alert('登録に失敗しました。もう一度お試しください。');
+        alert('ç™»éŒ²ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ã‚‚ã†ä¸€åº¦ãŠè©¦ã—ãã ã•ã„ã€‚');
     }
 }
 
@@ -457,8 +457,8 @@ function showTableAssignModal(customerName, guestCount) {
     const availableTables = state.dashboardData?.available_tables || [];
 
     document.getElementById('assignInfo').innerHTML = `
-        <div class="assign-customer">${escapeHtml(customerName)}様</div>
-        <div class="assign-guests">${guestCount}名</div>
+        <div class="assign-customer">${escapeHtml(customerName)}æ§˜</div>
+        <div class="assign-guests">${guestCount}å</div>
     `;
 
     const suitable = availableTables.filter(t => t.capacity >= guestCount);
@@ -467,10 +467,10 @@ function showTableAssignModal(customerName, guestCount) {
         ? suitable.map(t => `
             <div class="table-option" onclick="assignTable('${t.id}')">
                 <div class="table-number">${escapeHtml(t.table_number)}</div>
-                <div class="table-capacity">${t.capacity}名席</div>
+                <div class="table-capacity">${t.capacity}åå¸­</div>
             </div>
         `).join('')
-        : '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">適切な空席がありません</p>';
+        : '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">é©åˆ‡ãªç©ºå¸­ãŒã‚ã‚Šã¾ã›ã‚“</p>';
 
     document.getElementById('assignTableModal').classList.add('active');
 }
@@ -508,7 +508,7 @@ async function assignTable(tableId) {
         showResult({
             success: true,
             table_assigned: true,
-            message: `${state.pendingAssignment.data.customer_name || state.pendingAssignment.data.guest_name}様`,
+            message: `${state.pendingAssignment.data.customer_name || state.pendingAssignment.data.guest_name}æ§˜`,
             table_number: result.table_number,
             table_zone: result.table_zone
         });
@@ -520,7 +520,7 @@ async function assignTable(tableId) {
 
     } catch (error) {
         console.error('Assign error:', error);
-        alert('テーブル割り当てに失敗しました');
+        alert('ãƒ†ãƒ¼ãƒ–ãƒ«å‰²ã‚Šå½“ã¦ã«å¤±æ•—ã—ã¾ã—ãŸ');
     }
 }
 
@@ -535,7 +535,7 @@ function quickAssignTable(tableId) {
 
     // Otherwise show who to assign
     if (state.dashboardData?.waiting_list.length > 0 || state.dashboardData?.upcoming_bookings.length > 0) {
-        alert('先に予約またはお待ちのお客様を選択してください');
+        alert('å…ˆã«äºˆç´„ã¾ãŸã¯ãŠå¾…ã¡ã®ãŠå®¢æ§˜ã‚’é¸æŠžã—ã¦ãã ã•ã„');
     }
 }
 
@@ -602,3 +602,5 @@ document.addEventListener('click', (e) => {
 // For demo/testing - expose functions
 window.simulateScan = simulateScan;
 window.loadDashboard = loadDashboard;
+
+

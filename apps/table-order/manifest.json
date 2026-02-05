@@ -1,7 +1,7 @@
 {
-    "name": "焼肉ジナン - テーブルオーダー",
+    "name": "焼肉ヅアン - テーブルオーダー",
     "short_name": "テーブル注文",
-    "description": "iPad table ordering system for Yakiniku Jinan",
+    "description": "iPad table ordering system for Yakiniku JIAN",
     "start_url": "/apps/table-order/",
     "display": "standalone",
     "orientation": "any",

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Bookings Router - CRUD operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[BookingResponse])
 async def list_bookings(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     booking_date: Optional[date] = None,
     status: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
@@ -60,7 +60,7 @@ async def list_bookings(
 
 @router.get("/today", response_model=List[BookingResponse])
 async def get_today_bookings(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     db: AsyncSession = Depends(get_db),
 ):
     """Get today's bookings"""
@@ -70,7 +70,7 @@ async def get_today_bookings(
 
 @router.get("/available-slots")
 async def get_available_slots(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     booking_date: date = Query(...),
     guests: int = Query(default=2),
     db: AsyncSession = Depends(get_db),
@@ -174,9 +174,9 @@ async def create_booking(
             raise HTTPException(
                 status_code=409,
                 detail={
-                    "message": "申し訳ございません、ご希望の時間は満席です。",
+                    "message": "ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ã€ã”å¸Œæœ›ã®æ™‚é–“ã¯æº€å¸­ã§ã™ã€‚",
                     "alternatives": alt_times,
-                    "suggestion": f"代わりに {', '.join(alt_times)} はいかがでしょうか？" if alt_times else None
+                    "suggestion": f"ä»£ã‚ã‚Šã« {', '.join(alt_times)} ã¯ã„ã‹ãŒã§ã—ã‚‡ã†ã‹ï¼Ÿ" if alt_times else None
                 }
             )
     else:
@@ -233,7 +233,7 @@ async def create_booking(
     # Send real-time notification to staff dashboard
     await notify_new_booking(
         branch_code=db_booking.branch_code,
-        guest_name=db_booking.guest_name or "ゲスト",
+        guest_name=db_booking.guest_name or "ã‚²ã‚¹ãƒˆ",
         booking_date=db_booking.date.isoformat(),
         booking_time=db_booking.time,
         guests=db_booking.guests,
@@ -341,3 +341,4 @@ async def delete_booking(
 
     await db.delete(booking)
     await db.commit()
+

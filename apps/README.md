@@ -76,7 +76,7 @@ cd apps/dashboard && python -m http.server 8081
 
 ### Connection
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/dashboard?branch=jinan');
+const ws = new WebSocket('ws://localhost:8000/ws/dashboard?branch=JIAN');
 ```
 
 ### Subscribe to channels

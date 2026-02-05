@@ -1,5 +1,5 @@
 """
-Yakiniku Jinan - Data Package
+Yakiniku.io Platform - Data Package
 Contains CSV seed data and seed scripts.
 
 Files:

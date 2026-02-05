@@ -1,4 +1,4 @@
-"""
+﻿"""
 Order Domain - Table Ordering System
 Team: table-order
 """
@@ -13,3 +13,4 @@ __all__ = [
     "OrderCreate", "OrderResponse", "OrderItemCreate",
     "router"
 ]
+

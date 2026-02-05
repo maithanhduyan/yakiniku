@@ -1,4 +1,4 @@
-# Backend Architecture - Yakiniku Jinan
+# Backend Architecture - Yakiniku.io Platform
 
 > **Core Philosophy**: Customer Insights là tài sản quan trọng nhất. Mọi interaction đều được capture để hiểu khách hàng.
 
@@ -238,7 +238,7 @@ functions = [
 ### System Prompt
 
 ```text
-Bạn là AI assistant cho nhà hàng Yakiniku Jinan.
+Bạn là AI assistant cho nền tảng Yakiniku.io.
 
 MỤC TIÊU:
 1. Hỗ trợ đặt bàn: date, time, guests, name, phone

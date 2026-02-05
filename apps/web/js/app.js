@@ -1,6 +1,6 @@
-/**
+﻿/**
  * ========================================
- * YAKINIKU JINAN - Main Application Script
+ * YAKINIKU JIAN - Main Application Script
  * Mobile-First Booking Experience
  * ========================================
  */
@@ -12,7 +12,7 @@
     // API CONFIGURATION
     // ============================================
     const API_BASE = 'http://127.0.0.1:8000/api';
-    const BRANCH_CODE = 'jinan';
+    const BRANCH_CODE = 'hirama';
 
     // ============================================
     // MOBILE MENU
@@ -97,7 +97,7 @@
         // Set month label
         const year = selectedMonth.getFullYear();
         const month = selectedMonth.getMonth();
-        monthLabel.textContent = `${year}年 ${month + 1}月`;
+        monthLabel.textContent = `${year}å¹´ ${month + 1}æœˆ`;
 
         // Get first day of month and total days
         const firstDay = new Date(year, month, 1).getDay();
@@ -121,7 +121,7 @@
             const cellDate = new Date(year, month, day);
             const dayOfWeek = cellDate.getDay();
 
-            // Tuesday is closed (火曜定休)
+            // Tuesday is closed (ç«æ›œå®šä¼‘)
             const isTuesday = dayOfWeek === 2;
             const isPast = cellDate < today;
 
@@ -212,7 +212,7 @@
                 if (btnStep2) btnStep2.disabled = true;
             }
 
-            console.log(`📅 Available slots for ${dateStr}:`, availableSlots);
+            console.log(`ðŸ“… Available slots for ${dateStr}:`, availableSlots);
 
         } catch (error) {
             console.error('Error fetching available slots:', error);
@@ -301,21 +301,21 @@
 
         // Validate required fields
         if (!bookingData.name || !bookingData.phone) {
-            alert('お名前と電話番号は必須です。');
+            alert('ãŠåå‰ã¨é›»è©±ç•ªå·ã¯å¿…é ˆã§ã™ã€‚');
             return;
         }
 
         // Validate phone format (basic Japanese phone)
         const phoneRegex = /^[\d\-+()]{10,15}$/;
         if (!phoneRegex.test(bookingData.phone.replace(/\s/g, ''))) {
-            alert('有効な電話番号を入力してください。');
+            alert('æœ‰åŠ¹ãªé›»è©±ç•ªå·ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚');
             return;
         }
 
         // Format date
         const dateObj = new Date(bookingData.date);
-        const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
-        const days = ['日', '月', '火', '水', '木', '金', '土'];
+        const dateStr = `${dateObj.getFullYear()}å¹´${dateObj.getMonth() + 1}æœˆ${dateObj.getDate()}æ—¥`;
+        const days = ['æ—¥', 'æœˆ', 'ç«', 'æ°´', 'æœ¨', 'é‡‘', 'åœŸ'];
         const dayStr = days[dateObj.getDay()];
 
         // Update confirmation display
@@ -327,7 +327,7 @@
 
         if (confirmDate) confirmDate.textContent = `${dateStr} (${dayStr})`;
         if (confirmTime) confirmTime.textContent = bookingData.time;
-        if (confirmGuests) confirmGuests.textContent = `${bookingData.guests}名様`;
+        if (confirmGuests) confirmGuests.textContent = `${bookingData.guests}åæ§˜`;
         if (confirmName) confirmName.textContent = bookingData.name;
         if (confirmPhone) confirmPhone.textContent = bookingData.phone;
 
@@ -338,10 +338,10 @@
     window.submitBooking = async function() {
         // Show loading state
         const submitBtn = document.querySelector('.booking-step[data-step="5"] .btn-booking:not(.btn-back)');
-        const originalText = submitBtn?.textContent || '予約を確定';
+        const originalText = submitBtn?.textContent || 'äºˆç´„ã‚’ç¢ºå®š';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = '送信中...';
+            submitBtn.textContent = 'é€ä¿¡ä¸­...';
         }
 
         // Prepare data for API
@@ -365,11 +365,11 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.detail || '予約に失敗しました');
+                throw new Error(error.detail || 'äºˆç´„ã«å¤±æ•—ã—ã¾ã—ãŸ');
             }
 
             const result = await response.json();
-            console.log('✅ Booking created:', result);
+            console.log('âœ… Booking created:', result);
 
             // Also identify/create customer for insights
             try {
@@ -401,8 +401,8 @@
             if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
 
         } catch (error) {
-            console.error('❌ Booking error:', error);
-            alert(`予約エラー: ${error.message}`);
+            console.error('âŒ Booking error:', error);
+            alert(`äºˆç´„ã‚¨ãƒ©ãƒ¼: ${error.message}`);
 
             // Reset button
             if (submitBtn) {
@@ -535,7 +535,7 @@
         handleHeaderScroll();
         initChatWidget();
 
-        console.log('🍖 Yakiniku Jinan - App Initialized');
+        console.log('ðŸ– Yakiniku JIAN - App Initialized');
     });
 
     // ============================================
@@ -560,10 +560,10 @@
         // Customer Data Store (simulating customer insights)
         const customerInsights = {
             // Example customer preferences (would come from backend in production)
-            '渡辺': { preferences: ['レバ刺し', '生肉'], note: 'レバ刺しがお好み。生肉系を好む。' },
-            '田中': { preferences: ['上タン塩', '厚切り'], note: 'タン塩が大好き。厚切りを好む。' },
-            '佐藤': { preferences: ['和牛ハラミ', '赤身'], note: '赤身肉を好む。脂身は控えめに。' },
-            '鈴木': { preferences: ['特選盛り', 'ホルモン'], note: 'ホルモン好き。辛いものもOK。' }
+            'æ¸¡è¾º': { preferences: ['ãƒ¬ãƒåˆºã—', 'ç”Ÿè‚‰'], note: 'ãƒ¬ãƒåˆºã—ãŒãŠå¥½ã¿ã€‚ç”Ÿè‚‰ç³»ã‚’å¥½ã‚€ã€‚' },
+            'ç”°ä¸­': { preferences: ['ä¸Šã‚¿ãƒ³å¡©', 'åŽšåˆ‡ã‚Š'], note: 'ã‚¿ãƒ³å¡©ãŒå¤§å¥½ãã€‚åŽšåˆ‡ã‚Šã‚’å¥½ã‚€ã€‚' },
+            'ä½è—¤': { preferences: ['å’Œç‰›ãƒãƒ©ãƒŸ', 'èµ¤èº«'], note: 'èµ¤èº«è‚‰ã‚’å¥½ã‚€ã€‚è„‚èº«ã¯æŽ§ãˆã‚ã«ã€‚' },
+            'éˆ´æœ¨': { preferences: ['ç‰¹é¸ç››ã‚Š', 'ãƒ›ãƒ«ãƒ¢ãƒ³'], note: 'ãƒ›ãƒ«ãƒ¢ãƒ³å¥½ãã€‚è¾›ã„ã‚‚ã®ã‚‚OKã€‚' }
         };
 
         let currentCustomer = localStorage.getItem('yakiniku_customer') || '';
@@ -608,11 +608,11 @@
                 const insight = findCustomerInsight(name);
                 if (insight) {
                     setTimeout(() => {
-                        addMessage(`${name}様、いつもありがとうございます！ ${insight.note}`, 'incoming');
+                        addMessage(`${name}æ§˜ã€ã„ã¤ã‚‚ã‚ã‚ŠãŒã¨ã†ã”ã–ã„ã¾ã™ï¼ ${insight.note}`, 'incoming');
                     }, 500);
                 } else {
                     setTimeout(() => {
-                        addMessage(`${name}様、ありがとうございます！本日はどのようなお肉をお探しですか？`, 'incoming');
+                        addMessage(`${name}æ§˜ã€ã‚ã‚ŠãŒã¨ã†ã”ã–ã„ã¾ã™ï¼æœ¬æ—¥ã¯ã©ã®ã‚ˆã†ãªãŠè‚‰ã‚’ãŠæŽ¢ã—ã§ã™ã‹ï¼Ÿ`, 'incoming');
                     }, 500);
                 }
             }
@@ -632,8 +632,8 @@
         function showWelcomeMessage() {
             chatMessages.innerHTML = '';
             const welcomeText = currentCustomer
-                ? `${currentCustomer}様、こんにちは！焼肉ジナンへようこそ。特別なご注文やご質問がございましたらお気軽にどうぞ。`
-                : 'こんにちは！焼肉ジナンへようこそ。🥩\n\n特別なご注文やご質問がございましたらお気軽にどうぞ。\n\nまずはお名前を教えていただけますか？';
+                ? `${currentCustomer}æ§˜ã€ã“ã‚“ã«ã¡ã¯ï¼Yakiniku.io ã¸ã‚ˆã†ã“ãã€‚ç‰¹åˆ¥ãªã”æ³¨æ–‡ã‚„ã”è³ªå•ãŒã”ã–ã„ã¾ã—ãŸã‚‰ãŠæ°—è»½ã«ã©ã†ãžã€‚`
+                : 'ã“ã‚“ã«ã¡ã¯ï¼Yakiniku.io ã¸ã‚ˆã†ã“ãã€‚ðŸ¥©\n\nç‰¹åˆ¥ãªã”æ³¨æ–‡ã‚„ã”è³ªå•ãŒã”ã–ã„ã¾ã—ãŸã‚‰ãŠæ°—è»½ã«ã©ã†ãžã€‚\n\nã¾ãšã¯ãŠåå‰ã‚’æ•™ãˆã¦ã„ãŸã ã‘ã¾ã™ã‹ï¼Ÿ';
 
             addMessage(welcomeText, 'incoming');
 
@@ -642,7 +642,7 @@
                 const insight = findCustomerInsight(currentCustomer);
                 if (insight) {
                     setTimeout(() => {
-                        addMessage(`前回は${insight.preferences.join('、')}をご注文いただきました。本日もいかがですか？`, 'incoming');
+                        addMessage(`å‰å›žã¯${insight.preferences.join('ã€')}ã‚’ã”æ³¨æ–‡ã„ãŸã ãã¾ã—ãŸã€‚æœ¬æ—¥ã‚‚ã„ã‹ãŒã§ã™ã‹ï¼Ÿ`, 'incoming');
                     }, 1000);
                 }
             }
@@ -730,13 +730,13 @@
             const lowerMessage = userMessage.toLowerCase();
 
             const responses = {
-                'おすすめ': `本日のおすすめは：\n\n🥇 特選黒毛和牛カルビ ¥2,800\n🥈 厚切り上タン塩 ¥2,200\n🥉 和牛上ハラミ ¥1,800\n\nどれも新鮮で絶品です！`,
-                'レバ刺し': '申し訳ございませんが、現在レバ刺しは法律により提供できません。代わりに低温調理のレバーはいかがですか？',
-                'アレルギー': 'アレルギー対応可能です。ご来店時にスタッフにお申し付けください。',
-                '記念日': '記念日のご予定ですね！🎉 特別デザートプレート・お花のご用意など承ります。',
-                '予約': 'ご予約はこのページの「ご予約」セクションから、またはお電話（044-789-8413）で承っております。',
-                '営業': '営業時間: 17:00 - 23:00（L.O. 22:30）\n定休日: 火曜日',
-                'ホルモン': 'ホルモンメニュー：\n・上ミノ ¥980\n・シマチョウ ¥880\n・ハツ ¥780',
+                'ãŠã™ã™ã‚': `æœ¬æ—¥ã®ãŠã™ã™ã‚ã¯ï¼š\n\nðŸ¥‡ ç‰¹é¸é»’æ¯›å’Œç‰›ã‚«ãƒ«ãƒ“ Â¥2,800\nðŸ¥ˆ åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡© Â¥2,200\nðŸ¥‰ å’Œç‰›ä¸Šãƒãƒ©ãƒŸ Â¥1,800\n\nã©ã‚Œã‚‚æ–°é®®ã§çµ¶å“ã§ã™ï¼`,
+                'ãƒ¬ãƒåˆºã—': 'ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ãŒã€ç¾åœ¨ãƒ¬ãƒåˆºã—ã¯æ³•å¾‹ã«ã‚ˆã‚Šæä¾›ã§ãã¾ã›ã‚“ã€‚ä»£ã‚ã‚Šã«ä½Žæ¸©èª¿ç†ã®ãƒ¬ãƒãƒ¼ã¯ã„ã‹ãŒã§ã™ã‹ï¼Ÿ',
+                'ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼': 'ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼å¯¾å¿œå¯èƒ½ã§ã™ã€‚ã”æ¥åº—æ™‚ã«ã‚¹ã‚¿ãƒƒãƒ•ã«ãŠç”³ã—ä»˜ã‘ãã ã•ã„ã€‚',
+                'è¨˜å¿µæ—¥': 'è¨˜å¿µæ—¥ã®ã”äºˆå®šã§ã™ã­ï¼ðŸŽ‰ ç‰¹åˆ¥ãƒ‡ã‚¶ãƒ¼ãƒˆãƒ—ãƒ¬ãƒ¼ãƒˆãƒ»ãŠèŠ±ã®ã”ç”¨æ„ãªã©æ‰¿ã‚Šã¾ã™ã€‚',
+                'äºˆç´„': 'ã”äºˆç´„ã¯ã“ã®ãƒšãƒ¼ã‚¸ã®ã€Œã”äºˆç´„ã€ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã‹ã‚‰ã€ã¾ãŸã¯ãŠé›»è©±ï¼ˆ044-789-8413ï¼‰ã§æ‰¿ã£ã¦ãŠã‚Šã¾ã™ã€‚',
+                'å–¶æ¥­': 'å–¶æ¥­æ™‚é–“: 17:00 - 23:00ï¼ˆL.O. 22:30ï¼‰\nå®šä¼‘æ—¥: ç«æ›œæ—¥',
+                'ãƒ›ãƒ«ãƒ¢ãƒ³': 'ãƒ›ãƒ«ãƒ¢ãƒ³ãƒ¡ãƒ‹ãƒ¥ãƒ¼ï¼š\nãƒ»ä¸ŠãƒŸãƒŽ Â¥980\nãƒ»ã‚·ãƒžãƒãƒ§ã‚¦ Â¥880\nãƒ»ãƒãƒ„ Â¥780',
             };
 
             for (const [keyword, response] of Object.entries(responses)) {
@@ -745,7 +745,7 @@
                 }
             }
 
-            return `ありがとうございます！\n\nご質問を承りました。詳しくはお電話（044-789-8413）でお問い合わせください。`;
+            return `ã‚ã‚ŠãŒã¨ã†ã”ã–ã„ã¾ã™ï¼\n\nã”è³ªå•ã‚’æ‰¿ã‚Šã¾ã—ãŸã€‚è©³ã—ãã¯ãŠé›»è©±ï¼ˆ044-789-8413ï¼‰ã§ãŠå•ã„åˆã‚ã›ãã ã•ã„ã€‚`;
         }
 
         // Send message (async for AI API)
@@ -768,7 +768,7 @@
                 addMessage(response, 'incoming');
             } catch (error) {
                 hideTyping();
-                addMessage('申し訳ございません。接続エラーが発生しました。お電話（044-789-8413）でお問い合わせください。', 'incoming');
+                addMessage('ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ã€‚æŽ¥ç¶šã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸã€‚ãŠé›»è©±ï¼ˆ044-789-8413ï¼‰ã§ãŠå•ã„åˆã‚ã›ãã ã•ã„ã€‚', 'incoming');
             }
         }
 
@@ -812,8 +812,8 @@
         }
 
         // Log for debugging
-        console.log('💬 Chat Widget Initialized');
-        console.log('📊 Customer Insights:', customerInsights);
+        console.log('ðŸ’¬ Chat Widget Initialized');
+        console.log('ðŸ“Š Customer Insights:', customerInsights);
     }
 
 })();

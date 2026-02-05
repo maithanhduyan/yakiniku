@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Table Order App - JavaScript
- * iPad table ordering system for Yakiniku Jinan
+ * iPad table ordering system for Yakiniku JIAN
  */
 
 // ============ Configuration ============
 
 const CONFIG = {
     API_BASE: 'http://localhost:8000/api',
-    BRANCH_CODE: 'jinan',
+    BRANCH_CODE: 'hirama',
     WS_URL: 'ws://localhost:8000/api/notifications/ws',
 };
 
@@ -67,7 +67,7 @@ function setupTableInfo() {
     state.guestCount = guestCount;
 
     document.getElementById('tableNumber').textContent = tableNumber;
-    document.getElementById('guestCount').textContent = `${guestCount}名様`;
+    document.getElementById('guestCount').textContent = `${guestCount}åæ§˜`;
 }
 
 // ============ API Functions ============
@@ -98,54 +98,54 @@ function loadDemoMenu() {
     state.categories = [
         {
             category: 'meat',
-            category_label: '肉類',
-            icon: '🥩',
+            category_label: 'è‚‰é¡ž',
+            icon: 'ðŸ¥©',
             items: [
-                { id: '1', name: '和牛上ハラミ', description: '口の中でほどける柔らかさと濃厚な味わい', price: 1800, image_url: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400', is_popular: true },
-                { id: '2', name: '厚切り上タン塩', description: '贅沢な厚切り。歯ごたえと肉汁が溢れます', price: 2200, image_url: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400', is_popular: true },
-                { id: '3', name: 'カルビ', description: '定番の人気メニュー', price: 1500, image_url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400' },
-                { id: '4', name: 'ロース', description: '赤身の旨味が楽しめる', price: 1600, image_url: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400' },
-                { id: '5', name: 'ホルモン盛り合わせ', description: '新鮮なホルモンをたっぷり', price: 1400, image_url: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400' },
-                { id: '6', name: '特選盛り合わせ', description: '本日のおすすめ希少部位を贅沢に', price: 4500, image_url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400', is_popular: true },
+                { id: '1', name: 'å’Œç‰›ä¸Šãƒãƒ©ãƒŸ', description: 'å£ã®ä¸­ã§ã»ã©ã‘ã‚‹æŸ”ã‚‰ã‹ã•ã¨æ¿ƒåŽšãªå‘³ã‚ã„', price: 1800, image_url: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400', is_popular: true },
+                { id: '2', name: 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©', description: 'è´…æ²¢ãªåŽšåˆ‡ã‚Šã€‚æ­¯ã”ãŸãˆã¨è‚‰æ±ãŒæº¢ã‚Œã¾ã™', price: 2200, image_url: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400', is_popular: true },
+                { id: '3', name: 'ã‚«ãƒ«ãƒ“', description: 'å®šç•ªã®äººæ°—ãƒ¡ãƒ‹ãƒ¥ãƒ¼', price: 1500, image_url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400' },
+                { id: '4', name: 'ãƒ­ãƒ¼ã‚¹', description: 'èµ¤èº«ã®æ—¨å‘³ãŒæ¥½ã—ã‚ã‚‹', price: 1600, image_url: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400' },
+                { id: '5', name: 'ãƒ›ãƒ«ãƒ¢ãƒ³ç››ã‚Šåˆã‚ã›', description: 'æ–°é®®ãªãƒ›ãƒ«ãƒ¢ãƒ³ã‚’ãŸã£ã·ã‚Š', price: 1400, image_url: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400' },
+                { id: '6', name: 'ç‰¹é¸ç››ã‚Šåˆã‚ã›', description: 'æœ¬æ—¥ã®ãŠã™ã™ã‚å¸Œå°‘éƒ¨ä½ã‚’è´…æ²¢ã«', price: 4500, image_url: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400', is_popular: true },
             ]
         },
         {
             category: 'drinks',
-            category_label: '飲物',
-            icon: '🍺',
+            category_label: 'é£²ç‰©',
+            icon: 'ðŸº',
             items: [
-                { id: '10', name: '生ビール', description: 'キンキンに冷えた生ビール', price: 600, image_url: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400' },
-                { id: '11', name: 'ハイボール', description: 'すっきり爽やか', price: 500, image_url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400' },
-                { id: '12', name: 'レモンサワー', description: '自家製レモンサワー', price: 500, image_url: 'https://images.unsplash.com/photo-1560508180-03f285f67c1a?w=400' },
-                { id: '13', name: 'ウーロン茶', description: 'ソフトドリンク', price: 300, image_url: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400' },
+                { id: '10', name: 'ç”Ÿãƒ“ãƒ¼ãƒ«', description: 'ã‚­ãƒ³ã‚­ãƒ³ã«å†·ãˆãŸç”Ÿãƒ“ãƒ¼ãƒ«', price: 600, image_url: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400' },
+                { id: '11', name: 'ãƒã‚¤ãƒœãƒ¼ãƒ«', description: 'ã™ã£ãã‚Šçˆ½ã‚„ã‹', price: 500, image_url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400' },
+                { id: '12', name: 'ãƒ¬ãƒ¢ãƒ³ã‚µãƒ¯ãƒ¼', description: 'è‡ªå®¶è£½ãƒ¬ãƒ¢ãƒ³ã‚µãƒ¯ãƒ¼', price: 500, image_url: 'https://images.unsplash.com/photo-1560508180-03f285f67c1a?w=400' },
+                { id: '13', name: 'ã‚¦ãƒ¼ãƒ­ãƒ³èŒ¶', description: 'ã‚½ãƒ•ãƒˆãƒ‰ãƒªãƒ³ã‚¯', price: 300, image_url: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400' },
             ]
         },
         {
             category: 'salad',
-            category_label: 'サラダ',
-            icon: '🥗',
+            category_label: 'ã‚µãƒ©ãƒ€',
+            icon: 'ðŸ¥—',
             items: [
-                { id: '20', name: 'チョレギサラダ', description: '韓国風ピリ辛サラダ', price: 600, image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400' },
-                { id: '21', name: 'シーザーサラダ', description: 'パルメザンチーズたっぷり', price: 700, image_url: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400' },
+                { id: '20', name: 'ãƒãƒ§ãƒ¬ã‚®ã‚µãƒ©ãƒ€', description: 'éŸ“å›½é¢¨ãƒ”ãƒªè¾›ã‚µãƒ©ãƒ€', price: 600, image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400' },
+                { id: '21', name: 'ã‚·ãƒ¼ã‚¶ãƒ¼ã‚µãƒ©ãƒ€', description: 'ãƒ‘ãƒ«ãƒ¡ã‚¶ãƒ³ãƒãƒ¼ã‚ºãŸã£ã·ã‚Š', price: 700, image_url: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400' },
             ]
         },
         {
             category: 'rice',
-            category_label: 'ご飯・麺',
-            icon: '🍚',
+            category_label: 'ã”é£¯ãƒ»éºº',
+            icon: 'ðŸš',
             items: [
-                { id: '30', name: 'ライス', description: '国産コシヒカリ', price: 200, image_url: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400' },
-                { id: '31', name: 'ビビンバ', description: '石焼ビビンバ', price: 1200, image_url: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400' },
-                { id: '32', name: '冷麺', description: '韓国冷麺', price: 900, image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400' },
+                { id: '30', name: 'ãƒ©ã‚¤ã‚¹', description: 'å›½ç”£ã‚³ã‚·ãƒ’ã‚«ãƒª', price: 200, image_url: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400' },
+                { id: '31', name: 'ãƒ“ãƒ“ãƒ³ãƒ', description: 'çŸ³ç„¼ãƒ“ãƒ“ãƒ³ãƒ', price: 1200, image_url: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400' },
+                { id: '32', name: 'å†·éºº', description: 'éŸ“å›½å†·éºº', price: 900, image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400' },
             ]
         },
         {
             category: 'dessert',
-            category_label: 'デザート',
-            icon: '🍨',
+            category_label: 'ãƒ‡ã‚¶ãƒ¼ãƒˆ',
+            icon: 'ðŸ¨',
             items: [
-                { id: '40', name: 'バニラアイス', description: '濃厚バニラ', price: 400, image_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400' },
-                { id: '41', name: '杏仁豆腐', description: '手作り杏仁豆腐', price: 450, image_url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400' },
+                { id: '40', name: 'ãƒãƒ‹ãƒ©ã‚¢ã‚¤ã‚¹', description: 'æ¿ƒåŽšãƒãƒ‹ãƒ©', price: 400, image_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400' },
+                { id: '41', name: 'æä»è±†è…', description: 'æ‰‹ä½œã‚Šæä»è±†è…', price: 450, image_url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400' },
             ]
         }
     ];
@@ -159,7 +159,7 @@ async function submitOrder() {
 
     const btnOrder = document.getElementById('btnOrder');
     btnOrder.disabled = true;
-    btnOrder.innerHTML = '<span class="loading-spinner"></span> 送信中...';
+    btnOrder.innerHTML = '<span class="loading-spinner"></span> é€ä¿¡ä¸­...';
 
     try {
         const orderData = {
@@ -194,17 +194,17 @@ async function submitOrder() {
         renderCartItems();
 
         // Show success
-        showNotification('ご注文を承りました！', 'success');
+        showNotification('ã”æ³¨æ–‡ã‚’æ‰¿ã‚Šã¾ã—ãŸï¼', 'success');
 
         // Add to order history
         state.orderHistory.push(result);
 
     } catch (error) {
         console.error('Order error:', error);
-        showNotification('注文に失敗しました。もう一度お試しください。', 'error');
+        showNotification('æ³¨æ–‡ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ã‚‚ã†ä¸€åº¦ãŠè©¦ã—ãã ã•ã„ã€‚', 'error');
     } finally {
         btnOrder.disabled = false;
-        btnOrder.textContent = '注文を確定する';
+        btnOrder.textContent = 'æ³¨æ–‡ã‚’ç¢ºå®šã™ã‚‹';
     }
 }
 
@@ -223,16 +223,16 @@ async function callStaff(callType) {
         });
 
         const callLabels = {
-            'assistance': 'スタッフを呼びました',
-            'water': 'お水をお持ちします',
-            'bill': 'お会計をお待ちください'
+            'assistance': 'ã‚¹ã‚¿ãƒƒãƒ•ã‚’å‘¼ã³ã¾ã—ãŸ',
+            'water': 'ãŠæ°´ã‚’ãŠæŒã¡ã—ã¾ã™',
+            'bill': 'ãŠä¼šè¨ˆã‚’ãŠå¾…ã¡ãã ã•ã„'
         };
 
-        showNotification(callLabels[callType] || 'スタッフを呼びました', 'success');
+        showNotification(callLabels[callType] || 'ã‚¹ã‚¿ãƒƒãƒ•ã‚’å‘¼ã³ã¾ã—ãŸ', 'success');
 
     } catch (error) {
         console.error('Call staff error:', error);
-        showNotification('スタッフを呼びました', 'success'); // Show success anyway for demo
+        showNotification('ã‚¹ã‚¿ãƒƒãƒ•ã‚’å‘¼ã³ã¾ã—ãŸ', 'success'); // Show success anyway for demo
     }
 }
 
@@ -290,10 +290,10 @@ function updateConnectionStatus(isOnline) {
     const statusEl = document.getElementById('connectionStatus');
     if (statusEl) {
         if (isOnline) {
-            statusEl.innerHTML = '<span class="status-dot online"></span> オンライン';
+            statusEl.innerHTML = '<span class="status-dot online"></span> ã‚ªãƒ³ãƒ©ã‚¤ãƒ³';
             statusEl.className = 'connection-status online';
         } else {
-            statusEl.innerHTML = '<span class="status-dot offline"></span> オフライン';
+            statusEl.innerHTML = '<span class="status-dot offline"></span> ã‚ªãƒ•ãƒ©ã‚¤ãƒ³';
             statusEl.className = 'connection-status offline';
         }
     }
@@ -308,8 +308,8 @@ function showOfflineNotice() {
     notice.id = 'offlineNotice';
     notice.className = 'offline-notice';
     notice.innerHTML = `
-        <span>⚠️ リアルタイム通知は現在利用できません。ご注文は通常通りお受けできます。</span>
-        <button onclick="this.parentElement.remove()">×</button>
+        <span>âš ï¸ ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ é€šçŸ¥ã¯ç¾åœ¨åˆ©ç”¨ã§ãã¾ã›ã‚“ã€‚ã”æ³¨æ–‡ã¯é€šå¸¸é€šã‚ŠãŠå—ã‘ã§ãã¾ã™ã€‚</span>
+        <button onclick="this.parentElement.remove()">Ã—</button>
     `;
     document.body.appendChild(notice);
 }
@@ -318,7 +318,7 @@ function handleWebSocketMessage(data) {
     switch (data.type) {
         case 'order_status_changed':
             if (data.new_status === 'ready') {
-                showNotification(`注文 #${data.order_number} が完成しました！`, 'success');
+                showNotification(`æ³¨æ–‡ #${data.order_number} ãŒå®Œæˆã—ã¾ã—ãŸï¼`, 'success');
             }
             break;
         case 'menu_updated':
@@ -371,7 +371,7 @@ function renderMenuItems(items) {
     const container = document.getElementById('menuGrid');
 
     if (!items || items.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted);">メニューがありません</p>';
+        container.innerHTML = '<p style="color: var(--text-muted);">ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãŒã‚ã‚Šã¾ã›ã‚“</p>';
         return;
     }
 
@@ -389,10 +389,10 @@ function renderMenuItems(items) {
                     <h3 class="menu-card-name">${item.name}</h3>
                     <p class="menu-card-description">${item.description || ''}</p>
                     <div class="menu-card-footer">
-                        <span class="menu-card-price">¥${item.price.toLocaleString()}</span>
+                        <span class="menu-card-price">Â¥${item.price.toLocaleString()}</span>
                         <div class="menu-card-badges">
-                            ${item.is_popular ? '<span class="badge popular">人気</span>' : ''}
-                            ${item.is_spicy ? '<span class="badge spicy">辛</span>' : ''}
+                            ${item.is_popular ? '<span class="badge popular">äººæ°—</span>' : ''}
+                            ${item.is_spicy ? '<span class="badge spicy">è¾›</span>' : ''}
                         </div>
                     </div>
                 </div>
@@ -405,7 +405,7 @@ function renderCartItems() {
     const container = document.getElementById('cartItems');
 
     if (state.cart.length === 0) {
-        container.innerHTML = '<div class="cart-empty">カートは空です</div>';
+        container.innerHTML = '<div class="cart-empty">ã‚«ãƒ¼ãƒˆã¯ç©ºã§ã™</div>';
         document.getElementById('btnOrder').disabled = true;
         return;
     }
@@ -416,21 +416,21 @@ function renderCartItems() {
                  onerror="this.src='https://via.placeholder.com/60?text=No'">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">¥${item.price.toLocaleString()}</div>
+                <div class="cart-item-price">Â¥${item.price.toLocaleString()}</div>
                 ${item.notes ? `<div style="font-size: 12px; color: var(--text-muted);">${item.notes}</div>` : ''}
                 <div class="cart-item-controls">
-                    <button class="qty-btn" onclick="updateCartQty(${index}, -1)">−</button>
+                    <button class="qty-btn" onclick="updateCartQty(${index}, -1)">âˆ’</button>
                     <span class="qty-value">${item.quantity}</span>
                     <button class="qty-btn" onclick="updateCartQty(${index}, 1)">+</button>
                 </div>
             </div>
-            <button class="cart-item-delete" onclick="removeFromCart(${index})">🗑</button>
+            <button class="cart-item-delete" onclick="removeFromCart(${index})">ðŸ—‘</button>
         </div>
     `).join('');
 
     // Update total
     const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    document.getElementById('cartTotal').textContent = `¥${total.toLocaleString()}`;
+    document.getElementById('cartTotal').textContent = `Â¥${total.toLocaleString()}`;
     document.getElementById('btnOrder').disabled = false;
 }
 
@@ -544,7 +544,7 @@ function openItemModal(itemId) {
     document.getElementById('modalImage').src = getImageUrl(item.image_url);
     document.getElementById('modalTitle').textContent = item.name;
     document.getElementById('modalDescription').textContent = item.description || '';
-    document.getElementById('modalPrice').textContent = `¥${item.price.toLocaleString()}`;
+    document.getElementById('modalPrice').textContent = `Â¥${item.price.toLocaleString()}`;
     document.getElementById('modalQty').textContent = '1';
     document.getElementById('modalNotes').value = '';
 
@@ -568,7 +568,7 @@ function addToCartFromModal() {
     addToCart(state.currentItem, state.modalQty, notes);
 
     closeItemModal();
-    showNotification(`${state.currentItem.name} をカートに追加しました`, 'success');
+    showNotification(`${state.currentItem.name} ã‚’ã‚«ãƒ¼ãƒˆã«è¿½åŠ ã—ã¾ã—ãŸ`, 'success');
 }
 
 // ============ Notifications ============
@@ -578,7 +578,7 @@ function showNotification(message, type = 'success') {
     const icon = document.getElementById('notificationIcon');
     const msg = document.getElementById('notificationMessage');
 
-    icon.textContent = type === 'success' ? '✓' : '✕';
+    icon.textContent = type === 'success' ? 'âœ“' : 'âœ•';
     msg.textContent = message;
 
     toast.className = 'notification-toast ' + type;

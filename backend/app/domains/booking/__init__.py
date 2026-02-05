@@ -1,4 +1,4 @@
-"""
+﻿"""
 Booking Domain - Web/Customer Booking System
 Team: web
 """
@@ -13,3 +13,4 @@ __all__ = [
     "BookingCreate", "BookingResponse", "BookingUpdate",
     "router"
 ]
+

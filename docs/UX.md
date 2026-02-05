@@ -1,4 +1,4 @@
-# Customer Experience Workflow - 焼肉ジナン
+# Customer Experience Workflow - Yakiniku.io Platform
 
 ## Tổng quan
 
@@ -67,7 +67,7 @@ User click date
 bookingData.date = selectedDate
     │
     ▼
-API: GET /api/bookings/available-slots?branch_code=jinan&date=2026-02-05
+API: GET /api/bookings/available-slots?branch_code=JIAN&date=2026-02-05
     │
     ▼
 Cache available time slots for Step 2
@@ -209,7 +209,7 @@ POST /api/bookings
   guest_phone: "090-1111-2222",
   guest_email: "hanako@test.com",
   note: null,
-  branch_code: "jinan"
+  branch_code: "JIAN"
 }
     │
     ▼
@@ -278,11 +278,11 @@ Go to Success Step
 
 ```
 ┌─────────────────────────────────────┐
-│ 💬 焼肉ジナン                    ✕  │
+│ 💬 Yakiniku.io                   ✕  │
 ├─────────────────────────────────────┤
 │                                     │
 │  ┌─────────────────────────────┐    │
-│  │ こんにちは！焼肉ジナンへ     │    │
+│  │ こんにちは！Yakiniku.ioへ   │    │
 │  │ ようこそ。🥩                │    │
 │  │                       15:30 │    │
 │  └─────────────────────────────┘    │

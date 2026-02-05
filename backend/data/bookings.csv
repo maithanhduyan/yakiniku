@@ -1,14 +1,14 @@
 id,branch_code,global_customer_id,table_id,guest_name,phone,email,date,time,guests,duration_minutes,status,note,source,special_requests,created_at
-bk-001,jinan,cust-001,table-jinan-01,佐々木 美咲,090-2000-0001,sasaki.misaki@email.jp,2025-06-20,19:00:00,3,120,confirmed,厚切りタン塩希望,web,,2025-06-18 10:30:00
-bk-002,jinan,cust-004,table-jinan-09,井上 大輔,090-2000-0004,inoue.daisuke@email.jp,2025-06-20,19:30:00,6,150,confirmed,接待利用。VIP対応お願いします,phone,シャンパン用意,2025-06-17 14:00:00
-bk-003,jinan,cust-006,table-jinan-05,清水 翔太,090-2000-0006,shimizu.shota@email.jp,2025-06-20,18:30:00,2,120,confirmed,カウンター席希望,web,,2025-06-19 09:00:00
-bk-004,jinan,cust-008,table-jinan-08,森田 一郎,090-2000-0008,morita.ichiro@email.jp,2025-06-21,19:00:00,4,120,confirmed,記念日ケーキ持ち込み,web,赤ワイン準備,2025-06-15 16:30:00
-bk-005,jinan,cust-010,table-jinan-09,藤田 太郎,090-2000-0010,fujita.taro@email.jp,2025-06-21,18:00:00,10,180,confirmed,宴会予約。飲み放題プラン,phone,,2025-06-10 11:00:00
-bk-006,jinan,cust-014,table-jinan-08,長谷川 誠,090-2000-0014,hasegawa.makoto@email.jp,2025-06-22,19:30:00,5,150,confirmed,会社接待,web,上質な部位でコース,2025-06-20 08:00:00
-bk-007,jinan,cust-018,table-jinan-09,村上 浩二,090-2000-0018,murakami.koji@email.jp,2025-06-22,19:00:00,2,120,confirmed,常連様,phone,いつものコース,2025-06-21 10:00:00
-bk-008,jinan,cust-022,table-jinan-01,石田 陽子,090-2000-0022,ishida.yoko@email.jp,2025-06-23,18:00:00,4,120,pending,誕生日サプライズ,web,ケーキ持ち込みOK済,2025-06-21 15:00:00
-bk-009,jinan,cust-026,table-jinan-08,中山 愛,090-2000-0026,nakayama.ai@email.jp,2025-06-23,19:30:00,2,120,confirmed,デート利用,chat,ロマンチックな席で,2025-06-20 20:00:00
-bk-010,jinan,cust-030,table-jinan-09,西村 健,090-2000-0030,nishimura.ken@email.jp,2025-06-24,19:00:00,12,180,confirmed,ワイン会,phone,ワイン6本持ち込み,2025-06-15 09:00:00
+bk-001,JIAN,cust-001,table-JIAN-01,佐々木 美咲,090-2000-0001,sasaki.misaki@email.jp,2025-06-20,19:00:00,3,120,confirmed,厚切りタン塩希望,web,,2025-06-18 10:30:00
+bk-002,JIAN,cust-004,table-JIAN-09,井上 大輔,090-2000-0004,inoue.daisuke@email.jp,2025-06-20,19:30:00,6,150,confirmed,接待利用。VIP対応お願いします,phone,シャンパン用意,2025-06-17 14:00:00
+bk-003,JIAN,cust-006,table-JIAN-05,清水 翔太,090-2000-0006,shimizu.shota@email.jp,2025-06-20,18:30:00,2,120,confirmed,カウンター席希望,web,,2025-06-19 09:00:00
+bk-004,JIAN,cust-008,table-JIAN-08,森田 一郎,090-2000-0008,morita.ichiro@email.jp,2025-06-21,19:00:00,4,120,confirmed,記念日ケーキ持ち込み,web,赤ワイン準備,2025-06-15 16:30:00
+bk-005,JIAN,cust-010,table-JIAN-09,藤田 太郎,090-2000-0010,fujita.taro@email.jp,2025-06-21,18:00:00,10,180,confirmed,宴会予約。飲み放題プラン,phone,,2025-06-10 11:00:00
+bk-006,JIAN,cust-014,table-JIAN-08,長谷川 誠,090-2000-0014,hasegawa.makoto@email.jp,2025-06-22,19:30:00,5,150,confirmed,会社接待,web,上質な部位でコース,2025-06-20 08:00:00
+bk-007,JIAN,cust-018,table-JIAN-09,村上 浩二,090-2000-0018,murakami.koji@email.jp,2025-06-22,19:00:00,2,120,confirmed,常連様,phone,いつものコース,2025-06-21 10:00:00
+bk-008,JIAN,cust-022,table-JIAN-01,石田 陽子,090-2000-0022,ishida.yoko@email.jp,2025-06-23,18:00:00,4,120,pending,誕生日サプライズ,web,ケーキ持ち込みOK済,2025-06-21 15:00:00
+bk-009,JIAN,cust-026,table-JIAN-08,中山 愛,090-2000-0026,nakayama.ai@email.jp,2025-06-23,19:30:00,2,120,confirmed,デート利用,chat,ロマンチックな席で,2025-06-20 20:00:00
+bk-010,JIAN,cust-030,table-JIAN-09,西村 健,090-2000-0030,nishimura.ken@email.jp,2025-06-24,19:00:00,12,180,confirmed,ワイン会,phone,ワイン6本持ち込み,2025-06-15 09:00:00
 bk-011,shinjuku,cust-002,table-shinjuku-10,木村 健太,090-2000-0002,kimura.kenta@email.jp,2025-06-20,18:30:00,4,120,confirmed,子供連れ。個室希望,web,子供椅子必要,2025-06-18 14:00:00
 bk-012,shinjuku,cust-012,table-shinjuku-01,後藤 康平,090-2000-0012,goto.kohei@email.jp,2025-06-20,19:00:00,2,120,confirmed,デート,web,窓際席希望,2025-06-19 11:00:00
 bk-013,shinjuku,cust-017,table-shinjuku-03,藤井 美穂,090-2000-0017,fujii.miho@email.jp,2025-06-21,20:00:00,4,120,confirmed,写真撮影OK確認済,web,,2025-06-18 16:00:00
@@ -21,6 +21,6 @@ bk-019,shinagawa,cust-032,table-shinagawa-03,アスリート様,090-2000-0032,at
 bk-020,shinagawa,cust-037,table-shinagawa-07,ファミリー様,090-2000-0037,family@email.jp,2025-06-21,17:30:00,4,120,confirmed,赤ちゃん連れ,phone,ベビーカーあり,2025-06-19 16:00:00
 bk-021,yokohama,cust-040,table-yokohama-01,年末常連様,090-2000-0040,regular@email.jp,2025-06-20,19:00:00,4,120,confirmed,窓際で海を見ながら,web,,2025-06-17 11:00:00
 bk-022,yokohama,cust-050,table-yokohama-09,VIP様,090-2000-0050,vip@email.jp,2025-06-21,19:30:00,8,150,confirmed,特上盛り合わせ希望,phone,VIP対応,2025-06-15 14:00:00
-bk-023,jinan,,table-jinan-02,山田 太郎,090-9999-0001,,2025-06-20,20:00:00,4,120,confirmed,新規のお客様,walk_in,,2025-06-20 19:45:00
-bk-024,jinan,,table-jinan-03,田中 花子,090-9999-0002,,2025-06-21,18:30:00,2,120,cancelled,キャンセル,web,,2025-06-19 12:00:00
+bk-023,JIAN,,table-JIAN-02,山田 太郎,090-9999-0001,,2025-06-20,20:00:00,4,120,confirmed,新規のお客様,walk_in,,2025-06-20 19:45:00
+bk-024,JIAN,,table-JIAN-03,田中 花子,090-9999-0002,,2025-06-21,18:30:00,2,120,cancelled,キャンセル,web,,2025-06-19 12:00:00
 bk-025,shinjuku,,table-shinjuku-04,新規様,090-9999-0003,,2025-06-22,19:00:00,3,120,pending,確認待ち,web,,2025-06-21 20:00:00

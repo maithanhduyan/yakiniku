@@ -1,6 +1,6 @@
-# Yakiniku Jinan - Restaurant Booking System
+# Yakiniku.io - Restaurant Management Platform
 [![Deploy static content to Pages](https://github.com/maithanhduyan/yakiniku/actions/workflows/static.yml/badge.svg)](https://github.com/maithanhduyan/yakiniku/actions/workflows/static.yml)
-> Multi-tenant restaurant booking platform with AI-powered customer insights.
+> Multi-tenant Yakiniku (Japanese BBQ) restaurant management platform with AI-powered customer insights.
 
 ## Architecture
 
@@ -75,9 +75,9 @@ docker-compose up -d
 System is designed for chain restaurants:
 
 ```
-jinan.yakiniku.com      → 平間本店
-shibuya.yakiniku.com    → 渋谷店
-admin.yakiniku.com      → Dashboard (all branches)
+hirama.yakiniku.io      → 平間本店
+shibuya.yakiniku.io     → 渋谷店
+admin.yakiniku.io       → Dashboard (all branches)
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for multi-tenant strategy.

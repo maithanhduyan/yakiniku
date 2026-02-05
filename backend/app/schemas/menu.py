@@ -1,4 +1,4 @@
-"""
+﻿"""
 Menu Schemas - Pydantic models for menu items
 """
 from pydantic import BaseModel
@@ -48,3 +48,4 @@ class MenuResponse(BaseModel):
     branch_code: str
     categories: List[MenuCategoryResponse]
     updated_at: datetime
+

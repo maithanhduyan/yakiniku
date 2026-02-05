@@ -1,4 +1,4 @@
-"""
+﻿"""
 Orders Router - Table ordering API
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -28,7 +28,7 @@ router = APIRouter()
 @router.post("/sessions", response_model=TableSessionResponse)
 async def create_table_session(
     session: TableSessionCreate,
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
     """Start a new table session (when guests sit down)"""
@@ -134,7 +134,7 @@ async def get_session_summary(
 @router.post("/", response_model=OrderResponse)
 async def create_order(
     order_data: OrderCreate,
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
     """Create new order from table"""
@@ -243,7 +243,7 @@ async def get_orders(
     session_id: str = None,
     table_id: str = None,
     status: str = None,
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
     """Get orders (filter by session, table, or status)"""
@@ -271,7 +271,7 @@ async def get_orders(
 
 @router.get("/kitchen", response_model=List[OrderKitchen])
 async def get_kitchen_orders(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     status: List[str] = Query(default=["pending", "confirmed", "preparing"]),
     db: AsyncSession = Depends(get_db)
 ):
@@ -386,7 +386,7 @@ async def update_item_status(
 @router.post("/call-staff")
 async def call_staff(
     call: StaffCallRequest,
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
     """Call staff from table (assistance, water, bill, etc.)"""
@@ -399,10 +399,10 @@ async def call_staff(
 
     # Map call types to Japanese
     call_type_labels = {
-        "assistance": "呼び出し",
-        "water": "お水",
-        "bill": "お会計",
-        "other": "その他"
+        "assistance": "å‘¼ã³å‡ºã—",
+        "water": "ãŠæ°´",
+        "bill": "ãŠä¼šè¨ˆ",
+        "other": "ãã®ä»–"
     }
 
     # TODO: Fix notification - need to add new NotificationType for orders
@@ -417,3 +417,4 @@ async def call_staff(
     # })
 
     return {"message": "Staff notified", "table_number": table.table_number}
+

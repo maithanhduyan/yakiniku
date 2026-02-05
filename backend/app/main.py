@@ -1,4 +1,4 @@
-"""
+﻿"""
 FastAPI Application Entry Point
 """
 import signal
@@ -20,12 +20,12 @@ def setup_signal_handlers():
 
     def sync_shutdown_handler(signum, frame):
         """Synchronous signal handler that triggers async shutdown"""
-        print(f"\n🛑 Received signal {signum}, initiating graceful shutdown...")
+        print(f"\nðŸ›‘ Received signal {signum}, initiating graceful shutdown...")
         # Set the shutdown event synchronously - SSE generators will exit on next check
         notification_manager._shutdown_event.set()
 
         # Give SSE connections 2 seconds to close gracefully
-        print("⏳ Waiting for SSE connections to close...")
+        print("â³ Waiting for SSE connections to close...")
         time.sleep(2)
 
         # Now raise KeyboardInterrupt to let uvicorn shutdown
@@ -45,16 +45,16 @@ async def lifespan(app: FastAPI):
 
     # Startup: Initialize database
     await init_db()
-    print("🍖 Database initialized")
+    print("ðŸ– Database initialized")
     yield
     # Shutdown: Close SSE connections first
-    print("👋 Shutting down...")
+    print("ðŸ‘‹ Shutting down...")
     await notification_manager.shutdown()
-    print("✅ Graceful shutdown complete")
+    print("âœ… Graceful shutdown complete")
 
 
 app = FastAPI(
-    title="Yakiniku Jinan API",
+    title="Yakiniku JIAN API",
     description="Restaurant booking and customer insights API",
     version="1.0.0",
     lifespan=lifespan,
@@ -64,7 +64,7 @@ app = FastAPI(
 try:
     app.mount("/images", StaticFiles(directory="static/images"), name="images")
 except RuntimeError:
-    print("⚠️ Static images directory not found")
+    print("âš ï¸ Static images directory not found")
 
 # CORS - allow web frontend
 app.add_middleware(
@@ -78,7 +78,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Yakiniku Jinan API", "version": "1.0.0"}
+    return {"message": "Yakiniku JIAN API", "version": "1.0.0"}
 
 
 @app.get("/health")

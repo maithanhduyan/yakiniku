@@ -1,8 +1,8 @@
-Tuyệt vời! Đây là bản **Redesign hoàn chỉnh** dựa trên yêu cầu thiết kế lại trangweb yakinikujinan.com.
+Tuyệt vời! Đây là bản **Redesign hoàn chỉnh** dựa trên yêu cầu thiết kế lại trangweb yakinikuJIAN.com.
 
 Tôi đã thay đổi toàn bộ giao diện sang phong cách **Dark Luxury (Sang trọng tối giản)**. Mã nguồn này bao gồm HTML, CSS và một chút JavaScript (cho menu trên điện thoại).
 
-Bạn hãy tạo file mới tên là `yakinikujinan_modern.html` và dán đoạn mã sau vào:
+Bạn hãy tạo file mới tên là `yakinikuJIAN_modern.html` và dán đoạn mã sau vào:
 
 ```html
 <!DOCTYPE html>
@@ -10,7 +10,7 @@ Bạn hãy tạo file mới tên là `yakinikujinan_modern.html` và dán đoạ
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>焼肉ジナン | YAKINIKU JINAN - 平間の上質焼肉</title>
+    <title>焼肉ヅアン | YAKINIKU JIAN - 平間の上質焼肉</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -429,7 +429,7 @@ Bạn hãy tạo file mới tên là `yakinikujinan_modern.html` và dán đoạ
     <header>
         <div class="container header-inner">
             <div class="logo">
-                <a href="#"><h1>焼肉<span>ジナン</span></h1></a>
+                <a href="#"><h1>焼肉<span>ヅアン</span></h1></a>
             </div>
 
             <!-- Desktop Nav -->
@@ -560,14 +560,14 @@ Bạn hãy tạo file mới tên là `yakinikujinan_modern.html` và dán đoạ
     <!-- Footer -->
     <footer id="access">
         <div class="container">
-            <div class="footer-logo">焼肉ジナン</div>
+            <div class="footer-logo">焼肉ヅアン</div>
             <div class="footer-info">
                 <p>〒211-0013 神奈川県川崎市中原区上平間XXXX</p>
                 <p style="font-size: 1.5rem; color: #fff; margin: 10px 0;">044-789-8413</p>
                 <p>営業時間: 17:00 - 23:00 (L.O. 22:30)</p>
             </div>
             <div class="copyright">
-                &copy; 2024 YAKINIKU JINAN. All Rights Reserved.
+                &copy; 2024 YAKINIKU JIAN. All Rights Reserved.
             </div>
         </div>
     </footer>

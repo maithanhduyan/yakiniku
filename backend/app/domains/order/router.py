@@ -1,4 +1,4 @@
-"""
+﻿"""
 Order Router - Table Order APIs
 Team: table-order
 """
@@ -186,3 +186,4 @@ async def get_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     return TableSessionResponse.model_validate(session)
+

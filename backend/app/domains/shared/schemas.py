@@ -1,4 +1,4 @@
-"""
+﻿"""
 Shared Schemas - Base schemas for cross-domain use
 """
 from pydantic import BaseModel
@@ -41,3 +41,4 @@ class TableBase(BaseModel):
 
     class Config:
         from_attributes = True
+

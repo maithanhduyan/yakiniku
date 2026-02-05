@@ -1,4 +1,4 @@
-"""
+﻿"""
 Branches Router - Branch management
 """
 from fastapi import APIRouter, Depends, HTTPException
@@ -123,17 +123,17 @@ async def create_branch(
 async def seed_default_branch(
     db: AsyncSession = Depends(get_db),
 ):
-    """Seed default Jinan branch"""
-    existing = await db.execute(select(Branch).where(Branch.code == "jinan"))
+    """Seed default Hirama branch"""
+    existing = await db.execute(select(Branch).where(Branch.code == "hirama"))
     if existing.scalar_one_or_none():
         return {"message": "Default branch already exists"}
 
-    jinan = Branch(
-        code="jinan",
-        name="焼肉ジナン 平間本店",
-        subdomain="jinan",
+    hirama = Branch(
+        code="hirama",
+        name="Yakiniku å¹³é–“æœ¬åº—",
+        subdomain="hirama",
         phone="044-789-8413",
-        address="〒211-0013 神奈川県川崎市中原区上平間XXXX",
+        address="ã€’211-0013 ç¥žå¥ˆå·çœŒå·å´Žå¸‚ä¸­åŽŸåŒºä¸Šå¹³é–“XXXX",
         theme_primary_color="#d4af37",
         theme_bg_color="#1a1a1a",
         closed_days=[2],
@@ -145,7 +145,7 @@ async def seed_default_branch(
         },
     )
 
-    db.add(jinan)
+    db.add(hirama)
     await db.commit()
 
-    return {"message": "Default branch created", "code": "jinan"}
+    return {"message": "Default branch created", "code": "hirama"}

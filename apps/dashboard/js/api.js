@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API Client for Dashboard
  * REST API wrapper with authentication
  */
@@ -220,3 +220,6 @@ class APIError extends Error {
 
 // Create singleton instance
 const api = new APIClient();
+
+
+

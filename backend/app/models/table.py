@@ -1,4 +1,4 @@
-"""
+﻿"""
 Table Model - Restaurant table management
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Enum
@@ -11,18 +11,18 @@ from app.database import Base
 
 
 class TableStatus(str, enum.Enum):
-    AVAILABLE = "available"      # Bàn trống
-    OCCUPIED = "occupied"        # Đang có khách
-    RESERVED = "reserved"        # Đã đặt trước
-    CLEANING = "cleaning"        # Đang dọn dẹp
-    MAINTENANCE = "maintenance"  # Bảo trì
+    AVAILABLE = "available"      # BÃ n trá»‘ng
+    OCCUPIED = "occupied"        # Äang cÃ³ khÃ¡ch
+    RESERVED = "reserved"        # ÄÃ£ Ä‘áº·t trÆ°á»›c
+    CLEANING = "cleaning"        # Äang dá»n dáº¹p
+    MAINTENANCE = "maintenance"  # Báº£o trÃ¬
 
 
 class TableType(str, enum.Enum):
-    REGULAR = "regular"     # Bàn thường
-    PRIVATE = "private"     # Phòng riêng / bàn VIP
-    COUNTER = "counter"     # Quầy bar
-    TERRACE = "terrace"     # Ngoài trời
+    REGULAR = "regular"     # BÃ n thÆ°á»ng
+    PRIVATE = "private"     # PhÃ²ng riÃªng / bÃ n VIP
+    COUNTER = "counter"     # Quáº§y bar
+    TERRACE = "terrace"     # NgoÃ i trá»i
 
 
 class Table(Base):
@@ -34,36 +34,36 @@ class Table(Base):
 
     # Table identity
     table_number = Column(String(10), nullable=False)  # "A1", "B2", "VIP1"
-    name = Column(String(100))  # "窓際席", "個室A"
+    name = Column(String(100))  # "çª“éš›å¸­", "å€‹å®¤A"
 
     # Capacity
-    min_capacity = Column(Integer, default=1)   # Tối thiểu 1 người
-    max_capacity = Column(Integer, nullable=False)  # 4 hoặc 6 ghế
+    min_capacity = Column(Integer, default=1)   # Tá»‘i thiá»ƒu 1 ngÆ°á»i
+    max_capacity = Column(Integer, nullable=False)  # 4 hoáº·c 6 gháº¿
 
     # Location & Type
     table_type = Column(String(20), default=TableType.REGULAR.value)
-    floor = Column(Integer, default=1)  # Tầng
+    floor = Column(Integer, default=1)  # Táº§ng
     zone = Column(String(50))  # "A", "B", "VIP", "Window"
 
     # Features
-    has_window = Column(Boolean, default=False)      # Gần cửa sổ
-    is_smoking = Column(Boolean, default=False)      # Khu hút thuốc
+    has_window = Column(Boolean, default=False)      # Gáº§n cá»­a sá»•
+    is_smoking = Column(Boolean, default=False)      # Khu hÃºt thuá»‘c
     is_wheelchair_accessible = Column(Boolean, default=True)
-    has_baby_chair = Column(Boolean, default=False)  # Có ghế trẻ em
+    has_baby_chair = Column(Boolean, default=False)  # CÃ³ gháº¿ tráº» em
 
     # Status
     status = Column(String(20), default=TableStatus.AVAILABLE.value)
-    is_active = Column(Boolean, default=True)  # Bàn có hoạt động không
+    is_active = Column(Boolean, default=True)  # BÃ n cÃ³ hoáº¡t Ä‘á»™ng khÃ´ng
 
     # Metadata
-    priority = Column(Integer, default=0)  # Ưu tiên xếp khách (VIP = cao hơn)
-    notes = Column(String(500))  # Ghi chú nội bộ
+    priority = Column(Integer, default=0)  # Æ¯u tiÃªn xáº¿p khÃ¡ch (VIP = cao hÆ¡n)
+    notes = Column(String(500))  # Ghi chÃº ná»™i bá»™
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     def __repr__(self):
-        return f"<Table {self.table_number} ({self.max_capacity}席)>"
+        return f"<Table {self.table_number} ({self.max_capacity}å¸­)>"
 
 
 class TableAssignment(Base):
@@ -76,8 +76,8 @@ class TableAssignment(Base):
 
     # Time tracking
     assigned_at = Column(DateTime(timezone=True), server_default=func.now())
-    seated_at = Column(DateTime(timezone=True))   # Khi khách ngồi
-    cleared_at = Column(DateTime(timezone=True))  # Khi khách rời đi
+    seated_at = Column(DateTime(timezone=True))   # Khi khÃ¡ch ngá»“i
+    cleared_at = Column(DateTime(timezone=True))  # Khi khÃ¡ch rá»i Ä‘i
 
     # Notes
     notes = Column(String(500))
@@ -108,3 +108,4 @@ class TableAvailability(Base):
         # Index for finding availability
         # CREATE INDEX ix_availability_lookup ON table_availability(branch_code, date, time_slot, is_available)
     )
+

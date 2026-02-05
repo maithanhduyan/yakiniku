@@ -1,7 +1,7 @@
 {
     "name": "チェックイン",
     "short_name": "CheckIn",
-    "description": "焼肉ジナン - 受付チェックインシステム",
+    "description": "焼肉ヅアン - 受付チェックインシステム",
     "start_url": "/",
     "display": "standalone",
     "orientation": "landscape",

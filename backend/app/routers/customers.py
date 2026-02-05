@@ -1,4 +1,4 @@
-"""
+﻿"""
 Customers Router - Customer lookup and preferences
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.post("/identify", response_model=CustomerResponse)
 async def identify_customer(
     customer: CustomerCreate,
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -92,7 +92,7 @@ async def identify_customer(
 
 @router.get("/", response_model=List[CustomerResponse])
 async def list_customers(
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
     vip_only: bool = Query(default=False),
     search: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
@@ -241,3 +241,4 @@ async def toggle_vip(
     await db.commit()
 
     return {"id": customer_id, "is_vip": is_vip}
+

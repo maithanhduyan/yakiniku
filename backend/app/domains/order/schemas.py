@@ -1,4 +1,4 @@
-"""
+﻿"""
 Order Schemas
 """
 from pydantic import BaseModel, Field
@@ -24,7 +24,7 @@ class OrderItemCreate(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    branch_code: str = "jinan"
+    branch_code: str = "hirama"
     table_id: str
     session_id: str
     items: list[OrderItemCreate]
@@ -67,7 +67,7 @@ class OrderListResponse(BaseModel):
 
 
 class TableSessionCreate(BaseModel):
-    branch_code: str = "jinan"
+    branch_code: str = "hirama"
     table_id: str
     booking_id: Optional[str] = None
     guest_count: int = 1
@@ -86,3 +86,4 @@ class TableSessionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+

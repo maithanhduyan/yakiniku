@@ -1,4 +1,4 @@
-"""
+﻿"""
 Booking Models - Re-export from legacy models with extensions
 """
 # Re-export from legacy models
@@ -8,3 +8,4 @@ from app.models.booking import Booking, BookingStatus
 # For now, we'll add qr_token and check-in fields via migration later
 
 __all__ = ["Booking", "BookingStatus"]
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Customer Schemas
 """
 from pydantic import BaseModel, Field
@@ -44,3 +44,4 @@ class CustomerResponse(BaseModel):
     preferences: List[PreferenceResponse] = []
 
     model_config = {"from_attributes": True}
+

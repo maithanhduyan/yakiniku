@@ -1,4 +1,4 @@
-"""
+﻿"""
 Booking Router - Web Booking APIs
 Team: web
 """
@@ -47,7 +47,7 @@ async def create_booking(
 
 @router.get("/", response_model=BookingListResponse)
 async def list_bookings(
-    branch_code: str = "jinan",
+    branch_code: str = "hirama",
     booking_date: Optional[date] = None,
     status: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
@@ -174,3 +174,4 @@ async def get_booking_by_qr(
         raise HTTPException(status_code=404, detail="Invalid QR code")
 
     return BookingResponse.model_validate(booking)
+

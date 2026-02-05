@@ -1,7 +1,7 @@
 {
-    "name": "焼肉ジナン - POSレジ",
+    "name": "Yakiniku.io - POSレジ",
     "short_name": "POS",
-    "description": "Point of Sale System for Yakiniku Jinan",
+    "description": "Point of Sale System for Yakiniku.io Platform",
     "start_url": "/apps/pos/",
     "display": "standalone",
     "orientation": "landscape",

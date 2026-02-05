@@ -1,4 +1,4 @@
-"""
+﻿"""
 Booking Model
 """
 from sqlalchemy import Column, String, Integer, Date, DateTime, ForeignKey, Enum
@@ -51,3 +51,4 @@ class Booking(Base):
 
     # Relationships
     branch_customer = relationship("BranchCustomer")
+

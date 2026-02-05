@@ -1,4 +1,4 @@
-"""
+﻿"""
 Notification Router - SSE endpoint for real-time notifications
 """
 from fastapi import APIRouter, Request, Query
@@ -64,7 +64,7 @@ async def event_generator(request: Request, branch_code: str):
 @router.get("/stream")
 async def notification_stream(
     request: Request,
-    branch_code: str = Query(default="jinan"),
+    branch_code: str = Query(default="hirama"),
 ):
     """
     SSE endpoint for real-time notifications.
@@ -77,7 +77,7 @@ async def notification_stream(
 
     Usage:
     ```javascript
-    const eventSource = new EventSource('/api/notifications/stream?branch_code=jinan');
+    const eventSource = new EventSource('/api/notifications/stream?branch_code=JIAN');
     eventSource.onmessage = (event) => {
         const notification = JSON.parse(event.data);
         console.log(notification);

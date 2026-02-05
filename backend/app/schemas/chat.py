@@ -1,4 +1,4 @@
-"""
+﻿"""
 Chat Schemas
 """
 from pydantic import BaseModel, Field
@@ -18,7 +18,7 @@ class ChatRequest(BaseModel):
     customer_name: Optional[str] = None
     customer_phone: Optional[str] = None
     conversation_history: Optional[List[ChatMessage]] = None
-    branch_code: str = "jinan"
+    branch_code: str = "hirama"
 
 
 class ChatResponse(BaseModel):
@@ -35,3 +35,4 @@ class InsightExtraction(BaseModel):
     preference: str
     category: str  # meat, cooking, allergy, occasion
     confidence: float = 0.8
+

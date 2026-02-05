@@ -1,4 +1,4 @@
-"""
+﻿"""
 Chat Router - AI-powered customer chat with automatic insight extraction
 """
 from fastapi import APIRouter, Depends, HTTPException
@@ -18,7 +18,7 @@ router = APIRouter()
 async def get_branch_customer_id(
     db: AsyncSession,
     phone: Optional[str],
-    branch_code: str = "jinan"
+    branch_code: str = "hirama"
 ) -> Optional[str]:
     """Get branch_customer_id from phone number"""
     if not phone:
@@ -100,7 +100,7 @@ async def chat(
                     branch_customer_id = await get_branch_customer_id(
                         db=db,
                         phone=request.customer_phone,
-                        branch_code=request.branch_code or "jinan"
+                        branch_code=request.branch_code or "hirama"
                     )
 
                     if branch_customer_id:
@@ -130,3 +130,4 @@ async def chat_health():
         "openai_configured": has_openai,
         "fallback_available": True,
     }
+

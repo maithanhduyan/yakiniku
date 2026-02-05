@@ -1,4 +1,4 @@
-"""
+﻿"""
 Order Model - Table orders for in-restaurant dining
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Numeric, ForeignKey
@@ -11,12 +11,12 @@ from app.database import Base
 
 
 class OrderStatus(str, enum.Enum):
-    PENDING = "pending"         # 注文受付中 - Just placed
-    CONFIRMED = "confirmed"     # 確認済み - Confirmed by kitchen
-    PREPARING = "preparing"     # 調理中 - Being prepared
-    READY = "ready"             # 完成 - Ready to serve
-    SERVED = "served"           # 提供済み - Delivered to table
-    CANCELLED = "cancelled"     # キャンセル
+    PENDING = "pending"         # æ³¨æ–‡å—ä»˜ä¸­ - Just placed
+    CONFIRMED = "confirmed"     # ç¢ºèªæ¸ˆã¿ - Confirmed by kitchen
+    PREPARING = "preparing"     # èª¿ç†ä¸­ - Being prepared
+    READY = "ready"             # å®Œæˆ - Ready to serve
+    SERVED = "served"           # æä¾›æ¸ˆã¿ - Delivered to table
+    CANCELLED = "cancelled"     # ã‚­ãƒ£ãƒ³ã‚»ãƒ«
 
 
 class Order(Base):
@@ -63,7 +63,7 @@ class OrderItem(Base):
     quantity = Column(Integer, default=1, nullable=False)
 
     # Special requests
-    notes = Column(String(200))  # "よく焼き", "タレ多め"
+    notes = Column(String(200))  # "ã‚ˆãç„¼ã", "ã‚¿ãƒ¬å¤šã‚"
 
     # Status (for kitchen tracking individual items)
     status = Column(String(20), default=OrderStatus.PENDING.value)
@@ -108,3 +108,4 @@ class TableSession(Base):
 
     def __repr__(self):
         return f"<TableSession {self.id[:8]} - Table {self.table_id[:8]}>"
+

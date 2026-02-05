@@ -214,7 +214,7 @@ async def seed_menu_items(session: AsyncSession):
 
 async def seed_all(drop_existing=True):
     """Run all seed functions."""
-    print("\n🌱 Seeding Yakiniku Jinan database...\n")
+    print("\n🌱 Seeding Yakiniku JIAN database...\n")
 
     # Import all models to register them with Base
     from app.models.staff import Staff

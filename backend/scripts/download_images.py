@@ -1,4 +1,4 @@
-"""
+﻿"""
 Download menu images from web sources and save to backend/static/images/menu
 Run: cd backend && python scripts/download_images.py
 """
@@ -74,28 +74,28 @@ def download_image(filename: str, url: str):
     filepath = IMAGES_DIR / filename
 
     if filepath.exists():
-        print(f"⏭️  Skip (exists): {filename}")
+        print(f"â­ï¸  Skip (exists): {filename}")
         return True
 
     try:
-        print(f"⬇️  Downloading: {filename}...", end=" ")
+        print(f"â¬‡ï¸  Downloading: {filename}...", end=" ")
         response = requests.get(url, timeout=30)
         response.raise_for_status()
 
         with open(filepath, "wb") as f:
             f.write(response.content)
 
-        print(f"✅ ({len(response.content) // 1024}KB)")
+        print(f"âœ… ({len(response.content) // 1024}KB)")
         return True
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"âŒ Error: {e}")
         return False
 
 
 def main():
-    print("\n🖼️  Downloading menu images...\n")
-    print(f"📁 Target directory: {IMAGES_DIR}\n")
+    print("\nðŸ–¼ï¸  Downloading menu images...\n")
+    print(f"ðŸ“ Target directory: {IMAGES_DIR}\n")
 
     success = 0
     failed = 0
@@ -106,9 +106,10 @@ def main():
         else:
             failed += 1
 
-    print(f"\n📊 Results: {success} downloaded, {failed} failed")
-    print(f"📁 Images saved to: {IMAGES_DIR}")
+    print(f"\nðŸ“Š Results: {success} downloaded, {failed} failed")
+    print(f"ðŸ“ Images saved to: {IMAGES_DIR}")
 
 
 if __name__ == "__main__":
     main()
+

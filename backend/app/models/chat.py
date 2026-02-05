@@ -1,4 +1,4 @@
-"""
+﻿"""
 Chat Models - Message History and Extracted Insights
 """
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
@@ -37,3 +37,4 @@ class ChatInsight(Base):
     confidence = Column(String(10))  # 'high', 'medium', 'low'
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+

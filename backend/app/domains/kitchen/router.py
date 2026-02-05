@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Optional
 
 from app.database import get_db
-from app.domains.order.models import Order, OrderItem, OrderStatus
+from app.domains.tableorder.models import Order, OrderItem, OrderStatus
 from app.domains.shared.models import Table
 
 router = APIRouter()
@@ -196,4 +196,3 @@ def get_urgency_level(seconds: float) -> str:
         return "warning"  # ðŸŸ¡ 3-5 min
     else:
         return "urgent"   # ðŸ”´ > 5 min
-

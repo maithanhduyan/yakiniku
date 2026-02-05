@@ -1,7 +1,7 @@
 # GIT BRANCHING STRATEGY GUIDE
 ## Git Branching hiệu quả
 
-- **main**: production
+- **master**: production
 
 - **develop**: tích hợp các tính năng
 

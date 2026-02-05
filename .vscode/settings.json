@@ -1,6 +1,4 @@
 {
-    "files.encoding": "utf8",
-    "files.autoGuessEncoding": false,
     "[html]": {
         "files.encoding": "utf8"
     },
@@ -8,7 +6,7 @@
         "files.encoding": "utf8"
     },
     "[javascript]": {
-        "files.encoding": "utf8"
+        "files.encoding": "utf8",
     },
     "[css]": {
         "files.encoding": "utf8"
@@ -18,7 +16,6 @@
     },
     "[python]": {
         "files.encoding": "utf8",
-        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
@@ -29,10 +26,22 @@
     "editor.tabSize": 4,
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",
+    "editor.rulers": [80, 120],
+    "files.encoding": "utf8",
+    "files.autoGuessEncoding": false,
     "files.eol": "\n",
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
+
+    // ============ Copilot Configuration ============
     "chat.agent.maxRequests": 200,
+
+    // Prettier Configuration
+    "prettier.tabWidth": 4,
+    "prettier.singleQuote": true,
+    "prettier.printWidth": 120,
+
+    // ============ Live Server Configuration ============
     "liveServer.settings.host": "127.0.0.1",
     "liveServer.settings.port": 5500,
 

@@ -4,9 +4,7 @@
 
 const Loading = {
     show(container) {
-        const el = typeof container === 'string'
-            ? document.querySelector(container)
-            : container;
+        const el = typeof container === 'string' ? document.querySelector(container) : container;
 
         el.innerHTML = `
             <div class="loading">
@@ -16,9 +14,7 @@ const Loading = {
     },
 
     skeleton(container, rows = 3) {
-        const el = typeof container === 'string'
-            ? document.querySelector(container)
-            : container;
+        const el = typeof container === 'string' ? document.querySelector(container) : container;
 
         let html = '';
         for (let i = 0; i < rows; i++) {
@@ -30,5 +26,5 @@ const Loading = {
             `;
         }
         el.innerHTML = html;
-    }
+    },
 };

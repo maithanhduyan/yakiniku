@@ -1,119 +1,110 @@
 # Yakiniku.io - AI Agent Instructions
 
 ## Project Overview
-Multi-tenant Japanese Yakiniku (BBQ) restaurant management platform with booking widget, AI chat, and restaurant dashboard. **Mobile-first design** for customer website.
+Multi-tenant Japanese Yakiniku (BBQ) restaurant platform with modular apps: customer website, table ordering (iPad), kitchen display, POS, check-in kiosk, and admin dashboard.
 
-**Domain**: `yakiniku.io` - Platform for managing Yakiniku restaurant chains.
-
-## Architecture (Multi-Tenant Ready)
+## Architecture
 
 ```
 yakiniku/
-├── web/              # Customer website (static)
-│   ├── index.html    # Main page
-│   ├── css/style.css # Mobile-first styles (~1580 lines)
-│   └── js/app.js     # Booking + chat logic (~710 lines)
-├── backend/          # FastAPI server
-│   └── app/          # Python application
-├── dashboard/        # Admin panel (HTMX + Jinja2)
-│   └── templates/    # Dashboard views
-├── shared/           # Cross-component resources
-└── docs/             # Architecture documentation
+├── apps/                   # Frontend applications (Vanilla JS)
+│   ├── web/                # Customer website + booking
+│   ├── table-order/        # iPad ordering (offline-capable)
+│   ├── kitchen/            # Kitchen display system
+│   ├── pos/                # Point of sale
+│   ├── checkin/            # Self check-in kiosk
+│   └── dashboard/          # Admin SPA
+├── backend/                # FastAPI + SQLAlchemy (async)
+│   └── app/
+│       ├── domains/        # Domain-driven modules (NEW)
+│       │   ├── tableorder/ # Event-sourced order system
+│       │   ├── kitchen/
+│       │   ├── pos/
+│       │   └── checkin/
+│       ├── routers/        # Legacy REST endpoints
+│       └── models/         # SQLAlchemy models
+└── shared/                 # Cross-app config & branding
 ```
-
-## Tech Stack
-| Component | Technology |
-|-----------|------------|
-| Web | HTML5 + CSS3 + Vanilla JS + AOS |
-| Backend | FastAPI + SQLAlchemy + OpenAI |
-| Dashboard | HTMX + Jinja2 + TailwindCSS |
-| Database | SQLite (dev) → PostgreSQL (prod) |
-| Cache | Redis |
 
 ## Development Commands
 
 ```bash
-# Customer website
-cd web && python -m http.server 8080
-
-# Backend API
-cd backend && uvicorn app.main:app --reload --port 8000
-
-# Full stack (Docker)
-docker-compose up -d
+# Backend (required first) - Use VS Code task "Backend: Start"
+cd backend && .venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Design System
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--bg-color` | #1a1a1a | Dark background |
-| `--accent-color` | #d4af37 | Gold accent |
-| `--touch-target` | 48px | Mobile touch targets |
+**Frontend URLs** (Live Server port 5500):
+- `http://127.0.0.1:5500/apps/table-order/`
+- `http://127.0.0.1:5500/apps/kitchen/`
+- `http://127.0.0.1:5500/apps/dashboard/`
 
-## Key Patterns
+## Critical Patterns
 
-### 1. Mobile Touch Targets (48px minimum)
-```css
-.btn-booking { min-height: var(--touch-target); }
+### 1. Frontend Config Pattern (`apps/*/js/config.js`)
+Each app has frozen CONFIG object with API_HOST auto-detection:
+```javascript
+const API_HOST = window.location.hostname;  // Avoids CORS issues
+const CONFIG = {
+    API_URL: `http://${API_HOST}:8000/api`,
+    WS_URL: `ws://${API_HOST}:8000/ws`,
+    BRANCH_CODE: 'hirama',  // Default branch
+};
 ```
 
-### 2. iOS Form Zoom Prevention
-```css
-input, select, textarea { font-size: 16px; }
+### 2. Domain-Driven Backend (`backend/app/domains/`)
+New features go in domains, not routers:
+- `domains/tableorder/` - Event-sourced with `events.py`, `event_service.py`
+- Each domain: `router.py`, `models.py`, `schemas.py`
+- Registered in `main.py` under "Domain Routers" section
+
+### 3. Demo Mode (No FK Constraints)
+Models allow demo data without seeded DB:
+- `Order.table_id` - No FK to tables
+- `OrderItem.menu_item_id` - No FK to menu_items
+- Frontend sends `item_name`, `item_price` with orders
+
+### 4. Event Sourcing (`tableorder/events.py`)
+```python
+EventType.ORDER_CREATED, GATEWAY_SENT, GATEWAY_FAILED  # Track delivery
+EventSource.TABLE_ORDER, KITCHEN, POS, SYSTEM          # Origin tracking
 ```
 
-### 3. Booking Widget (web/js/app.js)
-6-step wizard: Date → Time → Guests → Info → Confirm → Success
-- State: `bookingData` object
-- Navigation: `goToStep(n)`, `nextStep()`, `prevStep()`
+### 5. CORS Configuration (`backend/app/config.py`)
+Allowed origins include both `localhost` and `127.0.0.1` variants for ports 5500, 8080-8084.
 
-### 4. Chat Widget with Customer Insights
-- Preferences in `customerInsights` object
-- localStorage keys: `yakiniku_customer`, `yakiniku_chat_history`
-- **No LINE** - centralized insights system
+## API Conventions
 
-### 5. Multi-Branch Support (backend)
-- Branch detection via subdomain or `X-Branch` header
-- Schema: `branches`, `global_customers`, `branch_customers`
-- Per-branch preferences and VIP tracking
+- **Trailing slash required**: POST `/api/tableorder/` (not `/api/tableorder`)
+- **Branch code**: Query param `?branch_code=hirama` or header `X-Branch`
+- **WebSocket**: `ws://host:8000/ws?branch_code=hirama&table_id=xxx`
 
-## Language
-- **UI**: Japanese (日本語)
-- **Code/Docs**: English/Vietnamese mix
+## Testing with Playwright MCP
 
-## Testing
-Playwright MCP with mobile viewport `375x812`:
-```
-1. Navigate to http://localhost:8080
-2. Test booking flow
-3. Test chat widget
-```
-
-## Common Tasks
-
-### Add menu item
-Edit `web/index.html`, add `.menu-card` following existing pattern.
-
-### Add chat keyword
-In `web/js/app.js`, add to `responses` in `processMessage()`.
-
-### Add new branch
-Insert into `branches` table with unique `code` and `subdomain`.
-
-## Documentation
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Multi-tenant design
-- [BACKEND.md](docs/BACKEND.md) - API & database schema
+1. Start backend first (task "Backend: Start")
+2. Navigate to `http://127.0.0.1:5500/apps/table-order/`
+3. Test flows: Menu → Cart → Submit Order
+4. Check backend logs for `200 OK`
 
 ## Language Usage
-- Tiếng Việt cho tài liệu kỹ thuật nội bộ.
-- English cho code và chú thích.
-- 日本語 cho giao diện người dùng và trải nghiệm khách hàng (đa ngôn ngữ English).
+- **UI**: Japanese (日本語)
+- **Code/Comments**: English
+- **Internal docs**: Vietnamese
 
-## Playwright Test
-- run backend first.
-- web: http://127.0.0.1:5500/apps/web/
-- checkin: http://127.0.0.1:5500/apps/checkin/
-- table-order: http://127.0.0.1:5500/apps/table-order/
-- kitchen: http://127.0.0.1:5500/apps/kitchen/
-- pos: http://127.0.0.1:5500/apps/pos/
-- dashboard: http://127.0.0.1:5500/apps/dashboard/
+## Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| CORS error on submit | Ensure URL has trailing slash, use same hostname |
+| FK violation on demo | Models should not have FK constraints for demo fields |
+| WebSocket 403 | Expected in demo mode, app falls back to offline |
+| Menu not loading | Check `branch_code` param, uses offline fallback |
+
+## Key Files
+- [backend/app/main.py](backend/app/main.py) - Router registration
+- [backend/app/config.py](backend/app/config.py) - CORS origins, DB URL
+- [apps/table-order/js/config.js](apps/table-order/js/config.js) - Frontend config pattern
+- [backend/app/domains/tableorder/events.py](backend/app/domains/tableorder/events.py) - Event types
+
+## Documentation
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Multi-tenant design
+- [docs/BACKEND.md](docs/BACKEND.md) - API & database schema

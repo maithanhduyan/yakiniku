@@ -107,8 +107,12 @@ from app.domains.booking.router import router as booking_router
 app.include_router(booking_router, prefix="/api/booking", tags=["booking-domain"])
 
 # Team: table-order
-from app.domains.order.router import router as order_router
-app.include_router(order_router, prefix="/api/order", tags=["order-domain"])
+from app.domains.tableorder.router import router as tableorder_router
+app.include_router(tableorder_router, prefix="/api/tableorder", tags=["tableorder-domain"])
+
+# Event Sourcing for table-order
+from app.domains.tableorder.event_router import router as event_router
+app.include_router(event_router, prefix="/api/events", tags=["events"])
 
 # Team: kitchen
 from app.domains.kitchen.router import router as kitchen_router

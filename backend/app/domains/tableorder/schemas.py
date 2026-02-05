@@ -21,6 +21,9 @@ class OrderItemCreate(BaseModel):
     menu_item_id: str
     quantity: int = Field(default=1, ge=1)
     notes: Optional[str] = None
+    # Optional fields for demo mode (when menu_item doesn't exist in DB)
+    item_name: Optional[str] = None
+    item_price: Optional[int] = None
 
 
 class OrderCreate(BaseModel):
@@ -86,4 +89,3 @@ class TableSessionResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

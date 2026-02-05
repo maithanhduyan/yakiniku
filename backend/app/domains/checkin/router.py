@@ -17,7 +17,7 @@ from app.domains.checkin.schemas import (
     CheckInDashboard, WaitingStatusEnum
 )
 from app.domains.booking.models import Booking, BookingStatus
-from app.domains.order.models import TableSession
+from app.domains.tableorder.models import TableSession
 from app.domains.shared.models import Table
 
 router = APIRouter()
@@ -536,4 +536,3 @@ async def log_checkin_event(
         event_data=json.dumps(event_data) if event_data else None
     )
     db.add(log)
-

@@ -26,8 +26,8 @@ class Order(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     branch_code = Column(String(50), nullable=False, index=True)
 
-    # Table info
-    table_id = Column(String(36), ForeignKey("tables.id"), nullable=False, index=True)
+    # Table info (no FK constraint for demo mode)
+    table_id = Column(String(36), nullable=False, index=True)
     session_id = Column(String(36), nullable=False, index=True)  # Unique per table session
 
     # Order number for display (e.g., "001", "002")
@@ -55,7 +55,7 @@ class OrderItem(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     order_id = Column(String(36), ForeignKey("orders.id"), nullable=False, index=True)
-    menu_item_id = Column(String(36), ForeignKey("menu_items.id"), nullable=False)
+    menu_item_id = Column(String(36), nullable=False)  # No FK for demo mode
 
     # Item details (snapshot at time of order)
     item_name = Column(String(100), nullable=False)
@@ -108,4 +108,3 @@ class TableSession(Base):
 
     def __repr__(self):
         return f"<TableSession {self.id[:8]} - Table {self.table_id[:8]}>"
-

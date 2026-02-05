@@ -3,20 +3,6 @@
  * iPad table ordering system for Yakiniku Jinan
  */
 
-// ============ Configuration ============
-
-// Auto-detect API server based on current hostname
-// This allows the app to work from both localhost and internal network
-const API_HOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'localhost'
-    : window.location.hostname; // Use same host as the web server
-
-const CONFIG = {
-    API_BASE: `http://${API_HOST}:8000/api`,
-    BRANCH_CODE: 'hirama',
-    WS_URL: `ws://${API_HOST}:8000/api/notifications/ws`,
-};
-
 // Get table info from URL params or localStorage
 const urlParams = new URLSearchParams(window.location.search);
 const TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || 'demo-table-1';
@@ -163,7 +149,7 @@ async function loadMenu() {
     try {
         updateLoadingStatus('api', 'pending');
 
-        const response = await fetch(`${CONFIG.API_BASE}/menu/categories?branch_code=${CONFIG.BRANCH_CODE}`);
+        const response = await fetch(`${CONFIG.API_URL}/menu/categories?branch_code=${CONFIG.BRANCH_CODE}`);
 
         if (!response.ok) {
             throw new Error('Failed to load menu');
@@ -388,14 +374,18 @@ async function submitOrder() {
         const orderData = {
             table_id: TABLE_ID,
             session_id: state.sessionId,
+            branch_code: CONFIG.BRANCH_CODE,
             items: state.cart.map(item => ({
                 menu_item_id: item.id,
                 quantity: item.quantity,
-                notes: item.notes || null
+                notes: item.notes || null,
+                // Include item details for demo mode
+                item_name: item.name,
+                item_price: item.price
             }))
         };
 
-        const response = await fetch(`${CONFIG.API_BASE}/orders?branch_code=${CONFIG.BRANCH_CODE}`, {
+        const response = await fetch(`${CONFIG.API_URL}/tableorder/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -433,7 +423,7 @@ async function submitOrder() {
 
 async function callStaff(callType) {
     try {
-        const response = await fetch(`${CONFIG.API_BASE}/orders/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
+        const response = await fetch(`${CONFIG.API_URL}/tableorder/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

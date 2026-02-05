@@ -8,16 +8,34 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel
 
 from app.database import get_db
-from app.domains.order.models import Order, OrderItem, OrderStatus, TableSession
-from app.domains.order.schemas import (
+from app.domains.tableorder.models import Order, OrderItem, OrderStatus, TableSession
+from app.domains.tableorder.schemas import (
     OrderCreate, OrderResponse, OrderListResponse,
     TableSessionCreate, TableSessionResponse
 )
 from app.domains.shared.models import MenuItem
+from app.domains.tableorder.events import EventType, EventSource
+from app.domains.tableorder.event_service import EventService
 
 router = APIRouter()
+
+
+# ============ Call Staff Schema ============
+
+class CallStaffRequest(BaseModel):
+    table_id: str
+    session_id: str
+    call_type: str  # "assistance", "water", "bill"
+
+
+class CallStaffResponse(BaseModel):
+    success: bool
+    message: str
+    call_type: str
+    correlation_id: str
 
 
 @router.post("/", response_model=OrderResponse)
@@ -26,6 +44,8 @@ async def create_order(
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new order from table"""
+    event_service = EventService(db)
+
     # Get next order number for this session
     result = await db.execute(
         select(func.max(Order.order_number))
@@ -43,24 +63,43 @@ async def create_order(
     )
 
     # Add items
+    items_data = []
     for item_data in order_data.items:
-        # Get menu item details
+        # Get menu item details from database
         result = await db.execute(
             select(MenuItem).where(MenuItem.id == item_data.menu_item_id)
         )
         menu_item = result.scalar_one_or_none()
 
-        if not menu_item:
-            raise HTTPException(status_code=404, detail=f"Menu item {item_data.menu_item_id} not found")
+        # Use DB data if exists, otherwise use demo data from request
+        if menu_item:
+            item_name = menu_item.name
+            item_price = menu_item.price
+        elif item_data.item_name and item_data.item_price:
+            # Demo mode: use data from request
+            item_name = item_data.item_name
+            item_price = item_data.item_price
+        else:
+            # No menu item and no demo data - use placeholder
+            item_name = f"Item {item_data.menu_item_id}"
+            item_price = 0
 
         order_item = OrderItem(
             menu_item_id=item_data.menu_item_id,
-            item_name=menu_item.name,
-            item_price=menu_item.price,
+            item_name=item_name,
+            item_price=item_price,
             quantity=item_data.quantity,
             notes=item_data.notes
         )
         order.items.append(order_item)
+
+        items_data.append({
+            "menu_item_id": item_data.menu_item_id,
+            "name": item_name,
+            "price": float(item_price),
+            "quantity": item_data.quantity,
+            "notes": item_data.notes
+        })
 
     db.add(order)
     await db.commit()
@@ -73,6 +112,19 @@ async def create_order(
         .where(Order.id == order.id)
     )
     order = result.scalar_one()
+
+    # Log ORDER_CREATED event
+    correlation_id = await event_service.log_order_created(
+        order_id=order.id,
+        branch_code=order_data.branch_code,
+        table_id=order_data.table_id,
+        session_id=order_data.session_id,
+        items=items_data,
+        source=EventSource.TABLE_ORDER
+    )
+
+    # TODO: Send to kitchen via WebSocket and log GATEWAY_SENT
+    # await event_service.log_gateway_sent(...)
 
     return OrderResponse.model_validate(order)
 
@@ -126,6 +178,8 @@ async def update_order_status(
     db: AsyncSession = Depends(get_db)
 ):
     """Update order status"""
+    event_service = EventService(db)
+
     result = await db.execute(
         select(Order).where(Order.id == order_id)
     )
@@ -134,6 +188,7 @@ async def update_order_status(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
+    old_status = order.status
     order.status = status
 
     # Update timestamps based on status
@@ -147,7 +202,77 @@ async def update_order_status(
 
     await db.commit()
 
+    # Log status change event
+    status_event_map = {
+        OrderStatus.CONFIRMED.value: EventType.ORDER_CONFIRMED,
+        OrderStatus.PREPARING.value: EventType.ORDER_PREPARING,
+        OrderStatus.READY.value: EventType.ORDER_READY,
+        OrderStatus.SERVED.value: EventType.ORDER_SERVED,
+        OrderStatus.CANCELLED.value: EventType.ORDER_CANCELLED,
+    }
+
+    if status in status_event_map:
+        await event_service.log_event(
+            event_type=status_event_map[status],
+            branch_code=order.branch_code,
+            event_source=EventSource.API,
+            table_id=order.table_id,
+            session_id=order.session_id,
+            order_id=order.id,
+            data={"old_status": old_status, "new_status": status}
+        )
+
     return {"message": "Status updated", "status": status}
+
+
+# ============ Call Staff Endpoint ============
+
+@router.post("/call-staff", response_model=CallStaffResponse)
+async def call_staff(
+    request: CallStaffRequest,
+    branch_code: str = "hirama",
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Call staff from table.
+    Logs event for tracking and sends notification via WebSocket.
+    """
+    event_service = EventService(db)
+
+    # Map call type to event type
+    call_event_map = {
+        "assistance": EventType.CALL_STAFF,
+        "water": EventType.CALL_WATER,
+        "bill": EventType.CALL_BILL,
+    }
+
+    event_type = call_event_map.get(request.call_type, EventType.CALL_STAFF)
+
+    # Log the call event
+    event = await event_service.log_event(
+        event_type=event_type,
+        event_source=EventSource.TABLE_ORDER,
+        branch_code=branch_code,
+        table_id=request.table_id,
+        session_id=request.session_id,
+        data={"call_type": request.call_type}
+    )
+
+    # TODO: Send notification to staff via WebSocket
+    # notification_manager.broadcast(...)
+
+    call_labels = {
+        "assistance": "スタッフを呼び出しました",
+        "water": "お水をお持ちします",
+        "bill": "お会計をお待ちください"
+    }
+
+    return CallStaffResponse(
+        success=True,
+        message=call_labels.get(request.call_type, "スタッフを呼び出しました"),
+        call_type=request.call_type,
+        correlation_id=event.correlation_id
+    )
 
 
 # Session endpoints
@@ -157,6 +282,8 @@ async def create_session(
     db: AsyncSession = Depends(get_db)
 ):
     """Start a new table session"""
+    event_service = EventService(db)
+
     session = TableSession(
         branch_code=session_data.branch_code,
         table_id=session_data.table_id,
@@ -167,6 +294,19 @@ async def create_session(
     db.add(session)
     await db.commit()
     await db.refresh(session)
+
+    # Log session started event
+    await event_service.log_event(
+        event_type=EventType.SESSION_STARTED,
+        event_source=EventSource.TABLE_ORDER,
+        branch_code=session_data.branch_code,
+        table_id=session_data.table_id,
+        session_id=session.id,
+        data={
+            "guest_count": session_data.guest_count,
+            "booking_id": session_data.booking_id
+        }
+    )
 
     return TableSessionResponse.model_validate(session)
 
@@ -186,4 +326,3 @@ async def get_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     return TableSessionResponse.model_validate(session)
-

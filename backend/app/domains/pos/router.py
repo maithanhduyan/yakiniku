@@ -12,7 +12,7 @@ from typing import Optional
 import secrets
 
 from app.database import get_db
-from app.domains.order.models import Order, OrderItem, OrderStatus, TableSession
+from app.domains.tableorder.models import Order, OrderItem, OrderStatus, TableSession
 from app.domains.shared.models import Table
 from app.domains.pos.schemas import (
     CheckoutRequest, CheckoutResponse, TableOverview,
@@ -269,4 +269,3 @@ async def close_table(
     await db.commit()
 
     return {"message": "Table closed", "table_id": table_id}
-

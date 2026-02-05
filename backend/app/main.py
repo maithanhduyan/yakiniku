@@ -20,12 +20,12 @@ def setup_signal_handlers():
 
     def sync_shutdown_handler(signum, frame):
         """Synchronous signal handler that triggers async shutdown"""
-        print(f"\nðŸ›‘ Received signal {signum}, initiating graceful shutdown...")
+        print(f"\n🛑 Received signal {signum}, initiating graceful shutdown...")
         # Set the shutdown event synchronously - SSE generators will exit on next check
         notification_manager._shutdown_event.set()
 
         # Give SSE connections 2 seconds to close gracefully
-        print("â³ Waiting for SSE connections to close...")
+        print("⏳ Waiting for SSE connections to close...")
         time.sleep(2)
 
         # Now raise KeyboardInterrupt to let uvicorn shutdown
@@ -45,12 +45,12 @@ async def lifespan(app: FastAPI):
 
     # Startup: Initialize database
     await init_db()
-    print("ðŸ– Database initialized")
+    print("🍖 Database initialized")
     yield
     # Shutdown: Close SSE connections first
-    print("ðŸ‘‹ Shutting down...")
+    print("👋 Shutting down...")
     await notification_manager.shutdown()
-    print("âœ… Graceful shutdown complete")
+    print("✅ Graceful shutdown complete")
 
 
 app = FastAPI(
@@ -62,9 +62,9 @@ app = FastAPI(
 
 # Static files for menu images (backend serves images)
 try:
-    app.mount("/images", StaticFiles(directory="static/images"), name="images")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 except RuntimeError:
-    print("âš ï¸ Static images directory not found")
+    print("⚠️ Static directory not found")
 
 # CORS - allow web frontend
 app.add_middleware(

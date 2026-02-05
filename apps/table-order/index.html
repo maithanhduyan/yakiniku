@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="焼肉ヅアン - テーブルオーダーシステム">
+    <meta name="description" content="焼肉ジナン - テーブルオーダーシステム">
 
-    <title>テーブルオーダー | 焼肉ヅアン</title>
+    <title>テーブルオーダー | 焼肉ジナン</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -16,145 +16,164 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-left">
-                <div class="table-info">
-                    <span class="table-number" id="tableNumber">T1</span>
-                    <span class="guest-count" id="guestCount">2名様</span>
+        <!-- Sidebar - Categories -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🍖</div>
+            </div>
+            <nav class="category-list" id="categoryList">
+                <!-- Loading skeleton -->
+                <div class="category-skeleton">
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
                 </div>
-            </div>
-            <div class="header-center">
-                <h1 class="brand">焼肉ヅアン</h1>
-            </div>
-            <div class="header-right">
-                <button class="cart-btn" id="cartBtn">
-                    <span class="cart-icon">🛒</span>
-                    <span class="cart-count" id="cartCount">0</span>
+            </nav>
+            <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid var(--border-color);">
+                <button class="btn-call-staff" onclick="callStaff('assistance')" style="width: 100%; flex-direction: column; font-size: 12px;">
+                    <span style="font-size: 24px;">🔔</span>
+                    呼び出し
                 </button>
-            </div>
-        </header>
-
-        <!-- Category Navigation -->
-        <nav class="category-nav" id="categoryNav">
-            <button class="category-btn active" data-category="all">すべて</button>
-            <button class="category-btn" data-category="beef">牛肉</button>
-            <button class="category-btn" data-category="pork">豚肉</button>
-            <button class="category-btn" data-category="chicken">鶏肉</button>
-            <button class="category-btn" data-category="hormone">ホルモン</button>
-            <button class="category-btn" data-category="seafood">海鮮</button>
-            <button class="category-btn" data-category="vegetable">野菜</button>
-            <button class="category-btn" data-category="rice">ご飯・麺</button>
-            <button class="category-btn" data-category="side">サイドメニュー</button>
-            <button class="category-btn" data-category="drink">ドリンク</button>
-            <button class="category-btn" data-category="dessert">デザート</button>
-        </nav>
-
-        <!-- Menu Grid -->
-        <main class="menu-container">
-            <div class="menu-grid" id="menuGrid">
-                <!-- Menu items will be loaded dynamically -->
-            </div>
-        </main>
-
-        <!-- Cart Panel -->
-        <aside class="cart-panel" id="cartPanel">
-            <div class="cart-header">
-                <h2>ご注文</h2>
-                <button class="close-cart" id="closeCart">×</button>
-            </div>
-            <div class="cart-items" id="cartItems">
-                <!-- Cart items will be loaded dynamically -->
-            </div>
-            <div class="cart-summary">
-                <div class="summary-row">
-                    <span>小計</span>
-                    <span id="cartSubtotal">¥0</span>
-                </div>
-                <div class="summary-row total">
-                    <span>合計（税込）</span>
-                    <span id="cartTotal">¥0</span>
-                </div>
-            </div>
-            <div class="cart-actions">
-                <button class="btn-clear" id="btnClearCart">クリア</button>
-                <button class="btn-order" id="btnOrder">注文する</button>
             </div>
         </aside>
 
-        <!-- Overlay -->
-        <div class="overlay" id="overlay"></div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <div class="table-info">
+                        <span class="table-number" id="tableNumber">T5</span>
+                        <span class="guest-count" id="guestCount">4名様</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="btn-call-staff" onclick="callStaff('bill')">
+                        💳 お会計
+                    </button>
+                    <button class="cart-button" onclick="openCart()">
+                        🛒 カート
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Menu Section -->
+            <section class="menu-section" id="menuSection">
+                <h2 class="menu-title" id="menuTitle">
+                    <span id="categoryIcon">🥩</span>
+                    <span id="categoryLabel">肉類</span>
+                </h2>
+                <div class="menu-grid" id="menuGrid">
+                    <!-- Loading skeleton -->
+                    <div class="menu-skeleton">
+                        <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h2>🛒 カート</h2>
+            <button class="cart-close" onclick="closeCart()">×</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+                カートは空です
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>合計</span>
+                <span class="cart-total-amount" id="cartTotal">¥0</span>
+            </div>
+            <button class="btn-order" id="btnOrder" onclick="submitOrder()" disabled>
+                注文を確定する
+            </button>
+        </div>
     </div>
 
     <!-- Item Detail Modal -->
-    <div class="modal-overlay" id="itemModal" style="display: none;">
-        <div class="modal item-modal">
-            <div class="modal-header">
-                <h2 id="itemName">商品名</h2>
-                <button class="btn-close-modal" id="btnCloseItem">×</button>
-            </div>
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal-content">
+            <img class="modal-image" id="modalImage" src="" alt="">
             <div class="modal-body">
-                <div class="item-image" id="itemImage"></div>
-                <p class="item-description" id="itemDescription">商品説明</p>
-                <div class="item-price" id="itemPrice">¥0</div>
-                <div class="quantity-selector">
-                    <button class="qty-btn minus" id="qtyMinus">−</button>
-                    <span class="qty-value" id="qtyValue">1</span>
-                    <button class="qty-btn plus" id="qtyPlus">＋</button>
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <p class="modal-description" id="modalDescription"></p>
+                <div class="modal-price" id="modalPrice"></div>
+
+                <div class="modal-options">
+                    <label>ご要望（オプション）</label>
+                    <textarea id="modalNotes" placeholder="よく焼き、タレ多め など" rows="2"></textarea>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-add-cart" id="btnAddToCart">カートに追加</button>
+
+                <div class="modal-quantity">
+                    <button class="modal-qty-btn" onclick="changeModalQty(-1)">−</button>
+                    <span class="modal-qty-value" id="modalQty">1</span>
+                    <button class="modal-qty-btn" onclick="changeModalQty(1)">+</button>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeItemModal()">キャンセル</button>
+                    <button class="btn-add-cart" onclick="addToCartFromModal()">
+                        カートに追加
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Order Confirmation Modal -->
-    <div class="modal-overlay" id="confirmModal" style="display: none;">
-        <div class="modal confirm-modal">
-            <div class="modal-header">
-                <h2>ご注文確認</h2>
-            </div>
-            <div class="modal-body">
-                <div class="confirm-items" id="confirmItems">
-                    <!-- Order items will be listed here -->
-                </div>
-                <div class="confirm-total">
-                    <span>合計（税込）</span>
-                    <span id="confirmTotal">¥0</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" id="btnCancelOrder">戻る</button>
-                <button class="btn-confirm" id="btnConfirmOrder">注文確定</button>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-logo">🍖</div>
+            <div class="loading-spinner"></div>
+            <p class="loading-text" id="loadingText">メニューを読み込み中...</p>
+            <div class="loading-status" id="loadingStatus">
+                <span class="status-item" id="apiStatus">
+                    <span class="status-icon">⏳</span>
+                    <span>API接続</span>
+                </span>
+                <span class="status-item" id="wsStatus">
+                    <span class="status-icon">⏳</span>
+                    <span>リアルタイム</span>
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div class="modal-overlay" id="successModal" style="display: none;">
-        <div class="modal success-modal">
-            <div class="success-icon">✓</div>
-            <h2>ご注文ありがとうございます</h2>
-            <p>ご注文を受け付けました。<br>しばらくお待ちください。</p>
-            <button class="btn-close" id="btnCloseSuccess">閉じる</button>
-        </div>
+    <!-- Connection Status Bar -->
+    <div class="connection-bar" id="connectionBar">
+        <span class="connection-icon" id="connectionIcon">🔴</span>
+        <span class="connection-text" id="connectionText">オフライン</span>
     </div>
 
-    <!-- Call Staff Button -->
-    <button class="call-staff-btn" id="callStaffBtn">
-        <span class="call-icon">🔔</span>
-        <span>スタッフを呼ぶ</span>
-    </button>
+    <!-- Notification Toast -->
+    <div class="notification-toast" id="notificationToast">
+        <span id="notificationIcon">✓</span>
+        <span id="notificationMessage"></span>
+    </div>
 
     <!-- Scripts -->
+    <script src="js/components.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

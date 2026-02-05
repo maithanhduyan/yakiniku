@@ -1,401 +1,832 @@
-﻿/**
- * Table Order App - 焼肉ヅアン
- * iPad table ordering system for Yakiniku JIAN
+/**
+ * Table Order App - JavaScript
+ * iPad table ordering system for Yakiniku Jinan
  */
 
 // ============ Configuration ============
+
+// Auto-detect API server based on current hostname
+// This allows the app to work from both localhost and internal network
+const API_HOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'localhost'
+    : window.location.hostname; // Use same host as the web server
+
 const CONFIG = {
-    API_BASE: 'http://localhost:8000/api',
-    WS_BASE: 'ws://localhost:8000/ws',
-    DEFAULT_BRANCH: 'hirama',
-    TAX_RATE: 0.10,
-    CURRENCY: '¥'
+    API_BASE: `http://${API_HOST}:8000/api`,
+    BRANCH_CODE: 'hirama',
+    WS_URL: `ws://${API_HOST}:8000/api/notifications/ws`,
 };
+
+// Get table info from URL params or localStorage
+const urlParams = new URLSearchParams(window.location.search);
+const TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || 'demo-table-1';
+const SESSION_ID = urlParams.get('session') || localStorage.getItem('session_id') || generateSessionId();
 
 // ============ State ============
+
 let state = {
-    branchCode: CONFIG.DEFAULT_BRANCH,
-    tableId: null,
-    tableNumber: 'T1',
-    guestCount: 2,
-    menu: [],
+    categories: [],
+    menuItems: [],
+    currentCategory: 'meat',
     cart: [],
-    currentCategory: 'all',
-    selectedItem: null,
-    quantity: 1,
-    ws: null
+    currentItem: null,
+    modalQty: 1,
+    tableNumber: 'T5',
+    guestCount: 4,
+    sessionId: SESSION_ID,
+    orderHistory: [],
+    isOnline: false,
+    wsConnected: false,
+    wsRetryCount: 0,
+    maxWsRetries: 3,
+    isLoading: true,
+    apiStatus: 'pending', // pending, success, error
+    wsStatus: 'pending'   // pending, success, error
 };
 
-// ============ DOM Elements ============
-const elements = {
-    tableNumber: document.getElementById('tableNumber'),
-    guestCount: document.getElementById('guestCount'),
-    categoryNav: document.getElementById('categoryNav'),
-    menuGrid: document.getElementById('menuGrid'),
-    cartBtn: document.getElementById('cartBtn'),
-    cartCount: document.getElementById('cartCount'),
-    cartPanel: document.getElementById('cartPanel'),
-    cartItems: document.getElementById('cartItems'),
-    cartSubtotal: document.getElementById('cartSubtotal'),
-    cartTotal: document.getElementById('cartTotal'),
-    overlay: document.getElementById('overlay'),
-    itemModal: document.getElementById('itemModal'),
-    itemName: document.getElementById('itemName'),
-    itemDescription: document.getElementById('itemDescription'),
-    itemPrice: document.getElementById('itemPrice'),
-    itemImage: document.getElementById('itemImage'),
-    qtyValue: document.getElementById('qtyValue'),
-    confirmModal: document.getElementById('confirmModal'),
-    confirmItems: document.getElementById('confirmItems'),
-    confirmTotal: document.getElementById('confirmTotal'),
-    successModal: document.getElementById('successModal')
-};
+// ============ Loading State Management ============
 
-// ============ Menu Data (Mock) ============
-const menuData = [
-    // 牛肉
-    { id: 1, name: '特選カルビ', category: 'beef', price: 1980, description: '厳選された上質な牛カルビ。霜降りの脂が絶品。', image: '🥩' },
-    { id: 2, name: '上ハラミ', category: 'beef', price: 1680, description: '柔らかく旨味たっぷりのハラミ。', image: '🥩' },
-    { id: 3, name: '牛タン塩', category: 'beef', price: 1480, description: 'コリコリ食感の牛タン。レモンでさっぱりと。', image: '🥩' },
-    { id: 4, name: '和牛ロース', category: 'beef', price: 2480, description: 'A5ランク和牛の上質なロース。', image: '🥩' },
-    { id: 5, name: '特選5種盛り', category: 'beef', price: 4980, description: 'カルビ、ロース、ハラミ、タン、ホルモンの豪華盛り合わせ。', image: '🍖' },
+function updateLoadingStatus(type, status) {
+    const statusEl = document.getElementById(`${type}Status`);
+    if (!statusEl) return;
 
-    // 豚肉
-    { id: 10, name: 'サムギョプサル', category: 'pork', price: 1280, description: '厚切り豚バラ肉。野菜と一緒にどうぞ。', image: '🥓' },
-    { id: 11, name: '豚トロ', category: 'pork', price: 980, description: 'ジューシーな豚トロ。', image: '🥓' },
+    statusEl.classList.remove('success', 'error');
 
-    // 鶏肉
-    { id: 20, name: '鶏もも', category: 'chicken', price: 780, description: 'プリプリの鶏もも肉。', image: '🍗' },
-    { id: 21, name: 'ぼんじり', category: 'chicken', price: 680, description: 'コラーゲンたっぷり。', image: '🍗' },
+    if (status === 'success') {
+        statusEl.classList.add('success');
+    } else if (status === 'error') {
+        statusEl.classList.add('error');
+    }
 
-    // ホルモン
-    { id: 30, name: 'ホルモン盛り', category: 'hormone', price: 1580, description: 'ミノ、ハチノス、シマチョウの3種盛り。', image: '🫀' },
-    { id: 31, name: 'マルチョウ', category: 'hormone', price: 880, description: '甘みのあるマルチョウ。', image: '🫀' },
+    state[`${type}Status`] = status;
+}
 
-    // 海鮮
-    { id: 40, name: 'エビ', category: 'seafood', price: 780, description: 'プリプリの大エビ。', image: '🦐' },
-    { id: 41, name: 'イカ', category: 'seafood', price: 680, description: '新鮮なイカ。', image: '🦑' },
-    { id: 42, name: 'ホタテ', category: 'seafood', price: 880, description: '北海道産ホタテ。', image: '🐚' },
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        state.isLoading = true;
+    }
+}
 
-    // 野菜
-    { id: 50, name: '野菜盛り合わせ', category: 'vegetable', price: 680, description: 'キャベツ、玉ねぎ、ピーマン、かぼちゃなど。', image: '🥬' },
-    { id: 51, name: 'キムチ盛り合わせ', category: 'vegetable', price: 780, description: '白菜、カクテキ、オイキムチの3種。', image: '🥗' },
-    { id: 52, name: 'サンチュ', category: 'vegetable', price: 380, description: 'お肉を包んでどうぞ。', image: '🥬' },
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        state.isLoading = false;
+    }
 
-    // ご飯・麺
-    { id: 60, name: 'ライス', category: 'rice', price: 300, description: '国産コシヒカリ。', image: '🍚' },
-    { id: 61, name: '大盛りライス', category: 'rice', price: 400, description: '大盛りでお腹いっぱい。', image: '🍚' },
-    { id: 62, name: '冷麺', category: 'rice', price: 880, description: 'さっぱり冷麺。〆にどうぞ。', image: '🍜' },
-    { id: 63, name: 'ビビンバ', category: 'rice', price: 980, description: '石焼ビビンバ。', image: '🍲' },
+    // Remove skeleton loaders
+    document.querySelectorAll('.category-skeleton, .menu-skeleton').forEach(el => {
+        el.remove();
+    });
+}
 
-    // サイドメニュー
-    { id: 70, name: 'ナムル3種', category: 'side', price: 480, description: 'もやし、ほうれん草、大根のナムル。', image: '🥗' },
-    { id: 71, name: 'チヂミ', category: 'side', price: 780, description: 'カリッと焼いたチヂミ。', image: '🥞' },
-    { id: 72, name: '韓国のり', category: 'side', price: 280, description: 'ごま油香る韓国のり。', image: '🍃' },
+function showConnectionBar(isOnline) {
+    const bar = document.getElementById('connectionBar');
+    if (!bar) return;
 
-    // ドリンク
-    { id: 80, name: '生ビール', category: 'drink', price: 550, description: 'キンキンに冷えた生ビール。', image: '🍺' },
-    { id: 81, name: '瓶ビール', category: 'drink', price: 600, description: 'アサヒスーパードライ。', image: '🍺' },
-    { id: 82, name: 'チャミスル', category: 'drink', price: 680, description: '韓国焼酎。', image: '🍶' },
-    { id: 83, name: 'マッコリ', category: 'drink', price: 580, description: '甘くてまろやか。', image: '🥛' },
-    { id: 84, name: 'ハイボール', category: 'drink', price: 480, description: 'さっぱりハイボール。', image: '🥃' },
-    { id: 85, name: 'ソフトドリンク', category: 'drink', price: 380, description: 'コーラ、ウーロン茶、オレンジジュースなど。', image: '🥤' },
+    bar.classList.remove('online', 'offline');
+    bar.classList.add('show', isOnline ? 'online' : 'offline');
 
-    // デザート
-    { id: 90, name: 'バニラアイス', category: 'dessert', price: 380, description: '濃厚バニラ。', image: '🍨' },
-    { id: 91, name: 'シャーベット', category: 'dessert', price: 380, description: '柚子シャーベット。', image: '🍧' }
-];
+    const icon = bar.querySelector('.connection-icon');
+    const text = bar.querySelector('.connection-text');
+
+    if (isOnline) {
+        icon.textContent = '🟢';
+        text.textContent = 'オンライン接続中';
+        // Auto-hide after 3 seconds when online
+        setTimeout(() => {
+            bar.classList.remove('show');
+        }, 3000);
+    } else {
+        icon.textContent = '🔴';
+        text.textContent = 'オフラインモード - デモデータ使用中';
+    }
+}
+
+function hideConnectionBar() {
+    const bar = document.getElementById('connectionBar');
+    if (bar) {
+        bar.classList.remove('show');
+    }
+}
 
 // ============ Initialization ============
-document.addEventListener('DOMContentLoaded', () => {
-    initApp();
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Show loading overlay
+    showLoading();
+
+    // Load saved cart
+    loadCartFromStorage();
+
+    // Setup table info
+    setupTableInfo();
+
+    // Load menu with loading state
+    await loadMenu();
+
+    // Setup WebSocket for real-time updates
+    setupWebSocket();
+
+    // Update UI
+    updateCartBadge();
+
+    // Hide loading after initial load (with minimum display time)
+    setTimeout(() => {
+        hideLoading();
+        showConnectionBar(state.isOnline);
+    }, 1000);
 });
 
-function initApp() {
-    console.log('🍖 Table Order - 焼肉ヅアン initialized');
-
-    // Get table info from URL params
-    const params = new URLSearchParams(window.location.search);
-    state.tableId = params.get('table') || 'demo-table-1';
-    state.tableNumber = params.get('number') || 'T1';
-    state.guestCount = parseInt(params.get('guests')) || 2;
-
-    // Update display
-    elements.tableNumber.textContent = state.tableNumber;
-    elements.guestCount.textContent = `${state.guestCount}名様`;
-
-    // Load menu
-    state.menu = menuData;
-    renderMenu();
-
-    setupEventListeners();
-    connectWebSocket();
+function generateSessionId() {
+    const id = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('session_id', id);
+    return id;
 }
 
-// ============ Event Listeners ============
-function setupEventListeners() {
-    // Category navigation
-    elements.categoryNav.addEventListener('click', (e) => {
-        if (e.target.classList.contains('category-btn')) {
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            state.currentCategory = e.target.dataset.category;
-            renderMenu();
+function setupTableInfo() {
+    const tableNumber = urlParams.get('table_number') || 'T5';
+    const guestCount = parseInt(urlParams.get('guests')) || 4;
+
+    state.tableNumber = tableNumber;
+    state.guestCount = guestCount;
+
+    document.getElementById('tableNumber').textContent = tableNumber;
+    document.getElementById('guestCount').textContent = `${guestCount}名様`;
+}
+
+// ============ API Functions ============
+
+async function loadMenu() {
+    try {
+        updateLoadingStatus('api', 'pending');
+
+        const response = await fetch(`${CONFIG.API_BASE}/menu/categories?branch_code=${CONFIG.BRANCH_CODE}`);
+
+        if (!response.ok) {
+            throw new Error('Failed to load menu');
         }
-    });
 
-    // Cart button
-    elements.cartBtn.addEventListener('click', openCart);
-    document.getElementById('closeCart').addEventListener('click', closeCart);
-    elements.overlay.addEventListener('click', closeCart);
+        const data = await response.json();
 
-    // Cart actions
-    document.getElementById('btnClearCart').addEventListener('click', clearCart);
-    document.getElementById('btnOrder').addEventListener('click', openConfirmModal);
+        // Check if API returned valid data
+        if (data.categories && data.categories.length > 0) {
+            state.categories = data.categories;
+            state.isOnline = true;
+            updateLoadingStatus('api', 'success');
+        } else {
+            // API returned empty data, use demo
+            throw new Error('Empty menu data');
+        }
 
-    // Item modal
-    document.getElementById('btnCloseItem').addEventListener('click', closeItemModal);
-    document.getElementById('qtyMinus').addEventListener('click', () => updateQuantity(-1));
-    document.getElementById('qtyPlus').addEventListener('click', () => updateQuantity(1));
-    document.getElementById('btnAddToCart').addEventListener('click', addToCart);
+        renderCategories();
+        selectCategory(state.categories[0]?.category || 'meat');
 
-    // Confirm modal
-    document.getElementById('btnCancelOrder').addEventListener('click', closeConfirmModal);
-    document.getElementById('btnConfirmOrder').addEventListener('click', submitOrder);
-
-    // Success modal
-    document.getElementById('btnCloseSuccess').addEventListener('click', closeSuccessModal);
-
-    // Call staff
-    document.getElementById('callStaffBtn').addEventListener('click', callStaff);
+    } catch (error) {
+        console.error('Error loading menu:', error);
+        state.isOnline = false;
+        updateLoadingStatus('api', 'error');
+        // Load demo data if API fails
+        loadDemoMenu();
+    }
 }
 
-// ============ Menu Functions ============
-function renderMenu() {
-    const filteredMenu = state.currentCategory === 'all'
-        ? state.menu
-        : state.menu.filter(item => item.category === state.currentCategory);
+// Unsplash fallback images by category
+const UNSPLASH_IMAGES = {
+    meat: {
+        default: 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400',
+        items: {
+            'ハラミ': 'https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=400',
+            'タン': 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400',
+            'カルビ': 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400',
+            'ロース': 'https://images.unsplash.com/photo-1558030089-02acba3c214e?w=400',
+            'ホルモン': 'https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=400',
+            '盛り合わせ': 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400',
+            '豚': 'https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=400',
+            '鶏': 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400',
+        }
+    },
+    drinks: {
+        default: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400',
+        items: {
+            'ビール': 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400',
+            'ハイボール': 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400',
+            'サワー': 'https://images.unsplash.com/photo-1560508180-03f285f67c1a?w=400',
+            '梅酒': 'https://images.unsplash.com/photo-1560508180-03f285f67c1a?w=400',
+            'マッコリ': 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400',
+            '焼酎': 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400',
+            'ウーロン茶': 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400',
+            'コーラ': 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400',
+            'ジュース': 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=400',
+        }
+    },
+    salad: {
+        default: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
+        items: {
+            'チョレギ': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
+            'シーザー': 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400',
+            'ナムル': 'https://images.unsplash.com/photo-1547496502-affa22d38842?w=400',
+            'キムチ': 'https://images.unsplash.com/photo-1583224964978-2257b960c3d3?w=400',
+        }
+    },
+    rice: {
+        default: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400',
+        items: {
+            'ライス': 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400',
+            'ビビンバ': 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400',
+            '冷麺': 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400',
+            'クッパ': 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400',
+        }
+    },
+    side: {
+        default: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400',
+        items: {
+            'スープ': 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400',
+            '枝豆': 'https://images.unsplash.com/photo-1564894809611-1742fc40ed80?w=400',
+            '海苔': 'https://images.unsplash.com/photo-1519984388953-d2406bc725e1?w=400',
+            'チヂミ': 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400',
+        }
+    },
+    dessert: {
+        default: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400',
+        items: {
+            'アイス': 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400',
+            '杏仁豆腐': 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400',
+            'シャーベット': 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=400',
+        }
+    },
+    set: {
+        default: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400',
+        items: {
+            '定食': 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400',
+            'コース': 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=400',
+        }
+    }
+};
 
-    elements.menuGrid.innerHTML = filteredMenu.map(item => `
-        <div class="menu-item" data-item-id="${item.id}" onclick="openItemModal(${item.id})">
-            <div class="item-image">${item.image}</div>
-            <div class="item-info">
-                <h3 class="item-name">${item.name}</h3>
-                <p class="item-price">¥${item.price.toLocaleString()}</p>
-            </div>
-            <button class="quick-add-btn" onclick="event.stopPropagation(); quickAdd(${item.id})">+</button>
+// Get fallback image URL for an item
+function getFallbackImage(category, itemName) {
+    const catImages = UNSPLASH_IMAGES[category] || UNSPLASH_IMAGES.meat;
+    // Try to find a matching keyword in item name
+    for (const [keyword, url] of Object.entries(catImages.items || {})) {
+        if (itemName.includes(keyword)) {
+            return url;
+        }
+    }
+    return catImages.default;
+}
+
+function loadDemoMenu() {
+    // Full menu data matching backend (40 items)
+    state.categories = [
+        {
+            category: 'meat',
+            category_label: '肉類',
+            icon: '🥩',
+            items: [
+                { id: 'menu-001', name: '和牛上ハラミ', description: '口の中でほどける柔らかさと濃厚な味わい。当店自慢の一品', price: 1800, image_url: getFallbackImage('meat', 'ハラミ'), is_popular: true },
+                { id: 'menu-002', name: '厚切り上タン塩', description: '贅沢な厚切り。歯ごたえと肉汁が溢れます', price: 2200, image_url: getFallbackImage('meat', 'タン'), is_popular: true },
+                { id: 'menu-003', name: '特選カルビ', description: '霜降りが美しい最高級カルビ', price: 1800, image_url: getFallbackImage('meat', 'カルビ'), is_popular: true },
+                { id: 'menu-004', name: 'カルビ', description: '定番の人気メニュー。ジューシーな味わい', price: 1500, image_url: getFallbackImage('meat', 'カルビ') },
+                { id: 'menu-005', name: '上ロース', description: '赤身の旨味が楽しめる上質なロース', price: 1700, image_url: getFallbackImage('meat', 'ロース') },
+                { id: 'menu-006', name: 'ロース', description: 'あっさりとした赤身の美味しさ', price: 1400, image_url: getFallbackImage('meat', 'ロース') },
+                { id: 'menu-007', name: 'ホルモン盛り合わせ', description: '新鮮なホルモンをたっぷり。ミノ・ハチノス・シマチョウ', price: 1400, image_url: getFallbackImage('meat', 'ホルモン') },
+                { id: 'menu-008', name: '特選盛り合わせ', description: '本日のおすすめ希少部位を贅沢に盛り合わせ', price: 4500, image_url: getFallbackImage('meat', '盛り合わせ'), is_popular: true },
+                { id: 'menu-009', name: '豚カルビ', description: '甘みのある豚バラ肉', price: 900, image_url: getFallbackImage('meat', '豚') },
+                { id: 'menu-010', name: '鶏もも', description: '柔らかくジューシーな鶏もも肉', price: 800, image_url: getFallbackImage('meat', '鶏') },
+            ]
+        },
+        {
+            category: 'drinks',
+            category_label: '飲物',
+            icon: '🍺',
+            items: [
+                { id: 'menu-011', name: '生ビール', description: 'キンキンに冷えた生ビール（中）', price: 600, image_url: getFallbackImage('drinks', 'ビール') },
+                { id: 'menu-012', name: '瓶ビール', description: 'アサヒスーパードライ', price: 650, image_url: getFallbackImage('drinks', 'ビール') },
+                { id: 'menu-013', name: 'ハイボール', description: 'すっきり爽やかなウイスキーソーダ', price: 500, image_url: getFallbackImage('drinks', 'ハイボール') },
+                { id: 'menu-014', name: 'レモンサワー', description: '自家製レモンサワー。さっぱり飲みやすい', price: 500, image_url: getFallbackImage('drinks', 'サワー') },
+                { id: 'menu-015', name: '梅酒サワー', description: '甘酸っぱい梅酒ソーダ割り', price: 550, image_url: getFallbackImage('drinks', '梅酒') },
+                { id: 'menu-016', name: 'マッコリ', description: '韓国の伝統酒。まろやかな甘さ', price: 600, image_url: getFallbackImage('drinks', 'マッコリ') },
+                { id: 'menu-017', name: '焼酎（芋）', description: '本格芋焼酎。ロック・水割り・お湯割り', price: 500, image_url: getFallbackImage('drinks', '焼酎') },
+                { id: 'menu-018', name: 'ウーロン茶', description: 'ソフトドリンク', price: 300, image_url: getFallbackImage('drinks', 'ウーロン茶') },
+                { id: 'menu-019', name: 'コーラ', description: 'コカ・コーラ', price: 300, image_url: getFallbackImage('drinks', 'コーラ') },
+                { id: 'menu-020', name: 'オレンジジュース', description: '100%果汁オレンジジュース', price: 350, image_url: getFallbackImage('drinks', 'ジュース') },
+            ]
+        },
+        {
+            category: 'salad',
+            category_label: 'サラダ',
+            icon: '🥗',
+            items: [
+                { id: 'menu-021', name: 'チョレギサラダ', description: '韓国風ピリ辛サラダ。ごま油が香る', price: 600, image_url: getFallbackImage('salad', 'チョレギ'), is_spicy: true },
+                { id: 'menu-022', name: 'シーザーサラダ', description: 'パルメザンチーズたっぷり', price: 700, image_url: getFallbackImage('salad', 'シーザー') },
+                { id: 'menu-023', name: 'ナムル盛り合わせ', description: '3種のナムル（もやし・ほうれん草・大根）', price: 500, image_url: getFallbackImage('salad', 'ナムル') },
+                { id: 'menu-024', name: 'キムチ盛り合わせ', description: '白菜・カクテキ・オイキムチ', price: 550, image_url: getFallbackImage('salad', 'キムチ'), is_spicy: true },
+            ]
+        },
+        {
+            category: 'rice',
+            category_label: 'ご飯・麺',
+            icon: '🍚',
+            items: [
+                { id: 'menu-025', name: 'ライス', description: '国産コシヒカリ使用', price: 200, image_url: getFallbackImage('rice', 'ライス') },
+                { id: 'menu-026', name: '大盛りライス', description: '国産コシヒカリ大盛り', price: 300, image_url: getFallbackImage('rice', 'ライス') },
+                { id: 'menu-027', name: '石焼ビビンバ', description: '熱々の石鍋で提供。おこげが美味しい', price: 1200, image_url: getFallbackImage('rice', 'ビビンバ'), is_popular: true, is_spicy: true },
+                { id: 'menu-028', name: '冷麺', description: '韓国冷麺。さっぱりとした味わい', price: 900, image_url: getFallbackImage('rice', '冷麺') },
+                { id: 'menu-029', name: 'カルビクッパ', description: 'カルビ入りの韓国風スープご飯', price: 950, image_url: getFallbackImage('rice', 'クッパ'), is_spicy: true },
+            ]
+        },
+        {
+            category: 'side',
+            category_label: 'サイドメニュー',
+            icon: '🍲',
+            items: [
+                { id: 'menu-030', name: 'わかめスープ', description: '韓国風わかめスープ', price: 350, image_url: getFallbackImage('side', 'スープ') },
+                { id: 'menu-031', name: 'テールスープ', description: 'コラーゲンたっぷり牛テールスープ', price: 800, image_url: getFallbackImage('side', 'スープ') },
+                { id: 'menu-032', name: '枝豆', description: '塩茹で枝豆', price: 350, image_url: getFallbackImage('side', '枝豆') },
+                { id: 'menu-033', name: '韓国海苔', description: 'ごま油香る韓国海苔', price: 300, image_url: getFallbackImage('side', '海苔') },
+                { id: 'menu-034', name: 'チヂミ', description: '海鮮チヂミ。外はカリッと中はもっちり', price: 850, image_url: getFallbackImage('side', 'チヂミ') },
+            ]
+        },
+        {
+            category: 'dessert',
+            category_label: 'デザート',
+            icon: '🍨',
+            items: [
+                { id: 'menu-035', name: 'バニラアイス', description: '濃厚バニラアイスクリーム', price: 400, image_url: getFallbackImage('dessert', 'アイス') },
+                { id: 'menu-036', name: '杏仁豆腐', description: '手作り杏仁豆腐。なめらかな口当たり', price: 450, image_url: getFallbackImage('dessert', '杏仁豆腐') },
+                { id: 'menu-037', name: 'シャーベット', description: 'マンゴーシャーベット', price: 400, image_url: getFallbackImage('dessert', 'シャーベット') },
+            ]
+        },
+        {
+            category: 'set',
+            category_label: 'セットメニュー',
+            icon: '🍱',
+            items: [
+                { id: 'menu-038', name: '焼肉定食', description: 'カルビ・ロース・ライス・スープ・サラダ', price: 1800, image_url: getFallbackImage('set', '定食'), is_popular: true },
+                { id: 'menu-039', name: '上焼肉定食', description: '上カルビ・上ロース・ライス・スープ・サラダ', price: 2500, image_url: getFallbackImage('set', '定食') },
+                { id: 'menu-040', name: '女子会コース', description: 'サラダ・お肉5種・デザート・ドリンク付き', price: 3500, image_url: getFallbackImage('set', 'コース') },
+            ]
+        }
+    ];
+
+    console.log('Loaded offline menu with', state.categories.reduce((sum, cat) => sum + cat.items.length, 0), 'items');
+    renderCategories();
+    selectCategory('meat');
+}
+
+async function submitOrder() {
+    if (state.cart.length === 0) return;
+
+    const btnOrder = document.getElementById('btnOrder');
+    btnOrder.disabled = true;
+    btnOrder.innerHTML = '<span class="loading-spinner"></span> 送信中...';
+
+    try {
+        const orderData = {
+            table_id: TABLE_ID,
+            session_id: state.sessionId,
+            items: state.cart.map(item => ({
+                menu_item_id: item.id,
+                quantity: item.quantity,
+                notes: item.notes || null
+            }))
+        };
+
+        const response = await fetch(`${CONFIG.API_BASE}/orders?branch_code=${CONFIG.BRANCH_CODE}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Order failed');
+        }
+
+        const result = await response.json();
+
+        // Clear cart
+        state.cart = [];
+        saveCartToStorage();
+        updateCartBadge();
+        closeCart();
+        renderCartItems();
+
+        // Show success
+        showNotification('ご注文を承りました！', 'success');
+
+        // Add to order history
+        state.orderHistory.push(result);
+
+    } catch (error) {
+        console.error('Order error:', error);
+        showNotification('注文に失敗しました。もう一度お試しください。', 'error');
+    } finally {
+        btnOrder.disabled = false;
+        btnOrder.textContent = '注文を確定する';
+    }
+}
+
+async function callStaff(callType) {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE}/orders/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                table_id: TABLE_ID,
+                session_id: state.sessionId,
+                call_type: callType
+            })
+        });
+
+        const callLabels = {
+            'assistance': 'スタッフを呼びました',
+            'water': 'お水をお持ちします',
+            'bill': 'お会計をお待ちください'
+        };
+
+        showNotification(callLabels[callType] || 'スタッフを呼びました', 'success');
+
+    } catch (error) {
+        console.error('Call staff error:', error);
+        showNotification('スタッフを呼びました', 'success'); // Show success anyway for demo
+    }
+}
+
+// ============ WebSocket ============
+
+function setupWebSocket() {
+    // Skip if already exceeded max retries
+    if (state.wsRetryCount >= state.maxWsRetries) {
+        console.log('WebSocket: Max retries exceeded, using offline mode');
+        updateLoadingStatus('ws', 'error');
+        state.wsConnected = false;
+        return;
+    }
+
+    updateLoadingStatus('ws', 'pending');
+
+    try {
+        const ws = new WebSocket(`${CONFIG.WS_URL}?branch_code=${CONFIG.BRANCH_CODE}&table_id=${TABLE_ID}`);
+
+        ws.onopen = () => {
+            console.log('WebSocket connected');
+            state.wsRetryCount = 0; // Reset retry count on successful connection
+            state.wsConnected = true;
+            updateConnectionStatus(true);
+            updateLoadingStatus('ws', 'success');
+            showConnectionBar(true);
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            handleWebSocketMessage(data);
+        };
+
+        ws.onerror = (error) => {
+            console.log('WebSocket error (will retry):', error);
+        };
+
+        ws.onclose = () => {
+            state.wsRetryCount++;
+            state.wsConnected = false;
+            updateConnectionStatus(false);
+
+            if (state.wsRetryCount < state.maxWsRetries) {
+                console.log(`WebSocket disconnected, retry ${state.wsRetryCount}/${state.maxWsRetries}...`);
+                setTimeout(setupWebSocket, 3000);
+            } else {
+                console.log('WebSocket: Switching to offline mode');
+                updateLoadingStatus('ws', 'error');
+                showOfflineNotice();
+                showConnectionBar(false);
+            }
+        };
+
+    } catch (error) {
+        console.error('WebSocket setup error:', error);
+        state.wsRetryCount++;
+        updateLoadingStatus('ws', 'error');
+        if (state.wsRetryCount >= state.maxWsRetries) {
+            showOfflineNotice();
+            showConnectionBar(false);
+        }
+    }
+}
+
+function updateConnectionStatus(isOnline) {
+    state.isOnline = isOnline;
+    const statusEl = document.getElementById('connectionStatus');
+    if (statusEl) {
+        if (isOnline) {
+            statusEl.innerHTML = '<span class="status-dot online"></span> オンライン';
+            statusEl.className = 'connection-status online';
+        } else {
+            statusEl.innerHTML = '<span class="status-dot offline"></span> オフライン';
+            statusEl.className = 'connection-status offline';
+        }
+    }
+}
+
+function showOfflineNotice() {
+    // Show a non-intrusive notice that real-time updates are unavailable
+    const existingNotice = document.getElementById('offlineNotice');
+    if (existingNotice) return; // Already showing
+
+    const notice = document.createElement('div');
+    notice.id = 'offlineNotice';
+    notice.className = 'offline-notice';
+    notice.innerHTML = `
+        <span>⚠️ リアルタイム通知は現在利用できません。ご注文は通常通りお受けできます。</span>
+        <button onclick="this.parentElement.remove()">×</button>
+    `;
+    document.body.appendChild(notice);
+}
+
+function handleWebSocketMessage(data) {
+    switch (data.type) {
+        case 'order_status_changed':
+            if (data.new_status === 'ready') {
+                showNotification(`注文 #${data.order_number} が完成しました！`, 'success');
+            }
+            break;
+        case 'menu_updated':
+            loadMenu();
+            break;
+    }
+}
+
+// ============ Rendering ============
+
+function renderCategories() {
+    const container = document.getElementById('categoryList');
+    container.innerHTML = state.categories.map(cat => `
+        <div class="category-item ${cat.category === state.currentCategory ? 'active' : ''}"
+             onclick="selectCategory('${cat.category}')">
+            <span class="category-icon">${cat.icon}</span>
+            <span class="category-label">${cat.category_label}</span>
         </div>
     `).join('');
 }
 
-function openItemModal(itemId) {
-    const item = state.menu.find(i => i.id === itemId);
-    if (!item) return;
+function selectCategory(category) {
+    state.currentCategory = category;
 
-    state.selectedItem = item;
-    state.quantity = 1;
+    // Update active state
+    document.querySelectorAll('.category-item').forEach(el => {
+        el.classList.toggle('active', el.querySelector('.category-label').textContent ===
+            state.categories.find(c => c.category === category)?.category_label);
+    });
 
-    elements.itemName.textContent = item.name;
-    elements.itemDescription.textContent = item.description;
-    elements.itemPrice.textContent = `¥${item.price.toLocaleString()}`;
-    elements.itemImage.textContent = item.image;
-    elements.qtyValue.textContent = '1';
-
-    elements.itemModal.style.display = 'flex';
+    // Update title
+    const cat = state.categories.find(c => c.category === category);
+    if (cat) {
+        document.getElementById('categoryIcon').textContent = cat.icon;
+        document.getElementById('categoryLabel').textContent = cat.category_label;
+        renderMenuItems(cat.items);
+    }
 }
 
-function closeItemModal() {
-    elements.itemModal.style.display = 'none';
-    state.selectedItem = null;
-    state.quantity = 1;
-}
+function renderMenuItems(items) {
+    const container = document.getElementById('menuGrid');
 
-function updateQuantity(delta) {
-    state.quantity = Math.max(1, Math.min(10, state.quantity + delta));
-    elements.qtyValue.textContent = state.quantity;
-}
-
-function quickAdd(itemId) {
-    const item = state.menu.find(i => i.id === itemId);
-    if (!item) return;
-
-    addItemToCart(item, 1);
-}
-
-function addToCart() {
-    if (!state.selectedItem) return;
-
-    addItemToCart(state.selectedItem, state.quantity);
-    closeItemModal();
-}
-
-function addItemToCart(item, quantity) {
-    const existingIndex = state.cart.findIndex(i => i.id === item.id);
-
-    if (existingIndex >= 0) {
-        state.cart[existingIndex].quantity += quantity;
-    } else {
-        state.cart.push({
-            ...item,
-            quantity: quantity
-        });
+    if (!items || items.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted);">メニューがありません</p>';
+        return;
     }
 
-    updateCartUI();
-    showToast(`${item.name} を追加しました`);
+    container.innerHTML = items.map(item => {
+        const inCart = state.cart.find(c => c.id === item.id);
+        const cartQty = inCart ? inCart.quantity : 0;
+
+        return `
+            <div class="menu-card ${inCart ? 'in-cart' : ''}" onclick="openItemModal('${item.id}')">
+                ${cartQty > 0 ? `<div class="menu-card-cart-indicator">${cartQty}</div>` : ''}
+                <img class="menu-card-image" src="${item.image_url || ''}" alt="${item.name}" loading="lazy"
+                     onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                <div class="menu-card-content">
+                    <h3 class="menu-card-name">${item.name}</h3>
+                    <p class="menu-card-description">${item.description || ''}</p>
+                    <div class="menu-card-footer">
+                        <span class="menu-card-price">¥${item.price.toLocaleString()}</span>
+                        <div class="menu-card-badges">
+                            ${item.is_popular ? '<span class="badge popular">人気</span>' : ''}
+                            ${item.is_spicy ? '<span class="badge spicy">辛</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderCartItems() {
+    const container = document.getElementById('cartItems');
+
+    if (state.cart.length === 0) {
+        container.innerHTML = '<div class="cart-empty">カートは空です</div>';
+        document.getElementById('btnOrder').disabled = true;
+        return;
+    }
+
+    container.innerHTML = state.cart.map((item, index) => `
+        <div class="cart-item">
+            <img class="cart-item-image" src="${item.image_url || ''}" alt="${item.name}"
+                 onerror="this.src='https://via.placeholder.com/60?text=No'">
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-price">¥${item.price.toLocaleString()}</div>
+                ${item.notes ? `<div style="font-size: 12px; color: var(--text-muted);">${item.notes}</div>` : ''}
+                <div class="cart-item-controls">
+                    <button class="qty-btn" onclick="updateCartQty(${index}, -1)">−</button>
+                    <span class="qty-value">${item.quantity}</span>
+                    <button class="qty-btn" onclick="updateCartQty(${index}, 1)">+</button>
+                </div>
+            </div>
+            <button class="cart-item-delete" onclick="removeFromCart(${index})">🗑</button>
+        </div>
+    `).join('');
+
+    // Update total
+    const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('cartTotal').textContent = `¥${total.toLocaleString()}`;
+    document.getElementById('btnOrder').disabled = false;
 }
 
 // ============ Cart Functions ============
+
 function openCart() {
-    elements.cartPanel.classList.add('open');
-    elements.overlay.classList.add('show');
-    renderCart();
+    document.getElementById('cartOverlay').classList.add('open');
+    document.getElementById('cartDrawer').classList.add('open');
+    renderCartItems();
 }
 
 function closeCart() {
-    elements.cartPanel.classList.remove('open');
-    elements.overlay.classList.remove('show');
+    document.getElementById('cartOverlay').classList.remove('open');
+    document.getElementById('cartDrawer').classList.remove('open');
 }
 
-function renderCart() {
-    if (state.cart.length === 0) {
-        elements.cartItems.innerHTML = '<div class="empty-cart">カートは空です</div>';
+function addToCart(item, quantity = 1, notes = '') {
+    const existing = state.cart.find(c => c.id === item.id && c.notes === notes);
+
+    if (existing) {
+        existing.quantity += quantity;
     } else {
-        elements.cartItems.innerHTML = state.cart.map((item, index) => `
-            <div class="cart-item">
-                <div class="cart-item-info">
-                    <span class="cart-item-name">${item.name}</span>
-                    <span class="cart-item-price">¥${item.price.toLocaleString()}</span>
-                </div>
-                <div class="cart-item-controls">
-                    <button class="qty-btn small" onclick="updateCartItem(${index}, -1)">−</button>
-                    <span class="cart-item-qty">${item.quantity}</span>
-                    <button class="qty-btn small" onclick="updateCartItem(${index}, 1)">+</button>
-                    <button class="remove-btn" onclick="removeCartItem(${index})">×</button>
-                </div>
-            </div>
-        `).join('');
+        state.cart.push({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            image_url: item.image_url,
+            quantity: quantity,
+            notes: notes
+        });
     }
 
-    updateCartTotals();
+    saveCartToStorage();
+    updateCartBadge();
+
+    // Re-render current category to show cart indicator
+    const cat = state.categories.find(c => c.category === state.currentCategory);
+    if (cat) {
+        renderMenuItems(cat.items);
+    }
 }
 
-function updateCartItem(index, delta) {
+function updateCartQty(index, delta) {
     state.cart[index].quantity += delta;
 
     if (state.cart[index].quantity <= 0) {
         state.cart.splice(index, 1);
     }
 
-    renderCart();
-    updateCartUI();
+    saveCartToStorage();
+    updateCartBadge();
+    renderCartItems();
+
+    // Re-render menu
+    const cat = state.categories.find(c => c.category === state.currentCategory);
+    if (cat) {
+        renderMenuItems(cat.items);
+    }
 }
 
-function removeCartItem(index) {
+function removeFromCart(index) {
     state.cart.splice(index, 1);
-    renderCart();
-    updateCartUI();
+    saveCartToStorage();
+    updateCartBadge();
+    renderCartItems();
+
+    // Re-render menu
+    const cat = state.categories.find(c => c.category === state.currentCategory);
+    if (cat) {
+        renderMenuItems(cat.items);
+    }
 }
 
-function clearCart() {
-    state.cart = [];
-    renderCart();
-    updateCartUI();
-}
-
-function updateCartUI() {
+function updateCartBadge() {
     const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-    elements.cartCount.textContent = totalItems;
-    elements.cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+    const badge = document.getElementById('cartBadge');
+    badge.textContent = totalItems;
+    badge.classList.toggle('hidden', totalItems === 0);
 }
 
-function updateCartTotals() {
-    const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total = Math.floor(subtotal * (1 + CONFIG.TAX_RATE));
-
-    elements.cartSubtotal.textContent = `¥${subtotal.toLocaleString()}`;
-    elements.cartTotal.textContent = `¥${total.toLocaleString()}`;
+function saveCartToStorage() {
+    localStorage.setItem('table_order_cart', JSON.stringify(state.cart));
 }
 
-function getCartTotal() {
-    const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    return Math.floor(subtotal * (1 + CONFIG.TAX_RATE));
+function loadCartFromStorage() {
+    try {
+        const saved = localStorage.getItem('table_order_cart');
+        if (saved) {
+            state.cart = JSON.parse(saved);
+        }
+    } catch (e) {
+        state.cart = [];
+    }
 }
 
-// ============ Order Functions ============
-function openConfirmModal() {
-    if (state.cart.length === 0) {
-        showToast('カートに商品がありません', 'error');
-        return;
+// ============ Modal Functions ============
+
+function openItemModal(itemId) {
+    // Find item in all categories
+    let item = null;
+    for (const cat of state.categories) {
+        item = cat.items.find(i => i.id === itemId);
+        if (item) break;
     }
 
-    closeCart();
+    if (!item) return;
 
-    elements.confirmItems.innerHTML = state.cart.map(item => `
-        <div class="confirm-item">
-            <span class="confirm-item-name">${item.name} ×${item.quantity}</span>
-            <span class="confirm-item-price">¥${(item.price * item.quantity).toLocaleString()}</span>
-        </div>
-    `).join('');
+    state.currentItem = item;
+    state.modalQty = 1;
 
-    elements.confirmTotal.textContent = `¥${getCartTotal().toLocaleString()}`;
-    elements.confirmModal.style.display = 'flex';
+    document.getElementById('modalImage').src = item.image_url || '';
+    document.getElementById('modalTitle').textContent = item.name;
+    document.getElementById('modalDescription').textContent = item.description || '';
+    document.getElementById('modalPrice').textContent = `¥${item.price.toLocaleString()}`;
+    document.getElementById('modalQty').textContent = '1';
+    document.getElementById('modalNotes').value = '';
+
+    document.getElementById('itemModal').classList.add('open');
 }
 
-function closeConfirmModal() {
-    elements.confirmModal.style.display = 'none';
+function closeItemModal() {
+    document.getElementById('itemModal').classList.remove('open');
+    state.currentItem = null;
 }
 
-async function submitOrder() {
-    closeConfirmModal();
-
-    // Show loading
-    showToast('注文を送信中...');
-
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Show success
-    elements.successModal.style.display = 'flex';
-
-    // Clear cart
-    state.cart = [];
-    updateCartUI();
+function changeModalQty(delta) {
+    state.modalQty = Math.max(1, state.modalQty + delta);
+    document.getElementById('modalQty').textContent = state.modalQty;
 }
 
-function closeSuccessModal() {
-    elements.successModal.style.display = 'none';
+function addToCartFromModal() {
+    if (!state.currentItem) return;
+
+    const notes = document.getElementById('modalNotes').value.trim();
+    addToCart(state.currentItem, state.modalQty, notes);
+
+    closeItemModal();
+    showNotification(`${state.currentItem.name} をカートに追加しました`, 'success');
 }
 
-// ============ Staff Call ============
-function callStaff() {
-    showToast('スタッフを呼びました。しばらくお待ちください。');
+// ============ Notifications ============
 
-    // Mock API call to notify staff
-    console.log('Calling staff for table:', state.tableNumber);
-}
+function showNotification(message, type = 'success') {
+    const toast = document.getElementById('notificationToast');
+    const icon = document.getElementById('notificationIcon');
+    const msg = document.getElementById('notificationMessage');
 
-// ============ Utility Functions ============
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
+    icon.textContent = type === 'success' ? '✓' : '✕';
+    msg.textContent = message;
 
-    setTimeout(() => toast.classList.add('show'), 100);
+    toast.className = 'notification-toast ' + type;
+    toast.classList.add('show');
+
     setTimeout(() => {
         toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
-// ============ WebSocket ============
-function connectWebSocket() {
-    console.log('WebSocket connection placeholder');
-}
+// ============ Event Listeners ============
 
-// Make functions globally accessible
-window.openItemModal = openItemModal;
-window.quickAdd = quickAdd;
-window.updateCartItem = updateCartItem;
-window.removeCartItem = removeCartItem;
+// Close modal on overlay click
+document.getElementById('itemModal').addEventListener('click', (e) => {
+    if (e.target.id === 'itemModal') {
+        closeItemModal();
+    }
+});
+
+// Keyboard shortcuts (for testing)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeItemModal();
+        closeCart();
+    }
+});

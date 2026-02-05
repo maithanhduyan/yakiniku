@@ -174,9 +174,9 @@ async def create_booking(
             raise HTTPException(
                 status_code=409,
                 detail={
-                    "message": "ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ã€ã”å¸Œæœ›ã®æ™‚é–“ã¯æº€å¸­ã§ã™ã€‚",
+                    "message": "申し訳ございません、ご希望の時間は満席です。",
                     "alternatives": alt_times,
-                    "suggestion": f"ä»£ã‚ã‚Šã« {', '.join(alt_times)} ã¯ã„ã‹ãŒã§ã—ã‚‡ã†ã‹ï¼Ÿ" if alt_times else None
+                    "suggestion": f"代わりに {', '.join(alt_times)} はいかがでしょうか？" if alt_times else None
                 }
             )
     else:
@@ -233,7 +233,7 @@ async def create_booking(
     # Send real-time notification to staff dashboard
     await notify_new_booking(
         branch_code=db_booking.branch_code,
-        guest_name=db_booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+        guest_name=db_booking.guest_name or "ゲスト",
         booking_date=db_booking.date.isoformat(),
         booking_time=db_booking.time,
         guests=db_booking.guests,
@@ -341,4 +341,3 @@ async def delete_booking(
 
     await db.delete(booking)
     await db.commit()
-

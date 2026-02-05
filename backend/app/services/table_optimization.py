@@ -1,6 +1,6 @@
 ﻿"""
 AI Table Optimization Service
-Tá»‘i Æ°u hÃ³a viá»‡c xáº¿p bÃ n vÃ  quáº£n lÃ½ capacity nhÃ  hÃ ng
+Tối ưu hóa việc xếp bàn và quản lý capacity nhà hàng
 """
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
@@ -17,16 +17,16 @@ from app.models.booking import Booking, BookingStatus
 
 
 class OptimizationStrategy(str, Enum):
-    """Chiáº¿n lÆ°á»£c tá»‘i Æ°u hÃ³a"""
-    MAXIMIZE_CAPACITY = "maximize_capacity"      # Tá»‘i Ä‘a sá»‘ khÃ¡ch
-    MINIMIZE_WASTE = "minimize_waste"            # Giáº£m lÃ£ng phÃ­ gháº¿
-    VIP_PRIORITY = "vip_priority"                # Æ¯u tiÃªn VIP
-    QUICK_TURNOVER = "quick_turnover"            # Tá»‘i Ä‘a vÃ²ng quay bÃ n
+    """Chiến lược tối ưu hóa"""
+    MAXIMIZE_CAPACITY = "maximize_capacity"      # Tối đa số khách
+    MINIMIZE_WASTE = "minimize_waste"            # Giảm lãng phí ghế
+    VIP_PRIORITY = "vip_priority"                # Ưu tiên VIP
+    QUICK_TURNOVER = "quick_turnover"            # Tối đa vòng quay bàn
 
 
 @dataclass
 class TableSlot:
-    """ThÃ´ng tin 1 slot thá»i gian cá»§a bÃ n"""
+    """Thông tin 1 slot thời gian của bàn"""
     table_id: str
     table_number: str
     max_capacity: int
@@ -38,7 +38,7 @@ class TableSlot:
 
 @dataclass
 class TimeSlotSummary:
-    """Tá»•ng há»£p tÃ¬nh tráº¡ng 1 khung giá»"""
+    """Tổng hợp tình trạng 1 khung giờ"""
     time_slot: str
     total_tables: int
     available_tables: int
@@ -52,18 +52,18 @@ class TimeSlotSummary:
 
 @dataclass
 class TableSuggestion:
-    """Äá» xuáº¥t bÃ n cho booking"""
+    """Đề xuất bàn cho booking"""
     table_id: str
     table_number: str
     capacity: int
-    score: float  # 0-100, Ä‘iá»ƒm phÃ¹ há»£p
+    score: float  # 0-100, điểm phù hợp
     reason: str
-    waste: int  # Sá»‘ gháº¿ thá»«a
+    waste: int  # Số ghế thừa
 
 
 @dataclass
 class OptimizationInsight:
-    """Insight tá»« AI vá» tÃ¬nh tráº¡ng nhÃ  hÃ ng"""
+    """Insight từ AI về tình trạng nhà hàng"""
     type: str  # "warning", "suggestion", "opportunity"
     title: str
     message: str
@@ -74,22 +74,22 @@ class OptimizationInsight:
 
 class TableOptimizationService:
     """
-    AI Service Ä‘á»ƒ tá»‘i Æ°u hÃ³a viá»‡c xáº¿p bÃ n
+    AI Service để tối ưu hóa việc xếp bàn
 
     Features:
-    1. Äá» xuáº¥t bÃ n phÃ¹ há»£p cho sá»‘ khÃ¡ch
-    2. Cáº£nh bÃ¡o khi sáº¯p full
-    3. Gá»£i Ã½ thá»i gian thay tháº¿
-    4. PhÃ¢n tÃ­ch utilization
+    1. Đề xuất bàn phù hợp cho số khách
+    2. Cảnh báo khi sắp full
+    3. Gợi ý thời gian thay thế
+    4. Phân tích utilization
     """
 
-    # Thá»i gian trung bÃ¬nh 1 bá»¯a Äƒn (phÃºt)
+    # Thời gian trung bình 1 bữa ăn (phút)
     AVERAGE_DINING_TIME = 90
 
-    # Thá»i gian buffer giá»¯a cÃ¡c booking (phÃºt)
+    # Thời gian buffer giữa các booking (phút)
     TURNOVER_BUFFER = 30
 
-    # Slot duration (phÃºt)
+    # Slot duration (phút)
     SLOT_DURATION = 30
 
     def __init__(self, db: AsyncSession, branch_code: str):
@@ -97,7 +97,7 @@ class TableOptimizationService:
         self.branch_code = branch_code
 
     # ==========================================
-    # CORE: TÃ¬m bÃ n phÃ¹ há»£p
+    # CORE: Tìm bàn phù hợp
     # ==========================================
 
     async def find_best_tables(
@@ -108,14 +108,14 @@ class TableOptimizationService:
         strategy: OptimizationStrategy = OptimizationStrategy.MINIMIZE_WASTE
     ) -> List[TableSuggestion]:
         """
-        TÃ¬m bÃ n phÃ¹ há»£p nháº¥t cho sá»‘ khÃ¡ch
+        Tìm bàn phù hợp nhất cho số khách
 
         Strategy:
-        - MINIMIZE_WASTE: Chá»n bÃ n cÃ³ capacity gáº§n nháº¥t vá»›i sá»‘ khÃ¡ch
-        - MAXIMIZE_CAPACITY: Æ¯u tiÃªn bÃ n lá»›n Ä‘á»ƒ cÃ³ chá»— náº¿u khÃ¡ch thÃªm
-        - VIP_PRIORITY: Æ¯u tiÃªn bÃ n VIP/private
+        - MINIMIZE_WASTE: Chọn bàn có capacity gần nhất với số khách
+        - MAXIMIZE_CAPACITY: Ưu tiên bàn lớn để có chỗ nếu khách thêm
+        - VIP_PRIORITY: Ưu tiên bàn VIP/private
         """
-        # Láº¥y táº¥t cáº£ bÃ n available cho slot nÃ y
+        # Lấy tất cả bàn available cho slot này
         available_tables = await self._get_available_tables(booking_date, time_slot)
 
         if not available_tables:
@@ -124,11 +124,11 @@ class TableOptimizationService:
         suggestions = []
 
         for table in available_tables:
-            # Bá» qua bÃ n quÃ¡ nhá»
+            # Bỏ qua bàn quá nhỏ
             if table.max_capacity < guests:
                 continue
 
-            # TÃ­nh Ä‘iá»ƒm dá»±a trÃªn strategy
+            # Tính điểm dựa trên strategy
             score, reason = self._calculate_table_score(
                 table, guests, strategy
             )
@@ -144,10 +144,10 @@ class TableOptimizationService:
                 waste=waste
             ))
 
-        # Sáº¯p xáº¿p theo score giáº£m dáº§n
+        # Sắp xếp theo score giảm dần
         suggestions.sort(key=lambda x: x.score, reverse=True)
 
-        return suggestions[:5]  # Top 5 Ä‘á» xuáº¥t
+        return suggestions[:5]  # Top 5 đề xuất
 
     def _calculate_table_score(
         self,
@@ -155,43 +155,43 @@ class TableOptimizationService:
         guests: int,
         strategy: OptimizationStrategy
     ) -> Tuple[float, str]:
-        """TÃ­nh Ä‘iá»ƒm phÃ¹ há»£p cá»§a bÃ n"""
+        """Tính điểm phù hợp của bàn"""
         base_score = 100.0
         reason_parts = []
 
         waste = table.max_capacity - guests
 
         if strategy == OptimizationStrategy.MINIMIZE_WASTE:
-            # Giáº£m Ä‘iá»ƒm theo sá»‘ gháº¿ thá»«a
+            # Giảm điểm theo số ghế thừa
             waste_penalty = waste * 10
             base_score -= waste_penalty
 
             if waste == 0:
-                reason_parts.append("å®Œç’§ã«ãƒžãƒƒãƒ")
+                reason_parts.append("完璧にマッチ")
             elif waste <= 2:
-                reason_parts.append(f"ä½™ã‚Š{waste}å¸­")
+                reason_parts.append(f"余り{waste}席")
             else:
-                reason_parts.append(f"ä½™ã‚Š{waste}å¸­(å¤§ãã‚)")
+                reason_parts.append(f"余り{waste}席(大きめ)")
 
         elif strategy == OptimizationStrategy.MAXIMIZE_CAPACITY:
-            # Æ¯u tiÃªn bÃ n lá»›n hÆ¡n
+            # Ưu tiên bàn lớn hơn
             capacity_bonus = table.max_capacity * 5
             base_score += capacity_bonus
-            reason_parts.append(f"æœ€å¤§{table.max_capacity}åã¾ã§å¯¾å¿œ")
+            reason_parts.append(f"最大{table.max_capacity}名まで対応")
 
-        # Bonus cho cÃ¡c features
+        # Bonus cho các features
         if table.table_type == "private":
             base_score += 15
-            reason_parts.append("å€‹å®¤")
+            reason_parts.append("個室")
 
         if table.has_window:
             base_score += 5
-            reason_parts.append("çª“éš›")
+            reason_parts.append("窓際")
 
         # Priority bonus
         base_score += table.priority * 2
 
-        reason = "ã€".join(reason_parts) if reason_parts else "æ¨™æº–å¸­"
+        reason = "・".join(reason_parts) if reason_parts else "標準席"
 
         return max(0, min(100, base_score)), reason
 
@@ -200,8 +200,8 @@ class TableOptimizationService:
         booking_date: date,
         time_slot: str
     ) -> List[Table]:
-        """Láº¥y danh sÃ¡ch bÃ n cÃ²n trá»‘ng cho slot"""
-        # Láº¥y táº¥t cáº£ bÃ n cá»§a branch
+        """Lấy danh sách bàn còn trống cho slot"""
+        # Lấy tất cả bàn của branch
         tables_query = select(Table).where(
             and_(
                 Table.branch_code == self.branch_code,
@@ -211,7 +211,7 @@ class TableOptimizationService:
         tables_result = await self.db.execute(tables_query)
         all_tables = tables_result.scalars().all()
 
-        # Láº¥y cÃ¡c bÃ n Ä‘Ã£ Ä‘Æ°á»£c assign cho slot nÃ y
+        # Lấy các bàn đã được assign cho slot này
         booked_tables_query = select(TableAssignment.table_id).join(
             Booking
         ).where(
@@ -225,7 +225,7 @@ class TableOptimizationService:
         booked_result = await self.db.execute(booked_tables_query)
         booked_table_ids = {r[0] for r in booked_result.fetchall()}
 
-        # Lá»c ra bÃ n cÃ²n trá»‘ng
+        # Lọc ra bàn còn trống
         available = [t for t in all_tables if t.id not in booked_table_ids]
 
         return available
@@ -241,7 +241,7 @@ class TableOptimizationService:
         time_slot: str
     ) -> Dict[str, Any]:
         """
-        Kiá»ƒm tra xem cÃ³ thá»ƒ Ä‘áº·t bÃ n khÃ´ng
+        Kiểm tra xem có thể đặt bàn không
 
         Returns:
             {
@@ -258,18 +258,18 @@ class TableOptimizationService:
                 "available": True,
                 "tables": suggestions,
                 "alternatives": [],
-                "message": f"{len(suggestions)}å¸­ã”æ¡ˆå†…å¯èƒ½ã§ã™"
+                "message": f"{len(suggestions)}席ご案内可能です"
             }
 
-        # KhÃ´ng cÃ³ bÃ n -> tÃ¬m alternatives
+        # Không có bàn -> tìm alternatives
         alternatives = await self._find_alternative_slots(guests, booking_date, time_slot)
 
         return {
             "available": False,
             "tables": [],
             "alternatives": alternatives,
-            "message": "ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ã€ã”å¸Œæœ›ã®æ™‚é–“ã¯æº€å¸­ã§ã™ã€‚" +
-                      (f"ä»£ã‚ã‚Šã«{len(alternatives)}ã¤ã®æ™‚é–“å¸¯ãŒã”ã–ã„ã¾ã™ã€‚" if alternatives else "")
+            "message": "申し訳ございません、ご希望の時間は満席です。" +
+                      (f"代わりに{len(alternatives)}つの時間帯がございます。" if alternatives else "")
         }
 
     async def _find_alternative_slots(
@@ -279,7 +279,7 @@ class TableOptimizationService:
         requested_slot: str,
         range_hours: int = 2
     ) -> List[Dict]:
-        """TÃ¬m cÃ¡c slot thay tháº¿ trong vÃ²ng Â±range_hours"""
+        """Tìm các slot thay thế trong vòng ±range_hours"""
         alternatives = []
 
         # Parse requested time
@@ -328,8 +328,8 @@ class TableOptimizationService:
         self,
         target_date: date
     ) -> List[TimeSlotSummary]:
-        """Tá»•ng há»£p tÃ¬nh tráº¡ng táº¥t cáº£ cÃ¡c slot trong ngÃ y"""
-        # Láº¥y táº¥t cáº£ bÃ n
+        """Tổng hợp tình trạng tất cả các slot trong ngày"""
+        # Lấy tất cả bàn
         tables_query = select(Table).where(
             and_(
                 Table.branch_code == self.branch_code,
@@ -341,7 +341,7 @@ class TableOptimizationService:
 
         total_capacity = sum(t.max_capacity for t in all_tables)
 
-        # Láº¥y táº¥t cáº£ booking trong ngÃ y
+        # Lấy tất cả booking trong ngày
         bookings_query = select(Booking).where(
             and_(
                 Booking.branch_code == self.branch_code,
@@ -398,12 +398,12 @@ class TableOptimizationService:
         target_date: date
     ) -> List[OptimizationInsight]:
         """
-        Táº¡o insights vÃ  suggestions cho staff
+        Tạo insights và suggestions cho staff
 
         Examples:
-        - "20:00 sáº¯p full (7/8 bÃ n), cÃ¢n nháº¯c tá»« chá»‘i booking má»›i"
-        - "18:00 cÃ²n nhiá»u bÃ n 6 gháº¿, khÃ¡ch 2 ngÆ°á»i nÃªn chuyá»ƒn sang 4 gháº¿"
-        - "HÃ´m nay cÃ³ 3 VIP, Ä‘Ã£ reserve phÃ²ng riÃªng"
+        - "20:00 sắp full (7/8 bàn), cân nhắc từ chối booking mới"
+        - "18:00 còn nhiều bàn 6 ghế, khách 2 người nên chuyển sang 4 ghế"
+        - "Hôm nay có 3 VIP, đã reserve phòng riêng"
         """
         insights = []
 
@@ -411,14 +411,14 @@ class TableOptimizationService:
         summaries = await self.get_time_slot_summary(target_date)
 
         for summary in summaries:
-            # Warning: Sáº¯p full
+            # Warning: Sắp full
             if summary.utilization_rate >= 80:
                 insights.append(OptimizationInsight(
                     type="warning",
-                    title=f"âš ï¸ {summary.time_slot} æ··é›‘æ³¨æ„",
-                    message=f"åˆ©ç”¨çŽ‡{summary.utilization_rate}% - æ®‹ã‚Š{summary.available_tables}å¸­",
+                    title=f"⚠️ {summary.time_slot} 混雑注意",
+                    message=f"利用率{summary.utilization_rate}% - 残り{summary.available_tables}席",
                     priority=4 if summary.utilization_rate >= 90 else 3,
-                    action="æ–°è¦äºˆç´„ã‚’æŽ§ãˆã‚‹ã‹ã€ä»£æ›¿æ™‚é–“ã‚’ã”æ¡ˆå†…ãã ã•ã„",
+                    action="新規予約を控えるか、代替時間をご案内ください",
                     data={
                         "time_slot": summary.time_slot,
                         "utilization": summary.utilization_rate,
@@ -426,14 +426,14 @@ class TableOptimizationService:
                     }
                 ))
 
-            # Opportunity: Slot trá»‘ng
+            # Opportunity: Slot trống
             elif summary.utilization_rate < 30 and summary.time_slot >= "18:00":
                 insights.append(OptimizationInsight(
                     type="opportunity",
-                    title=f"ðŸ“ˆ {summary.time_slot} ç©ºãå¤šã‚",
-                    message=f"åˆ©ç”¨çŽ‡{summary.utilization_rate}% - {summary.available_tables}å¸­ç©ºã",
+                    title=f"📈 {summary.time_slot} 空き多め",
+                    message=f"利用率{summary.utilization_rate}% - {summary.available_tables}席空き",
                     priority=2,
-                    action="ãƒ—ãƒ­ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚„äºˆç´„è»¢æ›ã®æ©Ÿä¼š",
+                    action="プロモーションや予約転換の機会",
                     data={
                         "time_slot": summary.time_slot,
                         "available": summary.available_tables
@@ -453,10 +453,10 @@ class TableOptimizationService:
         self,
         target_date: date
     ) -> List[OptimizationInsight]:
-        """Kiá»ƒm tra lÃ£ng phÃ­ capacity"""
+        """Kiểm tra lãng phí capacity"""
         insights = []
 
-        # Láº¥y bookings vá»›i table assignment
+        # Lấy bookings với table assignment
         query = select(Booking, TableAssignment, Table).join(
             TableAssignment, Booking.id == TableAssignment.booking_id
         ).join(
@@ -476,7 +476,7 @@ class TableOptimizationService:
 
         for booking, assignment, table in rows:
             waste = table.max_capacity - booking.guests
-            if waste >= 3:  # 3+ gháº¿ thá»«a
+            if waste >= 3:  # 3+ ghế thừa
                 waste_cases.append({
                     "booking": booking,
                     "table": table,
@@ -487,10 +487,10 @@ class TableOptimizationService:
             total_waste = sum(c["waste"] for c in waste_cases)
             insights.append(OptimizationInsight(
                 type="suggestion",
-                title=f"ðŸ’¡ å¸­åŠ¹çŽ‡ã®æ”¹å–„å¯èƒ½",
-                message=f"{len(waste_cases)}ä»¶ã®äºˆç´„ã§åˆè¨ˆ{total_waste}å¸­ã®ä½™è£•ã‚ã‚Š",
+                title=f"💡 席効率の改善可能",
+                message=f"{len(waste_cases)}件の予約で合計{total_waste}席の余裕あり",
                 priority=2,
-                action="å°ã•ã„å¸­ã¸ã®å¤‰æ›´ã‚’æ¤œè¨Ž",
+                action="小さい席への変更を検討",
                 data={
                     "waste_cases": [
                         {
@@ -517,7 +517,7 @@ class TableOptimizationService:
         booking_date: date,
         time_slot: str
     ) -> Optional[TableAssignment]:
-        """Tá»± Ä‘á»™ng assign bÃ n cho booking"""
+        """Tự động assign bàn cho booking"""
         suggestions = await self.find_best_tables(guests, booking_date, time_slot)
 
         if not suggestions:
@@ -544,7 +544,7 @@ class TableOptimizationService:
         new_table_id: str,
         reason: str = ""
     ) -> Optional[TableAssignment]:
-        """Äá»•i bÃ n cho booking"""
+        """Đổi bàn cho booking"""
         # Delete old assignment
         old_query = select(TableAssignment).where(
             TableAssignment.booking_id == booking_id
@@ -638,7 +638,7 @@ class TableOptimizationService:
                 "time_str": time_str,
                 "slot_index": slot_index,  # Pre-calculated slot index
                 "guests": booking.guests,
-                "customer_name": booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+                "customer_name": booking.guest_name or "ゲスト",
                 "status": booking.status,
                 "duration_slots": 3,  # 90 min = 3 slots of 30 min
                 "notes": booking.note or "",
@@ -685,4 +685,3 @@ async def get_optimization_service(
 ) -> TableOptimizationService:
     """Factory function to get optimization service"""
     return TableOptimizationService(db, branch_code)
-

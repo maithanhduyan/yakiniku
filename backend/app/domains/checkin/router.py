@@ -1,4 +1,4 @@
-﻿"""
+"""
 Check-in Router - Customer Reception APIs
 Team: checkin
 """
@@ -46,7 +46,7 @@ async def scan_qr_code(
         return QRScanResult(
             success=False,
             check_in_type=CheckInType.booking,
-            message="äºˆç´„ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚\nã‚¹ã‚¿ãƒƒãƒ•ã«ãŠå£°ãŒã‘ãã ã•ã„ã€‚"
+            message="予約が見つかりませんでした。\nスタッフにお声がけください。"
         )
 
     # Check booking date
@@ -56,13 +56,13 @@ async def scan_qr_code(
             return QRScanResult(
                 success=False,
                 check_in_type=CheckInType.booking,
-                message=f"ã“ã®äºˆç´„ã¯ {booking.date} ã§ã—ãŸã€‚\nã‚¹ã‚¿ãƒƒãƒ•ã«ãŠå£°ãŒã‘ãã ã•ã„ã€‚"
+                message=f"この予約は {booking.date} でした。\nスタッフにお声がけください。"
             )
         else:
             return QRScanResult(
                 success=False,
                 check_in_type=CheckInType.booking,
-                message=f"äºˆç´„æ—¥ã¯ {booking.date} ã§ã™ã€‚\nå½“æ—¥ã«ãŠè¶Šã—ãã ã•ã„ã€‚",
+                message=f"予約日は {booking.date} です。\n当日にお越しください。",
                 booking_id=booking.id,
                 guest_name=booking.guest_name,
                 booking_time=booking.time
@@ -75,7 +75,7 @@ async def scan_qr_code(
             return QRScanResult(
                 success=True,
                 check_in_type=CheckInType.booking,
-                message=f"æ—¢ã«ãƒã‚§ãƒƒã‚¯ã‚¤ãƒ³æ¸ˆã¿ã§ã™ã€‚\nãŠå¸­ã¸ã©ã†ãžã€‚",
+                message=f"既にチェックイン済みです。\nお席へどうぞ。",
                 booking_id=booking.id,
                 guest_name=booking.guest_name,
                 guest_count=booking.guests,
@@ -116,7 +116,7 @@ async def scan_qr_code(
         return QRScanResult(
             success=True,
             check_in_type=CheckInType.booking,
-            message=f"{booking.guest_name}æ§˜\nã„ã‚‰ã£ã—ã‚ƒã„ã¾ã›ï¼\n\nãŠå¸­ã¸ã”æ¡ˆå†…ã„ãŸã—ã¾ã™ã€‚",
+            message=f"{booking.guest_name}様\nいらっしゃいませ！\n\nお席へご案内いたします。",
             booking_id=booking.id,
             guest_name=booking.guest_name,
             guest_count=booking.guests,
@@ -132,7 +132,7 @@ async def scan_qr_code(
         return QRScanResult(
             success=True,
             check_in_type=CheckInType.booking,
-            message=f"{booking.guest_name}æ§˜\nã„ã‚‰ã£ã—ã‚ƒã„ã¾ã›ï¼\n\nåªä»Šæº€å¸­ã®ãŸã‚ã€å°‘ã€…ãŠå¾…ã¡ãã ã•ã„ã€‚",
+            message=f"{booking.guest_name}様\nいらっしゃいませ！\n\n只今満席のため、少々お待ちください。",
             booking_id=booking.id,
             guest_name=booking.guest_name,
             guest_count=booking.guests,
@@ -322,7 +322,7 @@ async def assign_table(
         table_number=table.table_number,
         table_zone=table.zone,
         session_id=session.id,
-        message=f"ãƒ†ãƒ¼ãƒ–ãƒ« {table.table_number} ã«æ¡ˆå†…ã—ã¾ã—ãŸ"
+        message=f"テーブル {table.table_number} に案内しました"
     )
 
 
@@ -346,7 +346,7 @@ async def call_waiting_customer(
     await db.commit()
 
     return {
-        "message": f"ç•ªå· {waiting.queue_number} - {waiting.customer_name}æ§˜ã‚’ãŠå‘¼ã³ã—ã¾ã—ãŸ",
+        "message": f"番号 {waiting.queue_number} - {waiting.customer_name}様をお呼びしました",
         "queue_number": waiting.queue_number,
         "customer_name": waiting.customer_name
     }

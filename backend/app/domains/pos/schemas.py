@@ -1,4 +1,4 @@
-﻿"""
+"""
 POS Schemas
 """
 from pydantic import BaseModel
@@ -16,10 +16,10 @@ class PaymentMethod(str, Enum):
 
 
 class TableStatusEnum(str, Enum):
-    available = "available"    # ç©ºå¸­
-    occupied = "occupied"      # ä½¿ç”¨ä¸­
-    pending_payment = "pending_payment"  # æœªä¼šè¨ˆ
-    cleaning = "cleaning"      # æ¸…æŽƒä¸­
+    available = "available"    # 空席
+    occupied = "occupied"      # 使用中
+    pending_payment = "pending_payment"  # 未会計
+    cleaning = "cleaning"      # 清掃中
 
 
 class CheckoutRequest(BaseModel):
@@ -59,4 +59,3 @@ class TableOverview(BaseModel):
 class POSDashboard(BaseModel):
     tables: list[TableOverview]
     summary: dict  # occupied, available, pending_payment counts
-

@@ -424,16 +424,16 @@ async def seed_tables(
 
     tables_config = [
         # 4-seat regular tables
-        {"table_number": "A1", "name": "çª“éš›å¸­A", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "A2", "name": "çª“éš›å¸­B", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "B1", "name": "ä¸­å¤®å¸­A", "max_capacity": 4, "zone": "B"},
-        {"table_number": "B2", "name": "ä¸­å¤®å¸­B", "max_capacity": 4, "zone": "B"},
+        {"table_number": "A1", "name": "窓際席A", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "A2", "name": "窓際席B", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "B1", "name": "中央席A", "max_capacity": 4, "zone": "B"},
+        {"table_number": "B2", "name": "中央席B", "max_capacity": 4, "zone": "B"},
         # 6-seat tables
-        {"table_number": "C1", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­A", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C2", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­B", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C3", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­C", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C1", "name": "グループ席A", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C2", "name": "グループ席B", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C3", "name": "グループ席C", "max_capacity": 6, "zone": "C"},
         # VIP room
-        {"table_number": "VIP1", "name": "å€‹å®¤", "max_capacity": 8, "zone": "VIP",
+        {"table_number": "VIP1", "name": "個室", "max_capacity": 8, "zone": "VIP",
          "table_type": "private", "priority": 10},
     ]
 
@@ -461,4 +461,3 @@ async def seed_tables(
         "seeded": True,
         "tables": created,
     }
-

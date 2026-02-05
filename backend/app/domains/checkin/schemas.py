@@ -1,4 +1,4 @@
-﻿"""
+"""
 Check-in Schemas
 """
 from pydantic import BaseModel, Field
@@ -16,8 +16,8 @@ class WaitingStatusEnum(str, Enum):
 
 
 class CheckInType(str, Enum):
-    booking = "booking"      # CÃ³ Ä‘áº·t trÆ°á»›c
-    walkin = "walkin"        # KhÃ¡ch vÃ£ng lai
+    booking = "booking"      # 予約あり
+    walkin = "walkin"        # ウォークイン
 
 
 # QR Scan response
@@ -100,5 +100,4 @@ class CheckInDashboard(BaseModel):
     available_tables: list[dict]
 
     # Stats
-    stats: dict  # checked_in_today, waiting_count, available_tables_count
-
+    stats: Optional[dict] = None

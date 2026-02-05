@@ -130,10 +130,10 @@ async def seed_default_branch(
 
     hirama = Branch(
         code="hirama",
-        name="Yakiniku å¹³é–“æœ¬åº—",
+        name="Yakiniku 平間本店",
         subdomain="hirama",
         phone="044-789-8413",
-        address="ã€’211-0013 ç¥žå¥ˆå·çœŒå·å´Žå¸‚ä¸­åŽŸåŒºä¸Šå¹³é–“XXXX",
+        address="〒211-0013 神奈川県川崎市中原区上平間XXXX",
         theme_primary_color="#d4af37",
         theme_bg_color="#1a1a1a",
         closed_days=[2],

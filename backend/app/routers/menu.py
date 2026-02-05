@@ -15,13 +15,13 @@ router = APIRouter()
 
 # Category labels and icons for UI
 CATEGORY_INFO = {
-    "meat": {"label": "è‚‰é¡ž", "icon": "ðŸ¥©"},
-    "drinks": {"label": "é£²ç‰©", "icon": "ðŸº"},
-    "salad": {"label": "ã‚µãƒ©ãƒ€", "icon": "ðŸ¥—"},
-    "rice": {"label": "ã”é£¯ãƒ»éºº", "icon": "ðŸš"},
-    "side": {"label": "ã‚µã‚¤ãƒ‰ãƒ¡ãƒ‹ãƒ¥ãƒ¼", "icon": "ðŸŸ"},
-    "dessert": {"label": "ãƒ‡ã‚¶ãƒ¼ãƒˆ", "icon": "ðŸ¨"},
-    "set": {"label": "ã‚»ãƒƒãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼", "icon": "ðŸ±"},
+    "meat": {"label": "肉類", "icon": "🥩"},
+    "drinks": {"label": "飲物", "icon": "🍺"},
+    "salad": {"label": "サラダ", "icon": "🥗"},
+    "rice": {"label": "ご飯・麺", "icon": "🍚"},
+    "side": {"label": "サイドメニュー", "icon": "🍟"},
+    "dessert": {"label": "デザート", "icon": "🍨"},
+    "set": {"label": "セットメニュー", "icon": "🍱"},
 }
 
 
@@ -123,4 +123,3 @@ async def get_menu_item(
         raise HTTPException(status_code=404, detail="Menu item not found")
 
     return item
-

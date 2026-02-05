@@ -19,7 +19,7 @@ class CustomerPreference(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     branch_customer_id = Column(String(36), ForeignKey("branch_customers.id"), nullable=False)
 
-    preference = Column(String(255), nullable=False)  # 'ãƒ¬ãƒåˆºã—', 'åŽšåˆ‡ã‚Š'
+    preference = Column(String(255), nullable=False)  # 'レバ刺し', '厚切り'
     category = Column(String(50))  # 'meat', 'cooking', 'allergy', 'occasion'
     note = Column(String(500))  # Additional context
 
@@ -31,4 +31,3 @@ class CustomerPreference(Base):
 
     # Relationships
     branch_customer = relationship("BranchCustomer", back_populates="preferences")
-

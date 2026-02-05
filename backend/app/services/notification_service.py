@@ -60,7 +60,7 @@ class NotificationManager:
 
     async def shutdown(self):
         """Signal all SSE connections to close gracefully"""
-        print("ðŸ“¡ Shutting down SSE connections...")
+        print("📡 Shutting down SSE connections...")
         self._shutdown_event.set()
 
         # Send shutdown signal to all queues
@@ -75,7 +75,7 @@ class NotificationManager:
             # Clear all clients
             self._clients.clear()
 
-        print("ðŸ“¡ All SSE connections closed")
+        print("📡 All SSE connections closed")
 
     async def connect(self, branch_code: str) -> asyncio.Queue:
         """Register a new SSE client connection"""
@@ -86,7 +86,7 @@ class NotificationManager:
                 self._clients[branch_code] = set()
             self._clients[branch_code].add(queue)
 
-        print(f"ðŸ“¡ SSE client connected for branch: {branch_code} (total: {len(self._clients[branch_code])})")
+        print(f"📡 SSE client connected for branch: {branch_code} (total: {len(self._clients[branch_code])})")
         return queue
 
     async def disconnect(self, branch_code: str, queue: asyncio.Queue):
@@ -97,7 +97,7 @@ class NotificationManager:
                 if not self._clients[branch_code]:
                     del self._clients[branch_code]
 
-        print(f"ðŸ“¡ SSE client disconnected from branch: {branch_code}")
+        print(f"📡 SSE client disconnected from branch: {branch_code}")
 
     async def broadcast(self, branch_code: str, notification: Notification):
         """Send notification to all connected clients for a branch"""
@@ -105,10 +105,10 @@ class NotificationManager:
             clients = self._clients.get(branch_code, set()).copy()
 
         if not clients:
-            print(f"ðŸ“¡ No clients connected for branch: {branch_code}")
+            print(f"📡 No clients connected for branch: {branch_code}")
             return
 
-        print(f"ðŸ“¡ Broadcasting to {len(clients)} clients: {notification.title}")
+        print(f"📡 Broadcasting to {len(clients)} clients: {notification.title}")
 
         for queue in clients:
             try:
@@ -154,13 +154,13 @@ async def notify_new_booking(
     table_number: str = None,
 ):
     """Send notification for new booking"""
-    message = f"{guest_name}æ§˜ {guests}åæ§˜ - {booking_date} {booking_time}"
+    message = f"{guest_name}様 {guests}名様 - {booking_date} {booking_time}"
     if table_number:
         message += f" ({table_number})"
 
     notification = Notification(
         type=NotificationType.NEW_BOOKING,
-        title="ðŸ”” æ–°è¦äºˆç´„",
+        title="🔔 新規予約",
         message=message,
         data={
             "booking_id": booking_id,
@@ -184,8 +184,8 @@ async def notify_booking_cancelled(
     """Send notification for cancelled booking"""
     notification = Notification(
         type=NotificationType.BOOKING_CANCELLED,
-        title="âŒ äºˆç´„ã‚­ãƒ£ãƒ³ã‚»ãƒ«",
-        message=f"{guest_name}æ§˜ - {booking_date} {booking_time}",
+        title="❌ 予約キャンセル",
+        message=f"{guest_name}様 - {booking_date} {booking_time}",
         data={
             "booking_id": booking_id,
             "guest_name": guest_name,
@@ -206,8 +206,8 @@ async def notify_booking_confirmed(
     """Send notification for confirmed booking"""
     notification = Notification(
         type=NotificationType.BOOKING_CONFIRMED,
-        title="âœ… äºˆç´„ç¢ºèªå®Œäº†",
-        message=f"{guest_name}æ§˜ - {booking_date} {booking_time}",
+        title="✅ 予約確認完了",
+        message=f"{guest_name}様 - {booking_date} {booking_time}",
         data={
             "booking_id": booking_id,
             "guest_name": guest_name,
@@ -226,12 +226,11 @@ async def notify_vip_arrived(
     """Send notification when VIP customer arrives"""
     notification = Notification(
         type=NotificationType.VIP_ARRIVED,
-        title="â­ VIPæ¥åº—",
-        message=f"{customer_name}æ§˜ãŒã”æ¥åº—ã§ã™",
+        title="⭐ VIP来店",
+        message=f"{customer_name}様がご来店です",
         data={
             "customer_name": customer_name,
             "preferences": preferences or [],
         }
     )
     await notification_manager.broadcast(branch_code, notification)
-

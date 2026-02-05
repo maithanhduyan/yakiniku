@@ -133,7 +133,7 @@ async def booking_detail(
     booking = result.scalar_one_or_none()
 
     if not booking:
-        return HTMLResponse("<p>äºˆç´„ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“</p>", status_code=404)
+        return HTMLResponse("<p>予約が見つかりません</p>", status_code=404)
 
     # Get customer info if exists
     customer = None
@@ -166,7 +166,7 @@ async def update_booking_status(
     booking = result.scalar_one_or_none()
 
     if not booking:
-        return HTMLResponse("<p>ã‚¨ãƒ©ãƒ¼</p>", status_code=404)
+        return HTMLResponse("<p>エラー</p>", status_code=404)
 
     old_status = booking.status
     booking.status = status
@@ -177,7 +177,7 @@ async def update_booking_status(
     if status == "confirmed" and old_status != "confirmed":
         await notify_booking_confirmed(
             branch_code=booking.branch_code,
-            guest_name=booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+            guest_name=booking.guest_name or "ゲスト",
             booking_date=booking.date.isoformat(),
             booking_time=booking.time,
             booking_id=booking.id,
@@ -185,7 +185,7 @@ async def update_booking_status(
     elif status == "cancelled" and old_status != "cancelled":
         await notify_booking_cancelled(
             branch_code=booking.branch_code,
-            guest_name=booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+            guest_name=booking.guest_name or "ゲスト",
             booking_date=booking.date.isoformat(),
             booking_time=booking.time,
             booking_id=booking.id,
@@ -282,7 +282,7 @@ async def customer_detail(
     customer = result.scalar_one_or_none()
 
     if not customer:
-        return HTMLResponse("<p>é¡§å®¢ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“</p>", status_code=404)
+        return HTMLResponse("<p>顧客が見つかりません</p>", status_code=404)
 
     # Get booking history
     result = await db.execute(
@@ -343,10 +343,10 @@ async def toggle_vip_status(
         customer.is_vip = not customer.is_vip
         await db.commit()
 
-        status = "VIP ã«è¨­å®šã—ã¾ã—ãŸ â­" if customer.is_vip else "VIP ã‚’è§£é™¤ã—ã¾ã—ãŸ"
+        status = "VIP に設定しました ⭐" if customer.is_vip else "VIP を解除しました"
         return HTMLResponse(f'<span class="text-primary">{status}</span>')
 
-    return HTMLResponse("<span>ã‚¨ãƒ©ãƒ¼</span>", status_code=404)
+    return HTMLResponse("<span>エラー</span>", status_code=404)
 
 
 # ============================================
@@ -568,17 +568,17 @@ async def seed_tables_dashboard(
         select(Table).where(Table.branch_code == branch_code).limit(1)
     )
     if existing.scalar_one_or_none():
-        return HTMLResponse('<div class="text-yellow-400 p-4">ãƒ†ãƒ¼ãƒ–ãƒ«ã¯æ—¢ã«è¨­å®šã•ã‚Œã¦ã„ã¾ã™ã€‚ãƒšãƒ¼ã‚¸ã‚’æ›´æ–°ã—ã¦ãã ã•ã„ã€‚</div>')
+        return HTMLResponse('<div class="text-yellow-400 p-4">テーブルは既に設定されています。ページを更新してください。</div>')
 
     tables_config = [
-        {"table_number": "A1", "name": "çª“éš›å¸­A", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "A2", "name": "çª“éš›å¸­B", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "B1", "name": "ä¸­å¤®å¸­A", "max_capacity": 4, "zone": "B"},
-        {"table_number": "B2", "name": "ä¸­å¤®å¸­B", "max_capacity": 4, "zone": "B"},
-        {"table_number": "C1", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­A", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C2", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­B", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C3", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­C", "max_capacity": 6, "zone": "C"},
-        {"table_number": "VIP1", "name": "å€‹å®¤", "max_capacity": 8, "zone": "VIP", "table_type": "private", "priority": 10},
+        {"table_number": "A1", "name": "窓際席A", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "A2", "name": "窓際席B", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "B1", "name": "中央席A", "max_capacity": 4, "zone": "B"},
+        {"table_number": "B2", "name": "中央席B", "max_capacity": 4, "zone": "B"},
+        {"table_number": "C1", "name": "グループ席A", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C2", "name": "グループ席B", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C3", "name": "グループ席C", "max_capacity": 6, "zone": "C"},
+        {"table_number": "VIP1", "name": "個室", "max_capacity": 8, "zone": "VIP", "table_type": "private", "priority": 10},
     ]
 
     for config in tables_config:
@@ -598,7 +598,7 @@ async def seed_tables_dashboard(
 
     await db.commit()
 
-    return HTMLResponse('<div class="text-green-400 p-4">âœ… 8ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’ç”Ÿæˆã—ã¾ã—ãŸã€‚ãƒšãƒ¼ã‚¸ã‚’æ›´æ–°ã—ã¦ãã ã•ã„ã€‚</div>')
+    return HTMLResponse('<div class="text-green-400 p-4">✅ 8テーブルを生成しました。ページを更新してください。</div>')
 
 
 @router.post("/tables/create", response_class=HTMLResponse)
@@ -627,7 +627,7 @@ async def create_table_dashboard(
         )
     )
     if existing.scalar_one_or_none():
-        return HTMLResponse('<div class="text-red-400 p-4">âŒ ã“ã®ãƒ†ãƒ¼ãƒ–ãƒ«ç•ªå·ã¯æ—¢ã«å­˜åœ¨ã—ã¾ã™</div>')
+        return HTMLResponse('<div class="text-red-400 p-4">❌ このテーブル番号は既に存在します</div>')
 
     table = Table(
         branch_code=branch_code,
@@ -644,5 +644,4 @@ async def create_table_dashboard(
     db.add(table)
     await db.commit()
 
-    return HTMLResponse(f'<div class="text-green-400 p-4">âœ… {table_number} ã‚’è¿½åŠ ã—ã¾ã—ãŸã€‚ãƒšãƒ¼ã‚¸ã‚’æ›´æ–°ã—ã¦ãã ã•ã„ã€‚</div>')
-
+    return HTMLResponse(f'<div class="text-green-400 p-4">✅ {table_number} を追加しました。ページを更新してください。</div>')

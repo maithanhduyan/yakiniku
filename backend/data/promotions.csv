@@ -1,0 +1,9 @@
+id,branch_code,code,name,name_en,description,trigger_type,trigger_item_id,trigger_category_id,trigger_value,reward_type,reward_item_id,reward_value,reward_quantity,start_date,end_date,valid_hours_start,valid_hours_end,valid_days,max_uses_per_order,max_uses_per_customer,max_uses_total,stackable,priority,display_order,show_on_menu,is_active
+promo-001,hirama,ORDER-30K-FREE-TONGUE,30000円以上で牛タン無料,Free beef tongue for orders over ¥30000,お会計30000円以上で牛タン（6枚）を1皿プレゼント！,order_amount,,,30000,free_item,item-013,,1,,,,,,,,,false,10,1,true,true
+promo-002,hirama,BEER-8-FREE-1,生ビール8杯で1杯無料,Buy 8 draft beers get 1 free,生ビール（大）を8杯ご注文で1杯無料！,item_quantity,item-101,,8,free_item,item-101,,1,,,,,,,,,false,5,2,true,true
+promo-003,hirama,LUNCH-20OFF,ランチタイム20%OFF,Lunch 20% discount,平日11:00-15:00のお食事が20%OFF（ドリンク除く）,order_amount,,,0,discount_order,,20,,,,11:00,15:00,mon-tue-wed-thu-fri,1,,,,8,3,true,true
+promo-004,hirama,BIRTHDAY-DESSERT,誕生日デザートサービス,Birthday free dessert,お誕生日の方にデザート1品プレゼント！スタッフにお申し付けください,order_amount,,,0,free_item,item-400,,1,,,,,,,1,1,,false,1,4,true,true
+promo-005,hirama,FIRST-VISIT-10OFF,初回来店10%OFF,First visit 10% discount,初めてのご来店で全品10%OFF！次回使えるクーポンもプレゼント,order_amount,,,0,discount_order,,10,,,,,,,,1,1,,false,3,5,true,true
+promo-006,hirama,RAINY-DAY-DRINK,雨の日ドリンク半額,Rainy day half price drinks,雨の日はソフトドリンク全品半額！,order_amount,,cat-soft,0,discount_item,,50,,,,,,,,,,false,2,6,true,true
+promo-007,hirama,WEEKDAY-HAPPY-HOUR,平日ハッピーアワー,Weekday Happy Hour,平日17:00-19:00はビール・ハイボールが¥100OFF,order_amount,,cat-beer,0,discount_item,,100,,,,17:00,19:00,mon-tue-wed-thu-fri,,,,,4,7,true,true
+promo-008,hirama,MEAT-5K-NAMUL,肉5000円以上でナムル無料,Free namul for meat orders over ¥5000,肉類を5000円以上ご注文でナムル盛り合わせプレゼント,item_total,,cat-meat,5000,free_item,item-202,,1,,,,,,,,,false,6,8,true,true

@@ -1,0 +1,29 @@
+id,group_id,name,name_en,price_adjustment,is_default,display_order,is_available
+opt-rice-small,og-rice-amount,少なめ,Less,0,false,1,true
+opt-rice-normal,og-rice-amount,普通,Normal,0,true,2,true
+opt-rice-large,og-rice-amount,大盛り,Large,100,false,3,true
+opt-rice-extra,og-rice-amount,特盛り,Extra Large,200,false,4,true
+opt-rare,og-doneness,レア,Rare,0,false,1,true
+opt-medium-rare,og-doneness,ミディアムレア,Medium Rare,0,false,2,true
+opt-medium,og-doneness,ミディアム,Medium,0,true,3,true
+opt-well,og-doneness,ウェルダン,Well Done,0,false,4,true
+opt-egg,og-toppings,卵黄,Egg Yolk,100,false,1,true
+opt-negi,og-toppings,ネギ増し,Extra Green Onion,50,false,2,true
+opt-garlic,og-toppings,にんにく,Garlic,50,false,3,true
+opt-cheese,og-toppings,チーズ,Cheese,150,false,4,true
+opt-kimchi,og-toppings,キムチ,Kimchi,100,false,5,true
+opt-rock,og-shochu-style,ロック,On the Rocks,0,true,1,true
+opt-mizuwari,og-shochu-style,水割り,Mizuwari,0,false,2,true
+opt-oyuwari,og-shochu-style,お湯割り,Oyuwari,0,false,3,true
+opt-straight,og-shochu-style,ストレート,Straight,0,false,4,true
+opt-soda,og-shochu-style,ソーダ割り,With Soda,0,false,5,true
+opt-mild,og-spicy,控えめ,Mild,0,false,1,true
+opt-normal-spicy,og-spicy,普通,Normal,0,true,2,true
+opt-hot,og-spicy,辛め,Hot,0,false,3,true
+opt-extra-hot,og-spicy,激辛,Extra Hot,100,false,4,true
+opt-noodle-small,og-noodle-amount,少なめ,Less,-100,false,1,true
+opt-noodle-normal,og-noodle-amount,普通,Normal,0,true,2,true
+opt-noodle-large,og-noodle-amount,大盛り,Large,150,false,3,true
+opt-sauce-salt,og-sauce,塩,Salt,0,false,1,true
+opt-sauce-tare,og-sauce,タレ,Tare Sauce,0,true,2,true
+opt-sauce-miso,og-sauce,味噌,Miso,0,false,3,true

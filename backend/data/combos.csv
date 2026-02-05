@@ -1,0 +1,10 @@
+id,branch_code,code,name,name_en,description,discount_type,discount_value,start_date,end_date,valid_hours_start,valid_hours_end,valid_days,max_uses_total,max_uses_per_order,min_order_amount,display_order,image_url,is_active,is_featured
+combo-001,hirama,WAGYU-SALAD-30,和牛A5 + サラダセット,Wagyu A5 + Salad Set,和牛A5（サーロインまたはカルビ）とサラダを一緒にご注文で30%OFF！,percentage,30,,,,,,,1,,1,,true,true
+combo-002,hirama,YAKINIKU-SET-A,焼肉セットA（2名様）,Yakiniku Set A for 2,カルビ・ロース・ハラミ・サラダ・ライス×2のお得なセット,new_price,4500,,,,,,,1,,2,,true,true
+combo-003,hirama,YAKINIKU-SET-B,焼肉セットB（3〜4名様）,Yakiniku Set B for 3-4,和牛カルビ・カルビ・ロース・ハラミ・ホルモン・サラダ×2・ライス×4,new_price,8800,,,,,,,1,,3,,true,true
+combo-004,hirama,BEER-SNACK,ビール＋おつまみセット,Beer + Snack Set,生ビール（中）2杯とキムチ盛り合わせで¥500 OFF,fixed,500,,,,,,,1,,4,,true,false
+combo-005,hirama,LUNCH-SET-A,ランチセットA,Lunch Set A,カルビ＋ライス＋わかめスープ＋ナムル,new_price,1200,,,11:00,15:00,mon-tue-wed-thu-fri,,1,,5,,true,true
+combo-006,hirama,LUNCH-SET-B,ランチセットB,Lunch Set B,ハラミ＋ライス＋わかめスープ＋ナムル,new_price,1400,,,11:00,15:00,mon-tue-wed-thu-fri,,1,,6,,true,true
+combo-007,hirama,LUNCH-SET-C,ランチセットC,Lunch Set C,石焼ビビンバ＋わかめスープ,new_price,1350,,,11:00,15:00,mon-tue-wed-thu-fri,,1,,7,,true,true
+combo-008,hirama,WAGYU-COURSE,和牛堪能コース,Wagyu Tasting Course,和牛A5サーロイン・和牛カルビ・和牛ハラミ・サラダ・ナムル・ライス×2・デザート,new_price,12800,,,17:00,22:00,,,1,,8,,true,true
+combo-009,hirama,NOMIHOUDAI-SET,飲み放題セット,All-You-Can-Drink Set,2時間飲み放題（ビール・サワー・ソフトドリンク）,new_price,1980,,,17:00,22:00,,,1,,9,,true,true

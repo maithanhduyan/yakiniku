@@ -1,0 +1,17 @@
+id,branch_code,code,name,name_en,parent_id,display_order,icon,is_active
+cat-meat,hirama,meat,肉類,Meat,,1,🥩,true
+cat-drinks,hirama,drinks,飲み物,Drinks,,2,🍺,true
+cat-salad,hirama,salad,サラダ,Salad,,3,🥗,true
+cat-rice,hirama,rice,ご飯・麺,Rice & Noodles,,4,🍚,true
+cat-side,hirama,side,サイドメニュー,Side Menu,,5,🍢,true
+cat-dessert,hirama,dessert,デザート,Dessert,,6,🍨,true
+cat-beef,hirama,beef,牛肉,Beef,cat-meat,1,,true
+cat-wagyu,hirama,wagyu,和牛,Wagyu,cat-meat,2,,true
+cat-pork,hirama,pork,豚肉,Pork,cat-meat,3,,true
+cat-chicken,hirama,chicken,鶏肉,Chicken,cat-meat,4,,true
+cat-offal,hirama,offal,ホルモン,Offal,cat-meat,5,,true
+cat-beer,hirama,beer,ビール,Beer,cat-drinks,1,,true
+cat-sour,hirama,sour,サワー,Sour,cat-drinks,2,,true
+cat-shochu,hirama,shochu,焼酎,Shochu,cat-drinks,3,,true
+cat-sake,hirama,sake,日本酒,Sake,cat-drinks,4,,true
+cat-soft,hirama,soft,ソフトドリンク,Soft Drinks,cat-drinks,5,,true

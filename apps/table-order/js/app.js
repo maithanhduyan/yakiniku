@@ -763,6 +763,14 @@ function openItemModal(itemId) {
     document.getElementById('modalQty').textContent = '1';
     document.getElementById('modalNotes').value = '';
 
+    // Show options field only if item has options
+    const modalOptions = document.getElementById('modalOptions');
+    if (item.options || item.has_options) {
+        modalOptions.style.display = 'block';
+    } else {
+        modalOptions.style.display = 'none';
+    }
+
     document.getElementById('itemModal').classList.add('open');
 }
 

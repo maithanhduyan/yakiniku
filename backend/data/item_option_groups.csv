@@ -1,0 +1,8 @@
+id,branch_code,name,name_en,description,selection_type,min_selections,max_selections,display_order,is_active
+og-rice-amount,hirama,ご飯の量,Rice Amount,ご飯の量をお選びください,single,0,1,1,true
+og-doneness,hirama,焼き加減,Doneness,お好みの焼き加減をお選びください,single,0,1,2,true
+og-toppings,hirama,トッピング,Toppings,トッピングを追加できます（最大3つ）,multiple,0,3,3,true
+og-shochu-style,hirama,飲み方,Drinking Style,焼酎の飲み方をお選びください,single,1,1,1,true
+og-spicy,hirama,辛さ,Spicy Level,辛さをお選びください,single,0,1,4,true
+og-noodle-amount,hirama,麺の量,Noodle Amount,麺の量をお選びください,single,0,1,5,true
+og-sauce,hirama,タレ,Sauce,タレをお選びください,single,0,1,6,true

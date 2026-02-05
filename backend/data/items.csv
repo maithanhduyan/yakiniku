@@ -1,0 +1,61 @@
+id,branch_code,category_id,sku,name,name_en,description,base_price,prep_time_minutes,kitchen_printer,display_order,is_available,is_popular,is_spicy,is_vegetarian,allergens,has_options,options_required
+item-001,hirama,cat-wagyu,WAGYU-A5-SIRLOIN,和牛A5サーロイン,Wagyu A5 Sirloin,最高級A5ランクの和牛サーロイン。口の中でとろける極上の味わい,4500,6,grill,1,true,true,false,false,,true,false
+item-002,hirama,cat-wagyu,WAGYU-A5-KALBI,和牛A5カルビ,Wagyu A5 Kalbi,霜降りが美しい最高級カルビ。濃厚な旨味が特徴,3800,5,grill,2,true,true,false,false,,true,false
+item-003,hirama,cat-wagyu,WAGYU-HARAMI,和牛上ハラミ,Premium Wagyu Harami,口の中でほどける柔らかさと濃厚な味わい。当店自慢の一品,2800,5,grill,3,true,true,false,false,,true,false
+item-004,hirama,cat-wagyu,WAGYU-ZABUTON,和牛ザブトン,Wagyu Zabuton,肩ロースの希少部位。きめ細かい霜降り,3200,5,grill,4,true,false,false,false,,true,false
+item-005,hirama,cat-wagyu,WAGYU-ICHIBO,和牛イチボ,Wagyu Ichibo,赤身と霜降りのバランスが絶妙,2600,5,grill,5,true,false,false,false,,true,false
+item-010,hirama,cat-beef,BEEF-KALBI,カルビ,Kalbi,定番の人気メニュー。ジューシーな味わい,1500,5,grill,1,true,false,false,false,,true,false
+item-011,hirama,cat-beef,BEEF-ROSU,ロース,Sirloin,あっさりとした赤身の美味しさ,1400,5,grill,2,true,false,false,false,,true,false
+item-012,hirama,cat-beef,BEEF-TAN-THICK,厚切り上タン塩,Thick Sliced Beef Tongue,贅沢な厚切り。歯ごたえと肉汁が溢れます,2200,6,grill,3,true,true,false,false,,true,false
+item-013,hirama,cat-beef,BEEF-TAN-6PC,牛タン（6枚）,Beef Tongue 6pcs,薄切り牛タン6枚盛り,1200,5,grill,4,true,false,false,false,,false,false
+item-014,hirama,cat-beef,BEEF-HARAMI,ハラミ,Harami,赤身の旨味が楽しめる定番部位,1600,5,grill,5,true,false,false,false,,true,false
+item-015,hirama,cat-beef,BEEF-SAGARI,サガリ,Sagari,あっさりとした赤身。ヘルシー志向の方に,1400,5,grill,6,true,false,false,false,,true,false
+item-016,hirama,cat-beef,BEEF-MORIAWASE,特選盛り合わせ,Special Assortment,本日のおすすめ希少部位を贅沢に盛り合わせ,4500,8,grill,7,true,true,false,false,,false,false
+item-020,hirama,cat-pork,PORK-KALBI,豚カルビ,Pork Kalbi,甘みのある豚バラ肉,900,5,grill,1,true,false,false,false,,true,false
+item-021,hirama,cat-pork,PORK-TORO,豚トロ,Pork Jowl,脂の甘みが絶品。とろける食感,1100,5,grill,2,true,false,false,false,,true,false
+item-022,hirama,cat-pork,PORK-ROSU,豚ロース,Pork Loin,あっさりヘルシーな豚ロース,850,5,grill,3,true,false,false,false,,true,false
+item-030,hirama,cat-chicken,CHICKEN-MOMO,鶏もも,Chicken Thigh,柔らかくジューシーな鶏もも肉,800,5,grill,1,true,false,false,false,,true,false
+item-031,hirama,cat-chicken,CHICKEN-SESERI,鶏せせり,Chicken Neck,コリコリ食感が楽しい希少部位,900,5,grill,2,true,false,false,false,,true,false
+item-032,hirama,cat-chicken,CHICKEN-KAWA,鶏皮,Chicken Skin,パリパリに焼いてお召し上がりください,600,5,grill,3,true,false,false,false,,false,false
+item-040,hirama,cat-offal,OFFAL-MIX,ホルモン盛り合わせ,Offal Assortment,新鮮なホルモンをたっぷり。ミノ・ハチノス・シマチョウ,1400,7,grill,1,true,false,false,false,,false,false
+item-041,hirama,cat-offal,OFFAL-MINO,ミノ,Beef Tripe,コリコリ食感の第一胃,800,6,grill,2,true,false,false,false,,false,false
+item-042,hirama,cat-offal,OFFAL-SHIMACHO,シマチョウ,Beef Large Intestine,脂の甘みが絶品,900,6,grill,3,true,false,false,false,,false,false
+item-043,hirama,cat-offal,OFFAL-HATSU,ハツ,Beef Heart,あっさり赤身の心臓,750,5,grill,4,true,false,false,false,,false,false
+item-100,hirama,cat-beer,BEER-DRAFT-M,生ビール（中）,Draft Beer Medium,キンキンに冷えた生ビール,600,1,drink,1,true,true,false,false,,false,false
+item-101,hirama,cat-beer,BEER-DRAFT-L,生ビール（大）,Draft Beer Large,大ジョッキの生ビール,800,1,drink,2,true,true,false,false,,false,false
+item-102,hirama,cat-beer,BEER-BOTTLE,瓶ビール,Bottled Beer,アサヒスーパードライ,650,1,drink,3,true,false,false,false,,false,false
+item-103,hirama,cat-beer,BEER-BLACK,黒ビール,Dark Beer,コクのある黒ビール,700,1,drink,4,true,false,false,false,,false,false
+item-110,hirama,cat-sour,SOUR-LEMON,レモンサワー,Lemon Sour,自家製レモンサワー。さっぱり飲みやすい,500,1,drink,1,true,false,false,false,,false,false
+item-111,hirama,cat-sour,SOUR-UME,梅酒サワー,Plum Wine Sour,甘酸っぱい梅酒ソーダ割り,550,1,drink,2,true,false,false,false,,false,false
+item-112,hirama,cat-sour,HIGHBALL,ハイボール,Highball,すっきり爽やかなウイスキーソーダ,500,1,drink,3,true,true,false,false,,false,false
+item-113,hirama,cat-sour,SOUR-GRAPEFRUIT,グレープフルーツサワー,Grapefruit Sour,さっぱりグレフルサワー,500,1,drink,4,true,false,false,false,,false,false
+item-114,hirama,cat-sour,SOUR-CALPIS,カルピスサワー,Calpis Sour,甘くて飲みやすいカルピスサワー,500,1,drink,5,true,false,false,false,,false,false
+item-120,hirama,cat-shochu,SHOCHU-IMO,焼酎（芋）,Sweet Potato Shochu,本格芋焼酎,500,1,drink,1,true,false,false,false,,true,true
+item-121,hirama,cat-shochu,SHOCHU-MUGI,焼酎（麦）,Barley Shochu,本格麦焼酎,500,1,drink,2,true,false,false,false,,true,true
+item-122,hirama,cat-shochu,SHOCHU-KOME,焼酎（米）,Rice Shochu,本格米焼酎,500,1,drink,3,true,false,false,false,,true,true
+item-125,hirama,cat-sake,SAKE-JUNMAI,純米酒,Junmai Sake,すっきりとした純米酒,600,1,drink,1,true,false,false,false,,false,false
+item-126,hirama,cat-sake,SAKE-DAIGINJO,大吟醸,Daiginjo Sake,フルーティーな香りの大吟醸,900,1,drink,2,true,false,false,false,,false,false
+item-130,hirama,cat-soft,SOFT-OOLONG,ウーロン茶,Oolong Tea,ソフトドリンク,300,1,drink,1,true,false,false,false,,false,false
+item-131,hirama,cat-soft,SOFT-COLA,コーラ,Cola,コカ・コーラ,300,1,drink,2,true,false,false,false,,false,false
+item-132,hirama,cat-soft,SOFT-ORANGE,オレンジジュース,Orange Juice,100%果汁オレンジジュース,350,1,drink,3,true,false,false,false,,false,false
+item-133,hirama,cat-soft,SOFT-GINGER,ジンジャーエール,Ginger Ale,カナダドライ,300,1,drink,4,true,false,false,false,,false,false
+item-134,hirama,cat-soft,SOFT-CALPIS,カルピス,Calpis,甘くておいしいカルピス,350,1,drink,5,true,false,false,false,,false,false
+item-200,hirama,cat-salad,SALAD-CHOREGI,チョレギサラダ,Korean Salad,韓国風ピリ辛サラダ。ごま油が香る,600,3,cold,1,true,false,true,true,,false,false
+item-201,hirama,cat-salad,SALAD-CAESAR,シーザーサラダ,Caesar Salad,パルメザンチーズたっぷり,700,3,cold,2,true,false,false,true,milk,false,false
+item-202,hirama,cat-salad,SALAD-NAMUL,ナムル盛り合わせ,Namul Assortment,3種のナムル（もやし・ほうれん草・大根）,500,3,cold,3,true,false,false,true,,false,false
+item-203,hirama,cat-salad,SALAD-KIMCHI,キムチ盛り合わせ,Kimchi Assortment,白菜・カクテキ・オイキムチ,550,2,cold,4,true,false,true,true,,false,false
+item-204,hirama,cat-salad,SALAD-TOFU,冷奴,Cold Tofu,新鮮な絹ごし豆腐,400,2,cold,5,true,false,false,true,soy,false,false
+item-205,hirama,cat-salad,SALAD-EDAMAME,枝豆,Edamame,塩茹で枝豆,400,3,cold,6,true,false,false,true,soy,false,false
+item-300,hirama,cat-rice,RICE-PLAIN,ライス,Rice,国産コシヒカリ使用,200,2,rice,1,true,false,false,true,,true,false
+item-301,hirama,cat-rice,RICE-BIBIMBAP,石焼ビビンバ,Stone Pot Bibimbap,熱々の石鍋で提供。おこげが美味しい,1200,8,grill,2,true,true,true,false,egg,true,false
+item-302,hirama,cat-rice,RICE-REIMEN,冷麺,Cold Noodles,韓国冷麺。さっぱりとした味わい,900,5,cold,3,true,false,false,false,wheat,false,false
+item-303,hirama,cat-rice,RICE-KUPPA,カルビクッパ,Kalbi Rice Soup,カルビ入りの韓国風スープご飯,950,6,grill,4,true,false,true,false,,true,false
+item-304,hirama,cat-rice,RICE-YUKKE,ユッケジャンクッパ,Yukkejan Kuppa,牛肉と野菜の辛口スープご飯,1000,6,grill,5,true,false,true,false,,true,false
+item-305,hirama,cat-rice,RICE-TAMAGO,たまごクッパ,Egg Rice Soup,やさしい味わいのたまごスープご飯,750,5,grill,6,true,false,false,false,egg,true,false
+item-310,hirama,cat-side,SIDE-WAKAME,わかめスープ,Wakame Soup,磯の香りが広がるわかめスープ,350,3,grill,1,true,false,false,true,,false,false
+item-311,hirama,cat-side,SIDE-TAMAGO,たまごスープ,Egg Soup,ふんわりたまごのスープ,350,3,grill,2,true,false,false,false,egg,false,false
+item-312,hirama,cat-side,SIDE-KAKUTEKI,カクテキ,Cubed Radish Kimchi,大根の角切りキムチ,350,1,cold,3,true,false,true,true,,false,false
+item-400,hirama,cat-dessert,DESSERT-VANILLA,バニラアイス,Vanilla Ice Cream,濃厚バニラアイス,300,2,cold,1,true,false,false,true,milk,false,false
+item-401,hirama,cat-dessert,DESSERT-YUZU,柚子シャーベット,Yuzu Sherbet,さっぱり柚子シャーベット,350,2,cold,2,true,false,false,true,,false,false
+item-402,hirama,cat-dessert,DESSERT-MATCHA,抹茶アイス,Matcha Ice Cream,京都産抹茶使用,350,2,cold,3,true,false,false,true,milk,false,false
+item-403,hirama,cat-dessert,DESSERT-MANGO,マンゴーシャーベット,Mango Sherbet,トロピカルなマンゴーシャーベット,350,2,cold,4,true,false,false,true,,false,false

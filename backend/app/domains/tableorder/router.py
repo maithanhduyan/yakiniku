@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel
+from typing import Optional, Any
+from pydantic import BaseModel, Field
 
 from app.database import get_db
 from app.domains.tableorder.models import Order, OrderItem, OrderStatus, TableSession
@@ -317,6 +317,82 @@ async def call_staff(
         call_type=request.call_type,
         correlation_id=event.correlation_id
     )
+
+
+# ============ Event Sync Endpoint (batch ingest from frontend EventStore) ============
+
+class ClientEvent(BaseModel):
+    """Single event from frontend EventStore"""
+    id: str
+    type: str
+    source: str = "customer"
+    ts: float                     # Unix epoch ms from Date.now()
+    session_id: Optional[str] = None
+    table_id: Optional[str] = None
+    data: dict = Field(default_factory=dict)
+
+
+class EventSyncRequest(BaseModel):
+    """Batch of events from one table"""
+    table_id: str
+    events: list[ClientEvent]
+
+
+class EventSyncResponse(BaseModel):
+    received: int
+    synced_ids: list[str]
+
+
+# Map frontend event type strings → backend EventType enum
+_CLIENT_EVENT_MAP: dict[str, EventType] = {
+    "session.started":          EventType.SESSION_STARTED,
+    "session.ended":            EventType.SESSION_ENDED,
+    "session.phase_transition": EventType.SESSION_LOG,
+    "item.added":               EventType.ITEM_ADDED,
+    "item.removed":             EventType.ITEM_REMOVED,
+    "order.submitted":          EventType.ORDER_CREATED,
+    "call.staff":               EventType.CALL_STAFF,
+    "call.water":               EventType.CALL_WATER,
+    "call.bill":                EventType.CALL_BILL,
+    "call.acknowledged":        EventType.CALL_ACKNOWLEDGED,
+    "ws.connected":             EventType.WS_CONNECTED,
+    "ws.disconnected":          EventType.WS_DISCONNECTED,
+}
+
+
+@router.post("/events/sync", response_model=EventSyncResponse)
+async def sync_events(
+    payload: EventSyncRequest,
+    branch_code: str = "hirama",
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Batch-ingest behaviour events from the frontend EventStore.
+    Accepts up to 200 events per request.
+    Unknown event types are stored as SESSION_LOG.
+    """
+    event_service = EventService(db)
+    synced: list[str] = []
+
+    for ce in payload.events[:200]:
+        backend_type = _CLIENT_EVENT_MAP.get(ce.type, EventType.SESSION_LOG)
+
+        await event_service.log_event(
+            event_type=backend_type,
+            event_source=EventSource.TABLE_ORDER,
+            branch_code=branch_code,
+            table_id=ce.table_id or payload.table_id,
+            session_id=ce.session_id,
+            data={
+                "client_event_type": ce.type,
+                "client_event_id": ce.id,
+                "client_ts": ce.ts,
+                **ce.data,
+            },
+        )
+        synced.append(ce.id)
+
+    return EventSyncResponse(received=len(synced), synced_ids=synced)
 
 
 # Session endpoints

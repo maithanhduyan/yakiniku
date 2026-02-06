@@ -10,37 +10,45 @@ const TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || '
 // SESSION_ID is generated on WELCOME → ORDERING transition, not on page load
 let SESSION_ID = localStorage.getItem('session_id') || null;
 
-// ============ Session Log (analytics, fire-and-forget) ============
+// ============ Event Store + API Client (singletons) ============
 
+const eventStore = new EventStore(TABLE_ID);
+const api = new APIClient();
+
+// Legacy SessionLog — delegates to EventStore for backward compat
 const SessionLog = {
-    _key: () => `session_log_${TABLE_ID}`,
-    log(type, meta = {}) {
-        try {
-            const logs = JSON.parse(localStorage.getItem(this._key()) || '[]');
-            logs.push({ type, ts: Date.now(), ...meta });
-            localStorage.setItem(this._key(), JSON.stringify(logs));
-        } catch (e) { /* analytics, not critical */ }
-    },
-    flush() {
-        try {
-            const logs = JSON.parse(localStorage.getItem(this._key()) || '[]');
-            if (!logs.length) return;
-            const payload = JSON.stringify({
-                table_id: TABLE_ID,
-                session_id: SESSION_ID,
-                entries: logs.map(l => ({ type: l.type, ts: l.ts, meta: l }))
-            });
-            const blob = new Blob([payload], { type: 'application/json' });
-            navigator.sendBeacon?.(`${CONFIG.API_URL}/tableorder/session-log`, blob);
-            localStorage.removeItem(this._key());
-        } catch (e) { /* best-effort */ }
-    },
-    clear() { localStorage.removeItem(this._key()); }
+    log(type, meta = {}) { eventStore.append(type, meta); },
+    flush() { syncEventsToBackend(); },
+    clear() { /* events are retained with 30-day rotation */ },
 };
 
-// Flush analytics periodically + on reconnect
-setInterval(() => { if (navigator.onLine) SessionLog.flush(); }, 60000);
-window.addEventListener('online', () => SessionLog.flush());
+/**
+ * Sync un-sent events to backend, mark as synced on success.
+ * Safe to call frequently — no-ops if nothing pending.
+ */
+async function syncEventsToBackend() {
+    try {
+        const pending = eventStore.pending();
+        if (!pending.length) return;
+        const result = await api.syncEvents(pending);
+        if (result.synced_ids?.length) {
+            eventStore.markSynced(result.synced_ids);
+        }
+    } catch (e) {
+        // Offline or backend down — events stay in localStorage
+        console.warn('[EventSync] sync failed (will retry):', e.message);
+    }
+}
+
+// Periodic sync every 60s + on reconnect + on page hide
+setInterval(() => { if (navigator.onLine) syncEventsToBackend(); }, 60_000);
+window.addEventListener('online', () => syncEventsToBackend());
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        // Best-effort beacon sync when tab is hidden/closed
+        api.beaconSyncEvents(eventStore.pending());
+    }
+});
 
 // ============ State ============
 
@@ -198,7 +206,7 @@ function transitionTo(newPhase) {
     console.log(`Session: ${currentPhase} → ${newPhase}`);
     state.sessionPhase = newPhase;
     localStorage.setItem('session_phase', newPhase);
-    SessionLog.log('phase_transition', { from: currentPhase, to: newPhase });
+    eventStore.logPhaseTransition(currentPhase, newPhase);
 
     // Phase-specific actions
     switch (newPhase) {
@@ -207,7 +215,7 @@ function transitionTo(newPhase) {
                 // New session — generate session ID
                 SESSION_ID = generateSessionId();
                 state.sessionId = SESSION_ID;
-                SessionLog.log('session_started', { session_id: SESSION_ID, table_id: TABLE_ID });
+                eventStore.append(EventType.SESSION_STARTED, { session_id: SESSION_ID, table_id: TABLE_ID });
             }
             // Coming from BILL_REVIEW (追加注文) — just show ordering UI
             showOrderingUI();
@@ -224,8 +232,8 @@ function transitionTo(newPhase) {
         case CONFIG.SESSION_PHASES.CLEANING:
             showCleaningUI();
             clearInactivityTimer();
-            SessionLog.log('session_ended', { session_id: SESSION_ID });
-            SessionLog.flush();
+            eventStore.append(EventType.SESSION_ENDED, { session_id: SESSION_ID });
+            syncEventsToBackend(); // flush events at session end
             break;
 
         case CONFIG.SESSION_PHASES.WELCOME:
@@ -848,12 +856,12 @@ async function submitOrder() {
         // Show success
         showNotification(t('notify.orderSuccess'), 'success');
 
-        // Log analytics
-        SessionLog.log('order_submitted', {
-            order_id: result.id || result.order_id,
-            items_count: orderData.items.length,
-            total: historyItems.reduce((s, i) => s + i.price * i.quantity, 0)
-        });
+        // Log event
+        eventStore.logOrderSubmitted(
+            result.id || result.order_id,
+            orderData.items,
+            historyItems.reduce((s, i) => s + i.price * i.quantity, 0)
+        );
 
         renderHistory();
 
@@ -868,15 +876,14 @@ async function submitOrder() {
 
 // Fire call-staff event to backend (fire-and-forget, no redirect logic)
 function fireCallStaffEvent(callType) {
-    fetch(`${CONFIG.API_URL}/tableorder/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            table_id: TABLE_ID,
-            session_id: state.sessionId,
-            call_type: callType
-        })
-    }).catch(err => console.warn('fireCallStaffEvent failed (OK in demo):', err));
+    // Log locally
+    if (callType === 'bill') {
+        eventStore.logCallBill();
+    } else {
+        eventStore.logCallStaff(callType);
+    }
+    // Send to backend (fire-and-forget)
+    api.fireCallStaff(callType, TABLE_ID, state.sessionId);
 }
 
 async function callStaff(callType) {
@@ -889,18 +896,18 @@ async function callStaff(callType) {
         // No orders yet — just notify staff
     }
 
+    // Log event locally
+    if (callType === 'bill') {
+        eventStore.logCallBill();
+    } else {
+        eventStore.logCallStaff(callType);
+    }
+
     try {
-        const response = await fetch(`${CONFIG.API_URL}/tableorder/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                table_id: TABLE_ID,
-                session_id: state.sessionId,
-                call_type: callType
-            })
-        });
+        // Send to backend via APIClient
+        const result = callType === 'bill'
+            ? await api.requestBill(TABLE_ID, state.sessionId)
+            : await api.callStaff(TABLE_ID, state.sessionId);
 
         const callLabels = {
             'assistance': t('call.assistance'),
@@ -1044,6 +1051,7 @@ function renderCategories() {
 }
 
 function selectCategory(category) {
+    eventStore.logMenuView(category);
     state.currentCategory = category;
     state.currentPage = 1; // Reset to first page
 
@@ -1322,6 +1330,7 @@ function renderCartItems() {
 // ============ Cart Functions ============
 
 function openCart() {
+    eventStore.append(EventType.CART_OPENED);
     document.getElementById('cartOverlay').classList.add('open');
     document.getElementById('cartDrawer').classList.add('open');
     renderCartItems();
@@ -1350,7 +1359,7 @@ function addToCart(item, quantity = 1, notes = '') {
 
     saveCartToStorage();
     updateCartBadge();
-    SessionLog.log('item_added', { item_id: item.id, item_name: item.name, qty: quantity });
+    eventStore.logItemAdded(item.id, item.name, quantity, item.price);
 
     // Re-render current category to show cart indicator
     const cat = state.categories.find(c => c.category === state.currentCategory);
@@ -1378,6 +1387,8 @@ function updateCartQty(index, delta) {
 }
 
 function removeFromCart(index) {
+    const removed = state.cart[index];
+    if (removed) eventStore.logItemRemoved(removed.id, removed.name);
     state.cart.splice(index, 1);
     saveCartToStorage();
     updateCartBadge();
@@ -1440,7 +1451,7 @@ function openItemModal(itemId) {
 
     state.currentItem = item;
     state.modalQty = 1;
-    SessionLog.log('item_viewed', { item_id: item.id, item_name: item.name });
+    eventStore.logItemView(item.id, item.name);
 
     const modalImg = document.getElementById('modalImage');
     modalImg.onerror = function() { this.onerror = null; this.src = DEFAULT_IMAGE_PLACEHOLDER; };
@@ -1486,6 +1497,7 @@ function addToCartFromModal() {
 // ============ Order History ============
 
 function openHistory() {
+    eventStore.append(EventType.HISTORY_OPENED);
     document.getElementById('historyOverlay').classList.add('open');
     document.getElementById('historyDrawer').classList.add('open');
     renderHistory();

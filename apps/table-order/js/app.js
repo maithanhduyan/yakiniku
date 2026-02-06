@@ -65,7 +65,7 @@ let state = {
     wsStatus: 'pending',
     // Pagination
     currentPage: 1,
-    itemsPerPage: 10
+    itemsPerPage: 8
 };
 
 // ============ Dynamic Grid Layout ============

@@ -1712,7 +1712,7 @@ body {
 
     .menu-grid {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
     }
 
     .menu-card-name {
@@ -1741,7 +1741,7 @@ body {
 
 @media (min-width: 600px) and (max-width: 1023px) {
     .menu-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         grid-template-rows: repeat(2, 1fr);
         gap: var(--spacing-md);
     }
@@ -1763,7 +1763,7 @@ body {
     }
 
     .menu-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         grid-template-rows: repeat(2, 1fr);
         gap: var(--spacing-sm);
     }
@@ -1812,7 +1812,7 @@ body {
 
 @media (min-width: 1366px) {
     .menu-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         grid-template-rows: repeat(2, 1fr);
     }
 
@@ -1861,7 +1861,7 @@ body {
 
 @media (min-width: 1024px) and (max-width: 1400px) and (min-height: 600px) and (max-height: 900px) {
     .menu-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         grid-template-rows: repeat(2, 1fr);
     }
 

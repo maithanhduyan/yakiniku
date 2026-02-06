@@ -2,7 +2,7 @@
     "name": "チェックイン",
     "short_name": "CheckIn",
     "description": "焼肉ヅアン - 受付チェックインシステム",
-    "start_url": "/",
+    "start_url": "/apps/checkin/",
     "display": "standalone",
     "orientation": "landscape",
     "background_color": "#0a0a0a",
@@ -13,6 +13,16 @@
             "sizes": "any",
             "type": "image/svg+xml",
             "purpose": "any maskable"
+        },
+        {
+            "src": "/shared/branding/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/shared/branding/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
         }
     ]
 }

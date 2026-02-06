@@ -136,6 +136,10 @@ app.include_router(event_router, prefix="/api/events", tags=["events"])
 from app.domains.kitchen.router import router as kitchen_router
 app.include_router(kitchen_router, prefix="/api/kitchen", tags=["kitchen-domain"])
 
+# Kitchen Event Sourcing
+from app.domains.kitchen.event_router import router as kitchen_event_router
+app.include_router(kitchen_event_router, prefix="/api/kitchen/events", tags=["kitchen-events"])
+
 # Team: pos
 from app.domains.pos.router import router as pos_router
 app.include_router(pos_router, prefix="/api/pos", tags=["pos-domain"])

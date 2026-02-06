@@ -21,25 +21,25 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-left">
-                <div class="logo">🍳 キッチン</div>
+                <div class="logo" data-i18n="header.kitchen">🍳 キッチン</div>
                 <div class="connection-status" id="connectionStatus">
                     <span class="status-dot"></span>
-                    <span class="status-text">接続中</span>
+                    <span class="status-text" data-i18n="header.connecting">接続中</span>
                 </div>
             </div>
 
             <div class="header-stats">
                 <div class="stat-item">
                     <span class="stat-count" id="statTotal">0</span>
-                    <span class="stat-label">合計</span>
+                    <span class="stat-label" data-i18n="header.total">合計</span>
                 </div>
                 <div class="stat-item warning">
                     <span class="stat-count" id="statWarning">0</span>
-                    <span class="stat-label">3分超</span>
+                    <span class="stat-label" data-i18n="header.warning">3分超</span>
                 </div>
                 <div class="stat-item urgent">
                     <span class="stat-count" id="statUrgent">0</span>
-                    <span class="stat-label">5分超</span>
+                    <span class="stat-label" data-i18n="header.urgent">5分超</span>
                 </div>
             </div>
 
@@ -52,22 +52,22 @@
         <nav class="station-selector">
             <button class="station-tab active" data-station="all">
                 <span class="station-icon">📋</span>
-                <span class="station-name">すべて</span>
+                <span class="station-name" data-i18n="station.all">すべて</span>
                 <span class="station-count" id="countAll">0</span>
             </button>
             <button class="station-tab" data-station="meat">
                 <span class="station-icon">🥩</span>
-                <span class="station-name">肉</span>
+                <span class="station-name" data-i18n="station.meat">肉</span>
                 <span class="station-count" id="countMeat">0</span>
             </button>
             <button class="station-tab" data-station="side">
                 <span class="station-icon">🍚</span>
-                <span class="station-name">他</span>
+                <span class="station-name" data-i18n="station.side">他</span>
                 <span class="station-count" id="countSide">0</span>
             </button>
             <button class="station-tab" data-station="drink">
                 <span class="station-icon">🍺</span>
-                <span class="station-name">飲物</span>
+                <span class="station-name" data-i18n="station.drink">飲物</span>
                 <span class="station-count" id="countDrink">0</span>
             </button>
         </nav>
@@ -115,17 +115,23 @@
             <!-- Empty State -->
             <div class="empty-state" id="emptyState">
                 <div class="empty-icon">☕</div>
-                <h2>注文を待っています</h2>
-                <p>新しい注文が入ると表示されます</p>
+                <h2 data-i18n="empty.title">注文を待っています</h2>
+                <p data-i18n="empty.subtitle">新しい注文が入ると表示されます</p>
             </div>
         </main>
 
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-info">
-                <span class="threshold-info">⏱ 警告: <span id="thresholdWarning">3</span>分 / 緊急: <span id="thresholdUrgent">5</span>分</span>
+                <span class="threshold-info">⏱ <span data-i18n="footer.warning">警告</span>: <span id="thresholdWarning">3</span><span data-i18n="footer.minute">分</span> / <span data-i18n="footer.urgent">緊急</span>: <span id="thresholdUrgent">5</span><span data-i18n="footer.minute">分</span></span>
             </div>
             <div class="control-group">
+                <button class="control-btn" id="langToggle" title="Switch to English" onclick="toggleLanguage()">
+                    EN
+                </button>
+                <button class="control-btn" id="historyToggle" title="履歴">
+                    <span>📜</span>
+                </button>
                 <button class="control-btn" id="soundToggle" title="通知音">
                     <span id="soundIcon">🔔</span>
                 </button>
@@ -134,6 +140,82 @@
                 </button>
             </div>
         </footer>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <span class="modal-icon">✅</span>
+                <h2 class="modal-title" data-i18n="modal.serve.title">提供確認</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-item-name" id="modalItemName"></div>
+                <div class="modal-item-details">
+                    <span class="modal-detail"><strong data-i18n="modal.serve.qty">数量</strong>: <span id="modalItemQty"></span></span>
+                    <span class="modal-detail"><strong data-i18n="modal.serve.table">テーブル</strong>: <span id="modalItemTable"></span></span>
+                    <span class="modal-detail"><strong data-i18n="modal.serve.wait">待ち</strong>: <span id="modalItemWait"></span></span>
+                </div>
+                <p class="modal-message" data-i18n="modal.serve.message">この料理を提供済みにしますか？</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="modalCancel" data-i18n="modal.serve.cancel">キャンセル</button>
+                <button class="modal-btn modal-btn-confirm" id="modalConfirm" data-i18n="modal.serve.confirm">提供済み</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirm Modal -->
+    <div class="modal-overlay" id="cancelModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <span class="modal-icon">❌</span>
+                <h2 class="modal-title" data-i18n="modal.cancel.title">キャンセル確認</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-item-name" id="cancelModalItemName"></div>
+                <div class="modal-item-details">
+                    <span class="modal-detail"><strong data-i18n="modal.cancel.qty">数量</strong>: <span id="cancelModalItemQty"></span></span>
+                    <span class="modal-detail"><strong data-i18n="modal.cancel.table">テーブル</strong>: <span id="cancelModalItemTable"></span></span>
+                </div>
+                <div class="modal-reason">
+                    <label for="cancelReason" data-i18n="modal.cancel.reasonLabel">理由（任意）:</label>
+                    <input type="text" id="cancelReason" class="modal-input" data-i18n-placeholder="modal.cancel.reasonPlaceholder" placeholder="例: 品切れ、お客様都合">
+                </div>
+                <p class="modal-message modal-message-warn" data-i18n="modal.cancel.message">この料理をキャンセルしますか？</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="cancelModalBack" data-i18n="modal.cancel.back">戻る</button>
+                <button class="modal-btn modal-btn-danger" id="cancelModalConfirm" data-i18n="modal.cancel.confirm">キャンセルする</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Panel -->
+    <div class="history-overlay" id="historyOverlay">
+        <div class="history-panel">
+            <div class="history-header">
+                <h2 data-i18n="history.title">📜 調理履歴</h2>
+                <div class="history-filters">
+                    <select id="historyStationFilter" class="history-filter-select">
+                        <option value="all" data-i18n="history.filterAll">すべて</option>
+                        <option value="meat" data-i18n="history.filterMeat">🥩 肉</option>
+                        <option value="side" data-i18n="history.filterSide">🍚 他</option>
+                        <option value="drink" data-i18n="history.filterDrink">🍺 飲物</option>
+                    </select>
+                    <select id="historyTypeFilter" class="history-filter-select">
+                        <option value="" data-i18n="history.filterAllEvents">全イベント</option>
+                        <option value="kitchen.item.served" data-i18n="history.filterServed">✅ 提供済み</option>
+                        <option value="kitchen.item.cancelled" data-i18n="history.filterCancelled">❌ キャンセル</option>
+                    </select>
+                </div>
+                <button class="history-close-btn" id="historyClose">✕</button>
+            </div>
+            <div class="history-summary" id="historySummary"></div>
+            <div class="history-list" id="historyList">
+                <div class="history-empty" data-i18n="history.empty">履歴がありません</div>
+            </div>
+        </div>
     </div>
 
     <!-- Notification -->
@@ -147,6 +229,9 @@
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleRsKRrPq9qVzGxNW" type="audio/wav">
     </audio>
 
+    <script src="js/i18n/ja.js"></script>
+    <script src="js/i18n/en.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

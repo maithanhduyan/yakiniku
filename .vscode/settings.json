@@ -44,6 +44,20 @@
     // ============ Live Server Configuration ============
     "liveServer.settings.host": "127.0.0.1",
     "liveServer.settings.port": 5500,
+    "liveServer.settings.root": "/apps",
+    "liveServer.settings.ignoreFiles": [
+        ".vscode/**",
+        "**/*.md",
+        "**/*.txt",
+        "**/*.xml",
+        "**/*.png",
+        "**/*.jpg",
+        "**/*.jpeg",
+        "**/*.gif",
+        "**/*.svg",
+        "**/*.pdf"
+    ],
+    "liveServer.settings.fullReload": false,
 
     // ============ Python + UV Configuration ============
     // Cross-platform: works on both Windows and Linux

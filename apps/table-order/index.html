@@ -33,11 +33,12 @@
                 </div>
             </div>
             <div class="header-right">
+                <button class="btn-lang-toggle" id="langToggle" onclick="toggleLanguage()" title="Switch to English">EN</button>
                 <button class="btn-call-staff" onclick="callStaff('assistance')">
-                    🔔 呼出
+                    🔔 <span data-i18n="header.call">呼出</span>
                 </button>
                 <button class="btn-call-staff" onclick="callStaff('bill')">
-                    💳 会計
+                    💳 <span data-i18n="header.bill">会計</span>
                 </button>
                 <button class="cart-button" onclick="openCart()">
                     🛒 <span id="cartBadge">0</span>
@@ -60,7 +61,7 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Menu Section -->
+            <!-- Menu Section (scrollable area) -->
             <section class="menu-section" id="menuSection">
                 <div class="menu-grid" id="menuGrid">
                     <!-- Loading skeleton -->
@@ -71,16 +72,18 @@
                         <div class="menu-card-skeleton"></div>
                         <div class="menu-card-skeleton"></div>
                         <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
+                        <div class="menu-card-skeleton"></div>
                     </div>
                 </div>
-
-                <!-- Pagination -->
-                <div class="pagination" id="pagination" style="display: none;">
-                    <button class="page-btn" id="prevPage" onclick="changePage(-1)">← 前へ</button>
-                    <span class="page-info" id="pageInfo">1 / 1</span>
-                    <button class="page-btn" id="nextPage" onclick="changePage(1)">次へ →</button>
-                </div>
             </section>
+
+            <!-- Pagination (always visible, never hidden) -->
+            <div class="pagination" id="pagination">
+                <button class="page-btn" id="prevPage" onclick="changePage(-1)" data-i18n="pagination.prev">← 前へ</button>
+                <span class="page-info" id="pageInfo">1 / 1</span>
+                <button class="page-btn" id="nextPage" onclick="changePage(1)" data-i18n="pagination.next">次へ →</button>
+            </div>
         </main>
     </div>
 
@@ -88,20 +91,20 @@
     <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
     <div class="cart-drawer" id="cartDrawer">
         <div class="cart-header">
-            <h2>🛒 カート</h2>
+            <h2 data-i18n="cart.title">🛒 カート</h2>
             <button class="cart-close" onclick="closeCart()">×</button>
         </div>
         <div class="cart-items" id="cartItems">
-            <div class="cart-empty">
+            <div class="cart-empty" data-i18n="cart.empty">
                 カートは空です
             </div>
         </div>
         <div class="cart-footer">
             <div class="cart-total">
-                <span>合計</span>
+                <span data-i18n="cart.total">合計</span>
                 <span class="cart-total-amount" id="cartTotal">¥0</span>
             </div>
-            <button class="btn-order" id="btnOrder" onclick="submitOrder()" disabled>
+            <button class="btn-order" id="btnOrder" onclick="submitOrder()" disabled data-i18n="cart.submit">
                 注文を確定する
             </button>
         </div>
@@ -110,6 +113,7 @@
     <!-- Item Detail Modal -->
     <div class="modal-overlay" id="itemModal">
         <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeItemModal()">×</button>
             <img class="modal-image" id="modalImage" src="" alt="">
             <div class="modal-body">
                 <h2 class="modal-title" id="modalTitle"></h2>
@@ -117,19 +121,17 @@
                 <div class="modal-price" id="modalPrice"></div>
 
                 <div class="modal-options" id="modalOptions" style="display: none;">
-                    <label>ご要望（オプション）</label>
-                    <textarea id="modalNotes" placeholder="よく焼き、タレ多め など" rows="2"></textarea>
+                    <label data-i18n="modal.notes.label">ご要望（オプション）</label>
+                    <textarea id="modalNotes" placeholder="よく焼き、タレ多め など" data-i18n-placeholder="modal.notes.placeholder" rows="2"></textarea>
                 </div>
 
-                <div class="modal-quantity">
-                    <button class="modal-qty-btn" onclick="changeModalQty(-1)">−</button>
-                    <span class="modal-qty-value" id="modalQty">1</span>
-                    <button class="modal-qty-btn" onclick="changeModalQty(1)">+</button>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="btn-cancel" onclick="closeItemModal()">キャンセル</button>
-                    <button class="btn-add-cart" onclick="addToCartFromModal()">
+                <div class="modal-bottom-row">
+                    <div class="modal-quantity">
+                        <button class="modal-qty-btn" onclick="changeModalQty(-1)">−</button>
+                        <span class="modal-qty-value" id="modalQty">1</span>
+                        <button class="modal-qty-btn" onclick="changeModalQty(1)">+</button>
+                    </div>
+                    <button class="btn-add-cart" onclick="addToCartFromModal()" data-i18n="modal.addToCart">
                         カートに追加
                     </button>
                 </div>
@@ -142,15 +144,15 @@
         <div class="loading-content">
             <div class="loading-logo">🍖</div>
             <div class="loading-spinner"></div>
-            <p class="loading-text" id="loadingText">メニューを読み込み中...</p>
+            <p class="loading-text" id="loadingText" data-i18n="loading.text">メニューを読み込み中...</p>
             <div class="loading-status" id="loadingStatus">
                 <span class="status-item" id="apiStatus">
                     <span class="status-icon">⏳</span>
-                    <span>API接続</span>
+                    <span data-i18n="loading.api">API接続</span>
                 </span>
                 <span class="status-item" id="wsStatus">
                     <span class="status-icon">⏳</span>
-                    <span>リアルタイム</span>
+                    <span data-i18n="loading.realtime">リアルタイム</span>
                 </span>
             </div>
         </div>
@@ -165,7 +167,7 @@
         <div class="floating-cart-total">
             <span id="floatingCartTotal">¥0</span>
         </div>
-        <button class="floating-cart-btn">
+        <button class="floating-cart-btn" data-i18n="cart.goToOrder">
             注文へ →
         </button>
     </div>
@@ -184,6 +186,9 @@
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
+    <script src="js/i18n/ja.js"></script>
+    <script src="js/i18n/en.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/websocket.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>

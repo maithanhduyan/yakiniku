@@ -30,8 +30,57 @@ let state = {
     wsStatus: 'pending',  // pending, success, error
     // Pagination
     currentPage: 1,
-    itemsPerPage: 8  // 2 rows x 4 items on iPad landscape
+    itemsPerPage: 10  // Default for tablet landscape (5 cols × 2 rows)
 };
+
+// ============ Dynamic Grid Layout ============
+
+/**
+ * Calculate how many items fit on screen without scrolling.
+ * Reads CSS grid columns AND rows from computed style.
+ * Tablet-first: grid-template-rows is explicit so we read it directly.
+ */
+function calculateItemsPerPage() {
+    const menuSection = document.getElementById('menuSection');
+    const menuGrid = document.getElementById('menuGrid');
+    if (!menuSection || !menuGrid) return;
+
+    // Get computed grid style
+    const gridStyle = window.getComputedStyle(menuGrid);
+
+    // Read columns from CSS grid
+    const colTracks = gridStyle.gridTemplateColumns.split(' ').filter(s => s.length > 0);
+    const columns = colTracks.length || 4;
+
+    // Read rows from CSS grid-template-rows (explicit rows set by media queries)
+    const rowTracks = gridStyle.gridTemplateRows.split(' ').filter(s => s.length > 0);
+    let rows;
+
+    if (rowTracks.length > 0 && rowTracks[0] !== 'none') {
+        // Use explicit row count from CSS
+        rows = rowTracks.length;
+    } else {
+        // Fallback: calculate from available height
+        const sectionHeight = menuSection.clientHeight;
+        if (sectionHeight <= 0) return;
+        const gap = parseFloat(gridStyle.rowGap) || parseFloat(gridStyle.gap) || 8;
+        const minCardHeight = window.innerWidth >= 1024 ? 180 : (window.innerWidth >= 600 ? 160 : 140);
+        rows = Math.max(1, Math.floor((sectionHeight + gap) / (minCardHeight + gap)));
+    }
+
+    const newItemsPerPage = columns * rows;
+
+    // Only re-render if items per page actually changed
+    if (newItemsPerPage !== state.itemsPerPage) {
+        state.itemsPerPage = newItemsPerPage;
+        state.currentPage = 1;
+        // Re-render current category
+        const cat = state.categories.find(c => c.category === state.currentCategory);
+        if (cat) {
+            renderMenuItems(cat.items);
+        }
+    }
+}
 
 // ============ Loading State Management ============
 
@@ -83,14 +132,14 @@ function showConnectionBar(isOnline) {
 
     if (isOnline) {
         icon.textContent = '🟢';
-        text.textContent = 'オンライン接続中';
+        text.textContent = t('connection.online');
         // Auto-hide after 3 seconds when online
         setTimeout(() => {
             bar.classList.remove('show');
         }, 3000);
     } else {
         icon.textContent = '🔴';
-        text.textContent = 'オフラインモード - デモデータ使用中';
+        text.textContent = t('connection.offline');
     }
 }
 
@@ -104,6 +153,9 @@ function hideConnectionBar() {
 // ============ Initialization ============
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize i18n
+    I18N.init();
+
     // Show loading overlay
     showLoading();
 
@@ -121,6 +173,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update UI
     updateCartBadge();
+
+    // Calculate dynamic items per page based on viewport
+    // Delay slightly to ensure layout is settled
+    requestAnimationFrame(() => {
+        calculateItemsPerPage();
+    });
+
+    // Recalculate on resize / orientation change
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => calculateItemsPerPage(), 150);
+    });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => calculateItemsPerPage(), 300);
+    });
 
     // Hide loading after initial load (with minimum display time)
     setTimeout(() => {
@@ -143,7 +211,7 @@ function setupTableInfo() {
     state.guestCount = guestCount;
 
     document.getElementById('tableNumber').textContent = tableNumber;
-    document.getElementById('guestCount').textContent = `${guestCount}名様`;
+    document.getElementById('guestCount').textContent = `${guestCount}${t('guest.suffix')}`;
 }
 
 // ============ API Functions ============
@@ -272,91 +340,91 @@ function loadDemoMenu() {
     state.categories = [
         {
             category: 'meat',
-            category_label: '肉類',
+            category_label: t('cat.meat'),
             icon: '🥩',
             items: [
-                { id: 'menu-001', name: '和牛上ハラミ', description: '口の中でほどける柔らかさと濃厚な味わい。当店自慢の一品', price: 1800, image_url: getFallbackImage('meat', 'ハラミ'), is_popular: true },
-                { id: 'menu-002', name: '厚切り上タン塩', description: '贅沢な厚切り。歯ごたえと肉汁が溢れます', price: 2200, image_url: getFallbackImage('meat', 'タン'), is_popular: true },
-                { id: 'menu-003', name: '特選カルビ', description: '霜降りが美しい最高級カルビ', price: 1800, image_url: getFallbackImage('meat', 'カルビ'), is_popular: true },
-                { id: 'menu-004', name: 'カルビ', description: '定番の人気メニュー。ジューシーな味わい', price: 1500, image_url: getFallbackImage('meat', 'カルビ') },
-                { id: 'menu-005', name: '上ロース', description: '赤身の旨味が楽しめる上質なロース', price: 1700, image_url: getFallbackImage('meat', 'ロース') },
-                { id: 'menu-006', name: 'ロース', description: 'あっさりとした赤身の美味しさ', price: 1400, image_url: getFallbackImage('meat', 'ロース') },
-                { id: 'menu-007', name: 'ホルモン盛り合わせ', description: '新鮮なホルモンをたっぷり。ミノ・ハチノス・シマチョウ', price: 1400, image_url: getFallbackImage('meat', 'ホルモン') },
-                { id: 'menu-008', name: '特選盛り合わせ', description: '本日のおすすめ希少部位を贅沢に盛り合わせ', price: 4500, image_url: getFallbackImage('meat', '盛り合わせ'), is_popular: true },
-                { id: 'menu-009', name: '豚カルビ', description: '甘みのある豚バラ肉', price: 900, image_url: getFallbackImage('meat', '豚') },
-                { id: 'menu-010', name: '鶏もも', description: '柔らかくジューシーな鶏もも肉', price: 800, image_url: getFallbackImage('meat', '鶏') },
+                { id: 'menu-001', name: t('demo.meat.wagyu_harami'), description: t('demo.meat.wagyu_harami.desc'), price: 1800, image_url: getFallbackImage('meat', 'ハラミ'), is_popular: true },
+                { id: 'menu-002', name: t('demo.meat.atsugiri_tan'), description: t('demo.meat.atsugiri_tan.desc'), price: 2200, image_url: getFallbackImage('meat', 'タン'), is_popular: true },
+                { id: 'menu-003', name: t('demo.meat.tokusen_kalbi'), description: t('demo.meat.tokusen_kalbi.desc'), price: 1800, image_url: getFallbackImage('meat', 'カルビ'), is_popular: true },
+                { id: 'menu-004', name: t('demo.meat.kalbi'), description: t('demo.meat.kalbi.desc'), price: 1500, image_url: getFallbackImage('meat', 'カルビ') },
+                { id: 'menu-005', name: t('demo.meat.jo_rosu'), description: t('demo.meat.jo_rosu.desc'), price: 1700, image_url: getFallbackImage('meat', 'ロース') },
+                { id: 'menu-006', name: t('demo.meat.rosu'), description: t('demo.meat.rosu.desc'), price: 1400, image_url: getFallbackImage('meat', 'ロース') },
+                { id: 'menu-007', name: t('demo.meat.horumon'), description: t('demo.meat.horumon.desc'), price: 1400, image_url: getFallbackImage('meat', 'ホルモン') },
+                { id: 'menu-008', name: t('demo.meat.tokusen_mori'), description: t('demo.meat.tokusen_mori.desc'), price: 4500, image_url: getFallbackImage('meat', '盛り合わせ'), is_popular: true },
+                { id: 'menu-009', name: t('demo.meat.buta_kalbi'), description: t('demo.meat.buta_kalbi.desc'), price: 900, image_url: getFallbackImage('meat', '豚') },
+                { id: 'menu-010', name: t('demo.meat.tori_momo'), description: t('demo.meat.tori_momo.desc'), price: 800, image_url: getFallbackImage('meat', '鶏') },
             ]
         },
         {
             category: 'drinks',
-            category_label: '飲物',
+            category_label: t('cat.drinks'),
             icon: '🍺',
             items: [
-                { id: 'menu-011', name: '生ビール', description: 'キンキンに冷えた生ビール（中）', price: 600, image_url: getFallbackImage('drinks', 'ビール') },
-                { id: 'menu-012', name: '瓶ビール', description: 'アサヒスーパードライ', price: 650, image_url: getFallbackImage('drinks', 'ビール') },
-                { id: 'menu-013', name: 'ハイボール', description: 'すっきり爽やかなウイスキーソーダ', price: 500, image_url: getFallbackImage('drinks', 'ハイボール') },
-                { id: 'menu-014', name: 'レモンサワー', description: '自家製レモンサワー。さっぱり飲みやすい', price: 500, image_url: getFallbackImage('drinks', 'サワー') },
-                { id: 'menu-015', name: '梅酒サワー', description: '甘酸っぱい梅酒ソーダ割り', price: 550, image_url: getFallbackImage('drinks', '梅酒') },
-                { id: 'menu-016', name: 'マッコリ', description: '韓国の伝統酒。まろやかな甘さ', price: 600, image_url: getFallbackImage('drinks', 'マッコリ') },
-                { id: 'menu-017', name: '焼酎（芋）', description: '本格芋焼酎。ロック・水割り・お湯割り', price: 500, image_url: getFallbackImage('drinks', '焼酎') },
-                { id: 'menu-018', name: 'ウーロン茶', description: 'ソフトドリンク', price: 300, image_url: getFallbackImage('drinks', 'ウーロン茶') },
-                { id: 'menu-019', name: 'コーラ', description: 'コカ・コーラ', price: 300, image_url: getFallbackImage('drinks', 'コーラ') },
-                { id: 'menu-020', name: 'オレンジジュース', description: '100%果汁オレンジジュース', price: 350, image_url: getFallbackImage('drinks', 'ジュース') },
+                { id: 'menu-011', name: t('demo.drinks.nama_beer'), description: t('demo.drinks.nama_beer.desc'), price: 600, image_url: getFallbackImage('drinks', 'ビール') },
+                { id: 'menu-012', name: t('demo.drinks.bin_beer'), description: t('demo.drinks.bin_beer.desc'), price: 650, image_url: getFallbackImage('drinks', 'ビール') },
+                { id: 'menu-013', name: t('demo.drinks.highball'), description: t('demo.drinks.highball.desc'), price: 500, image_url: getFallbackImage('drinks', 'ハイボール') },
+                { id: 'menu-014', name: t('demo.drinks.lemon_sour'), description: t('demo.drinks.lemon_sour.desc'), price: 500, image_url: getFallbackImage('drinks', 'サワー') },
+                { id: 'menu-015', name: t('demo.drinks.umeshu'), description: t('demo.drinks.umeshu.desc'), price: 550, image_url: getFallbackImage('drinks', '梅酒') },
+                { id: 'menu-016', name: t('demo.drinks.makgeolli'), description: t('demo.drinks.makgeolli.desc'), price: 600, image_url: getFallbackImage('drinks', 'マッコリ') },
+                { id: 'menu-017', name: t('demo.drinks.shochu'), description: t('demo.drinks.shochu.desc'), price: 500, image_url: getFallbackImage('drinks', '焼酎') },
+                { id: 'menu-018', name: t('demo.drinks.oolong'), description: t('demo.drinks.oolong.desc'), price: 300, image_url: getFallbackImage('drinks', 'ウーロン茶') },
+                { id: 'menu-019', name: t('demo.drinks.cola'), description: t('demo.drinks.cola.desc'), price: 300, image_url: getFallbackImage('drinks', 'コーラ') },
+                { id: 'menu-020', name: t('demo.drinks.oj'), description: t('demo.drinks.oj.desc'), price: 350, image_url: getFallbackImage('drinks', 'ジュース') },
             ]
         },
         {
             category: 'salad',
-            category_label: 'サラダ',
+            category_label: t('cat.salad'),
             icon: '🥗',
             items: [
-                { id: 'menu-021', name: 'チョレギサラダ', description: '韓国風ピリ辛サラダ。ごま油が香る', price: 600, image_url: getFallbackImage('salad', 'チョレギ'), is_spicy: true },
-                { id: 'menu-022', name: 'シーザーサラダ', description: 'パルメザンチーズたっぷり', price: 700, image_url: getFallbackImage('salad', 'シーザー') },
-                { id: 'menu-023', name: 'ナムル盛り合わせ', description: '3種のナムル（もやし・ほうれん草・大根）', price: 500, image_url: getFallbackImage('salad', 'ナムル') },
-                { id: 'menu-024', name: 'キムチ盛り合わせ', description: '白菜・カクテキ・オイキムチ', price: 550, image_url: getFallbackImage('salad', 'キムチ'), is_spicy: true },
+                { id: 'menu-021', name: t('demo.salad.choregi'), description: t('demo.salad.choregi.desc'), price: 600, image_url: getFallbackImage('salad', 'チョレギ'), is_spicy: true },
+                { id: 'menu-022', name: t('demo.salad.caesar'), description: t('demo.salad.caesar.desc'), price: 700, image_url: getFallbackImage('salad', 'シーザー') },
+                { id: 'menu-023', name: t('demo.salad.namul'), description: t('demo.salad.namul.desc'), price: 500, image_url: getFallbackImage('salad', 'ナムル') },
+                { id: 'menu-024', name: t('demo.salad.kimchi'), description: t('demo.salad.kimchi.desc'), price: 550, image_url: getFallbackImage('salad', 'キムチ'), is_spicy: true },
             ]
         },
         {
             category: 'rice',
-            category_label: 'ご飯・麺',
+            category_label: t('cat.rice'),
             icon: '🍚',
             items: [
-                { id: 'menu-025', name: 'ライス', description: '国産コシヒカリ使用', price: 200, image_url: getFallbackImage('rice', 'ライス') },
-                { id: 'menu-026', name: '大盛りライス', description: '国産コシヒカリ大盛り', price: 300, image_url: getFallbackImage('rice', 'ライス') },
-                { id: 'menu-027', name: '石焼ビビンバ', description: '熱々の石鍋で提供。おこげが美味しい', price: 1200, image_url: getFallbackImage('rice', 'ビビンバ'), is_popular: true, is_spicy: true },
-                { id: 'menu-028', name: '冷麺', description: '韓国冷麺。さっぱりとした味わい', price: 900, image_url: getFallbackImage('rice', '冷麺') },
-                { id: 'menu-029', name: 'カルビクッパ', description: 'カルビ入りの韓国風スープご飯', price: 950, image_url: getFallbackImage('rice', 'クッパ'), is_spicy: true },
+                { id: 'menu-025', name: t('demo.rice.rice'), description: t('demo.rice.rice.desc'), price: 200, image_url: getFallbackImage('rice', 'ライス') },
+                { id: 'menu-026', name: t('demo.rice.rice_large'), description: t('demo.rice.rice_large.desc'), price: 300, image_url: getFallbackImage('rice', 'ライス') },
+                { id: 'menu-027', name: t('demo.rice.bibimbap'), description: t('demo.rice.bibimbap.desc'), price: 1200, image_url: getFallbackImage('rice', 'ビビンバ'), is_popular: true, is_spicy: true },
+                { id: 'menu-028', name: t('demo.rice.naengmyeon'), description: t('demo.rice.naengmyeon.desc'), price: 900, image_url: getFallbackImage('rice', '冷麺') },
+                { id: 'menu-029', name: t('demo.rice.kuppa'), description: t('demo.rice.kuppa.desc'), price: 950, image_url: getFallbackImage('rice', 'クッパ'), is_spicy: true },
             ]
         },
         {
             category: 'side',
-            category_label: 'サイドメニュー',
+            category_label: t('cat.side'),
             icon: '🍲',
             items: [
-                { id: 'menu-030', name: 'わかめスープ', description: '韓国風わかめスープ', price: 350, image_url: getFallbackImage('side', 'スープ') },
-                { id: 'menu-031', name: 'テールスープ', description: 'コラーゲンたっぷり牛テールスープ', price: 800, image_url: getFallbackImage('side', 'スープ') },
-                { id: 'menu-032', name: '枝豆', description: '塩茹で枝豆', price: 350, image_url: getFallbackImage('side', '枝豆') },
-                { id: 'menu-033', name: '韓国海苔', description: 'ごま油香る韓国海苔', price: 300, image_url: getFallbackImage('side', '海苔') },
-                { id: 'menu-034', name: 'チヂミ', description: '海鮮チヂミ。外はカリッと中はもっちり', price: 850, image_url: getFallbackImage('side', 'チヂミ') },
+                { id: 'menu-030', name: t('demo.side.wakame'), description: t('demo.side.wakame.desc'), price: 350, image_url: getFallbackImage('side', 'スープ') },
+                { id: 'menu-031', name: t('demo.side.oxtail'), description: t('demo.side.oxtail.desc'), price: 800, image_url: getFallbackImage('side', 'スープ') },
+                { id: 'menu-032', name: t('demo.side.edamame'), description: t('demo.side.edamame.desc'), price: 350, image_url: getFallbackImage('side', '枝豆') },
+                { id: 'menu-033', name: t('demo.side.nori'), description: t('demo.side.nori.desc'), price: 300, image_url: getFallbackImage('side', '海苔') },
+                { id: 'menu-034', name: t('demo.side.jeon'), description: t('demo.side.jeon.desc'), price: 850, image_url: getFallbackImage('side', 'チヂミ') },
             ]
         },
         {
             category: 'dessert',
-            category_label: 'デザート',
+            category_label: t('cat.dessert'),
             icon: '🍨',
             items: [
-                { id: 'menu-035', name: 'バニラアイス', description: '濃厚バニラアイスクリーム', price: 400, image_url: getFallbackImage('dessert', 'アイス') },
-                { id: 'menu-036', name: '杏仁豆腐', description: '手作り杏仁豆腐。なめらかな口当たり', price: 450, image_url: getFallbackImage('dessert', '杏仁豆腐') },
-                { id: 'menu-037', name: 'シャーベット', description: 'マンゴーシャーベット', price: 400, image_url: getFallbackImage('dessert', 'シャーベット') },
+                { id: 'menu-035', name: t('demo.dessert.vanilla'), description: t('demo.dessert.vanilla.desc'), price: 400, image_url: getFallbackImage('dessert', 'アイス') },
+                { id: 'menu-036', name: t('demo.dessert.annin'), description: t('demo.dessert.annin.desc'), price: 450, image_url: getFallbackImage('dessert', '杏仁豆腐') },
+                { id: 'menu-037', name: t('demo.dessert.sorbet'), description: t('demo.dessert.sorbet.desc'), price: 400, image_url: getFallbackImage('dessert', 'シャーベット') },
             ]
         },
         {
             category: 'set',
-            category_label: 'セットメニュー',
+            category_label: t('cat.set'),
             icon: '🍱',
             items: [
-                { id: 'menu-038', name: '焼肉定食', description: 'カルビ・ロース・ライス・スープ・サラダ', price: 1800, image_url: getFallbackImage('set', '定食'), is_popular: true },
-                { id: 'menu-039', name: '上焼肉定食', description: '上カルビ・上ロース・ライス・スープ・サラダ', price: 2500, image_url: getFallbackImage('set', '定食') },
-                { id: 'menu-040', name: '女子会コース', description: 'サラダ・お肉5種・デザート・ドリンク付き', price: 3500, image_url: getFallbackImage('set', 'コース') },
+                { id: 'menu-038', name: t('demo.set.yakiniku_set'), description: t('demo.set.yakiniku_set.desc'), price: 1800, image_url: getFallbackImage('set', '定食'), is_popular: true },
+                { id: 'menu-039', name: t('demo.set.jo_yakiniku_set'), description: t('demo.set.jo_yakiniku_set.desc'), price: 2500, image_url: getFallbackImage('set', '定食') },
+                { id: 'menu-040', name: t('demo.set.joshikai'), description: t('demo.set.joshikai.desc'), price: 3500, image_url: getFallbackImage('set', 'コース') },
             ]
         }
     ];
@@ -371,7 +439,7 @@ async function submitOrder() {
 
     const btnOrder = document.getElementById('btnOrder');
     btnOrder.disabled = true;
-    btnOrder.innerHTML = '<span class="loading-spinner"></span> 送信中...';
+    btnOrder.innerHTML = `<span class="loading-spinner"></span> ${t('order.submitting')}`;
 
     try {
         const orderData = {
@@ -410,17 +478,17 @@ async function submitOrder() {
         renderCartItems();
 
         // Show success
-        showNotification('ご注文を承りました！', 'success');
+        showNotification(t('notify.orderSuccess'), 'success');
 
         // Add to order history
         state.orderHistory.push(result);
 
     } catch (error) {
         console.error('Order error:', error);
-        showNotification('注文に失敗しました。もう一度お試しください。', 'error');
+        showNotification(t('notify.orderFailed'), 'error');
     } finally {
         btnOrder.disabled = false;
-        btnOrder.textContent = '注文を確定する';
+        btnOrder.textContent = t('cart.submit');
     }
 }
 
@@ -439,16 +507,16 @@ async function callStaff(callType) {
         });
 
         const callLabels = {
-            'assistance': 'スタッフを呼びました',
-            'water': 'お水をお持ちします',
-            'bill': 'お会計をお待ちください'
+            'assistance': t('call.assistance'),
+            'water': t('call.water'),
+            'bill': t('call.bill')
         };
 
-        showNotification(callLabels[callType] || 'スタッフを呼びました', 'success');
+        showNotification(callLabels[callType] || t('call.assistance'), 'success');
 
     } catch (error) {
         console.error('Call staff error:', error);
-        showNotification('スタッフを呼びました', 'success'); // Show success anyway for demo
+        showNotification(t('call.assistance'), 'success'); // Show success anyway for demo
     }
 }
 
@@ -518,10 +586,10 @@ function updateConnectionStatus(isOnline) {
     const statusEl = document.getElementById('connectionStatus');
     if (statusEl) {
         if (isOnline) {
-            statusEl.innerHTML = '<span class="status-dot online"></span> オンライン';
+            statusEl.innerHTML = `<span class="status-dot online"></span> ${t('connection.statusOnline')}`;
             statusEl.className = 'connection-status online';
         } else {
-            statusEl.innerHTML = '<span class="status-dot offline"></span> オフライン';
+            statusEl.innerHTML = `<span class="status-dot offline"></span> ${t('connection.statusOffline')}`;
             statusEl.className = 'connection-status offline';
         }
     }
@@ -536,7 +604,7 @@ function showOfflineNotice() {
     notice.id = 'offlineNotice';
     notice.className = 'offline-notice';
     notice.innerHTML = `
-        <span>⚠️ リアルタイム通知は現在利用できません。ご注文は通常通りお受けできます。</span>
+        <span>${t('connection.offlineNotice')}</span>
         <button onclick="this.parentElement.remove()">×</button>
     `;
     document.body.appendChild(notice);
@@ -546,7 +614,7 @@ function handleWebSocketMessage(data) {
     switch (data.type) {
         case 'order_status_changed':
             if (data.new_status === 'ready') {
-                showNotification(`注文 #${data.order_number} が完成しました！`, 'success');
+                showNotification(t('notify.orderReady', { number: data.order_number }), 'success');
             }
             break;
         case 'menu_updated':
@@ -590,7 +658,7 @@ function renderMenuItems(items) {
     const container = document.getElementById('menuGrid');
 
     if (!items || items.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted);">メニューがありません</p>';
+        container.innerHTML = `<p style="color: var(--text-muted);">${t('menu.noItems')}</p>`;
         updatePagination(0, 0);
         return;
     }
@@ -619,14 +687,14 @@ function renderMenuItems(items) {
                 <div class="menu-card-image-wrap" onclick="openItemModal('${item.id}')">
                     <img class="menu-card-image" src="${item.image_url || ''}" alt="${item.name}" loading="lazy"
                          onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
-                    ${item.is_popular ? '<span class="popular-badge">🔥 人気</span>' : ''}
+                    ${item.is_popular ? `<span class="popular-badge">${t('menu.popular')}</span>` : ''}
                     ${item.is_spicy ? '<span class="spicy-badge">🌶️</span>' : ''}
                 </div>
                 <div class="menu-card-content">
                     <h3 class="menu-card-name" onclick="openItemModal('${item.id}')">${item.name}</h3>
                     <div class="menu-card-footer">
                         <span class="menu-card-price">¥${item.price.toLocaleString()}</span>
-                        <button class="quick-add-btn" onclick="quickAddToCart('${item.id}')" aria-label="追加">
+                        <button class="quick-add-btn" onclick="quickAddToCart('${item.id}')" aria-label="${t('menu.add')}">
                             ${cartQty > 0 ? `<span class="quick-add-qty">${cartQty}</span>` : '＋'}
                         </button>
                     </div>
@@ -645,15 +713,11 @@ function updatePagination(currentPage, totalPages) {
     const prevBtn = document.getElementById('prevPage');
     const nextBtn = document.getElementById('nextPage');
 
-    if (totalPages <= 1) {
-        pagination.style.display = 'none';
-        return;
-    }
-
+    // Always show pagination (never hide)
     pagination.style.display = 'flex';
-    pageInfo.textContent = `${currentPage} / ${totalPages}`;
+    pageInfo.textContent = totalPages > 0 ? `${currentPage} / ${totalPages}` : '1 / 1';
     prevBtn.disabled = currentPage <= 1;
-    nextBtn.disabled = currentPage >= totalPages;
+    nextBtn.disabled = currentPage >= totalPages || totalPages <= 1;
 }
 
 function changePage(delta) {
@@ -666,9 +730,6 @@ function changePage(delta) {
     if (newPage >= 1 && newPage <= totalPages) {
         state.currentPage = newPage;
         renderMenuItems(cat.items);
-
-        // Scroll to top of menu
-        document.getElementById('menuSection').scrollTop = 0;
     }
 }
 
@@ -692,14 +753,14 @@ function quickAddToCart(itemId) {
         setTimeout(() => card.classList.remove('item-added'), 400);
     }
 
-    showNotification(`${item.name} を追加`, 'success');
+    showNotification(t('notify.quickAdd', { name: item.name }), 'success');
 }
 
 function renderCartItems() {
     const container = document.getElementById('cartItems');
 
     if (state.cart.length === 0) {
-        container.innerHTML = '<div class="cart-empty">カートは空です</div>';
+        container.innerHTML = `<div class="cart-empty">${t('cart.empty')}</div>`;
         document.getElementById('btnOrder').disabled = true;
         return;
     }
@@ -814,7 +875,7 @@ function updateCartBadge() {
 
     if (floatingBar) {
         floatingBar.classList.toggle('visible', totalItems > 0);
-        if (floatingCount) floatingCount.textContent = `${totalItems}点`;
+        if (floatingCount) floatingCount.textContent = t('cart.itemCount', { count: totalItems });
         if (floatingTotal) floatingTotal.textContent = `¥${totalPrice.toLocaleString()}`;
     }
 }
@@ -881,10 +942,11 @@ function addToCartFromModal() {
     if (!state.currentItem) return;
 
     const notes = document.getElementById('modalNotes').value.trim();
+    const itemName = state.currentItem.name; // Save before closeItemModal nulls it
     addToCart(state.currentItem, state.modalQty, notes);
 
     closeItemModal();
-    showNotification(`${state.currentItem.name} をカートに追加しました`, 'success');
+    showNotification(t('notify.addedToCart', { name: itemName }), 'success');
 }
 
 // ============ Notifications ============

@@ -1,6 +1,7 @@
 /* ============================================
    Table Order App - iPad Ordering System
-   Mobile-first, touch-optimized for iPad
+   Tablet-first (landscape), touch-optimized
+   Full-screen layout: no scroll needed for menu
    ============================================ */
 
 :root {
@@ -25,15 +26,21 @@
     --border-color: #3a3a3a;
     --border-radius: 12px;
 
-    /* Touch targets - 48px minimum */
-    --touch-target: 48px;
+    /* Touch targets - 44px minimum */
+    --touch-target: 44px;
 
     /* Spacing */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+
+    /* Layout heights - compact to maximize menu area */
+    --header-height: 48px;
+    --category-height: 44px;
+    --pagination-height: 40px;
+    --floating-bar-height: 52px;
 
     /* Typography */
     --font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -70,15 +77,17 @@ body {
     overflow: hidden;
 }
 
-/* Header */
+/* Header - Compact for max menu space */
 .app-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
+    height: var(--header-height);
+    min-height: var(--header-height);
 }
 
 .header-left {
@@ -88,7 +97,8 @@ body {
 }
 
 .brand-logo {
-    font-size: 28px;
+    font-size: 24px;
+    line-height: 1;
 }
 
 .table-info {
@@ -101,13 +111,13 @@ body {
 }
 
 .table-number {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     color: var(--accent-color);
 }
 
 .guest-count {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
 }
 
@@ -121,14 +131,14 @@ body {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
     background: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     border-radius: var(--border-radius);
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 36px;
     transition: all 0.2s;
 }
 
@@ -159,6 +169,32 @@ body {
     transform: scale(0.95);
 }
 
+/* Language Toggle Button */
+.btn-lang-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.btn-lang-toggle:active {
+    background: var(--accent-color);
+    color: var(--bg-primary);
+    border-color: var(--accent-color);
+    transform: scale(0.9);
+}
+
 #cartBadge {
     background: var(--error);
     color: white;
@@ -179,6 +215,8 @@ body {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
+    height: var(--category-height);
+    min-height: var(--category-height);
 }
 
 .category-tabs-scroll {
@@ -187,8 +225,10 @@ body {
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
     gap: var(--spacing-sm);
+    height: 100%;
+    align-items: center;
 }
 
 .category-tabs-scroll::-webkit-scrollbar {
@@ -199,7 +239,7 @@ body {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--spacing-xs) var(--spacing-md);
     background: var(--bg-card);
     border: 2px solid transparent;
     border-radius: 25px;
@@ -207,7 +247,8 @@ body {
     white-space: nowrap;
     scroll-snap-align: start;
     transition: all 0.2s;
-    min-height: 48px;
+    min-height: 36px;
+    height: 36px;
 }
 
 .category-tab:active {
@@ -254,21 +295,24 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
+    flex-shrink: 0; /* Never collapse - always visible above floating cart bar */
+    height: var(--pagination-height);
+    min-height: var(--pagination-height);
 }
 
 .page-btn {
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--spacing-xs) var(--spacing-lg);
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     border-radius: var(--border-radius);
     font-size: 14px;
     cursor: pointer;
-    min-height: 44px;
+    min-height: 36px;
     transition: all 0.2s;
 }
 
@@ -289,20 +333,24 @@ body {
     text-align: center;
 }
 
-/* Main Content */
+/* Main Content - fills all space between header/tabs and floating bar */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    /* Reserve space at bottom for floating cart bar */
+    padding-bottom: var(--floating-bar-height);
+    min-height: 0; /* Allow flex shrink */
 }
 
-/* Menu Grid - iPad optimized */
+/* Menu Grid - Tablet-first: fill viewport, NO scrolling */
 .menu-section {
     flex: 1;
-    overflow-y: auto;
-    padding: var(--spacing-lg);
-    padding-bottom: 100px; /* Space for floating cart bar */
+    overflow: hidden; /* No scrolling - pagination handles overflow */
+    padding: var(--spacing-xs) var(--spacing-sm);
+    display: flex;
+    min-height: 0; /* Critical: allow flex to shrink */
 }
 
 .menu-title {
@@ -315,8 +363,12 @@ body {
 
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: var(--spacing-sm);
+    width: 100%;
+    height: 100%; /* Fill all available vertical space - NO scrolling */
 }
 
 /* Menu Card - Simplified iPad UX */
@@ -327,6 +379,9 @@ body {
     overflow: hidden;
     transition: all 0.2s;
     border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Allow shrinking in grid */
 }
 
 .menu-card:active {
@@ -354,9 +409,14 @@ body {
     cursor: pointer;
 }
 
+.menu-card-image-wrap {
+    flex: 1;
+    min-height: 0; /* Allow image area to shrink */
+}
+
 .menu-card-image {
     width: 100%;
-    height: 160px;
+    height: 100%;
     object-fit: cover;
     background: var(--bg-hover);
 }
@@ -391,39 +451,44 @@ body {
 }
 
 .menu-card-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    flex-shrink: 0; /* Never shrink - text always visible */
 }
 
 .menu-card-name {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: bold;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 2px;
     cursor: pointer;
-    line-height: 1.3;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .menu-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
 }
 
 .menu-card-price {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
     color: var(--accent-color);
 }
 
 /* Quick Add Button - Large touch target */
 .quick-add-btn {
-    width: 52px;
-    height: 52px;
+    width: 40px;
+    height: 40px;
     background: var(--accent-color);
     color: var(--bg-primary);
     border: none;
     border-radius: 50%;
-    font-size: 28px;
+    font-size: 22px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -470,15 +535,17 @@ body {
     left: 0;
     right: 0;
     background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--spacing-xs) var(--spacing-md);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     z-index: 90;
     transform: translateY(100%);
     transition: transform 0.3s ease;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    height: var(--floating-bar-height);
+    min-height: var(--floating-bar-height);
 }
 
 .floating-cart-bar.visible {
@@ -505,7 +572,7 @@ body {
     flex: 1;
     text-align: center;
     color: var(--bg-primary);
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
 }
 
@@ -513,9 +580,9 @@ body {
     background: var(--bg-primary);
     color: var(--accent-color);
     border: none;
-    padding: var(--spacing-md) var(--spacing-xl);
+    padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
     min-height: var(--touch-target);
@@ -743,85 +810,158 @@ body {
 }
 
 .modal-content {
-    background: var(--bg-secondary);
+    position: relative;
     border-radius: var(--border-radius);
-    max-width: 500px;
+    max-width: 480px;
     width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: 85vh;
+    overflow: hidden;
     transform: scale(0.9);
     transition: transform 0.3s;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
 .modal-overlay.open .modal-content {
     transform: scale(1);
 }
 
-.modal-image {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
+/* Close button - top right corner */
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
+.modal-close-btn:active {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(0.9);
+}
+
+/* Image fills the entire modal */
+.modal-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* Body overlays on top of image */
 .modal-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 420px;
     padding: var(--spacing-lg);
+    padding-top: 200px;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.3) 30%,
+        rgba(0, 0, 0, 0.8) 55%,
+        rgba(0, 0, 0, 0.9) 100%
+    );
 }
 
 .modal-title {
-    font-size: 24px;
-    margin-bottom: var(--spacing-sm);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .modal-description {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-lg);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
 }
 
 .modal-price {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: bold;
     color: var(--accent-color);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .modal-options {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
 }
 
 .modal-options label {
     display: block;
-    margin-bottom: var(--spacing-sm);
-    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
 }
 
 .modal-options textarea {
     width: 100%;
-    padding: var(--spacing-md);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    color: var(--text-primary);
-    font-size: 16px;
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
     resize: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-options textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Bottom row: quantity + add button side by side */
+.modal-bottom-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
 }
 
 .modal-quantity {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
 }
 
 .modal-qty-btn {
-    width: 56px;
-    height: 56px;
-    background: var(--bg-card);
-    border: 2px solid var(--border-color);
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.25);
     border-radius: 50%;
-    color: var(--text-primary);
-    font-size: 24px;
+    color: #fff;
+    font-size: 22px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .modal-qty-btn:active {
@@ -831,32 +971,16 @@ body {
 }
 
 .modal-qty-value {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: bold;
-    min-width: 60px;
+    min-width: 36px;
     text-align: center;
-}
-
-.modal-actions {
-    display: flex;
-    gap: var(--spacing-md);
-}
-
-.btn-cancel {
-    flex: 1;
-    padding: var(--spacing-md);
-    background: transparent;
-    border: 2px solid var(--border-color);
-    color: var(--text-secondary);
-    border-radius: var(--border-radius);
-    font-size: 16px;
-    cursor: pointer;
-    min-height: var(--touch-target);
+    color: #fff;
 }
 
 .btn-add-cart {
-    flex: 2;
-    padding: var(--spacing-md);
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--accent-color);
     color: var(--bg-primary);
     border: none;
@@ -864,7 +988,14 @@ body {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    min-height: var(--touch-target);
+    min-height: 48px;
+    transition: all 0.15s;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.btn-add-cart:active {
+    background: var(--accent-hover);
+    transform: scale(0.97);
 }
 
 /* ============ Order History ============ */
@@ -921,7 +1052,7 @@ body {
 
 .notification-toast {
     position: fixed;
-    bottom: 120px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%) translateY(50px);
     background: var(--bg-card);
@@ -972,73 +1103,62 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* ============ Landscape adjustments (iPad) ============ */
+/* ============ Small screens / Phone (max-width: 599px) ============ */
 
-@media (min-width: 1024px) {
+@media (max-width: 599px) {
+    :root {
+        --header-height: 52px;
+        --category-height: 48px;
+        --pagination-height: 44px;
+        --floating-bar-height: 56px;
+    }
+
+    .modal-content {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .modal-body {
+        min-height: 360px;
+        padding-top: 160px;
+    }
+
     .menu-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--spacing-lg);
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
     }
 
-    .menu-card-image {
-        height: 160px;
+    .menu-card-name {
+        font-size: 14px;
+        -webkit-line-clamp: 2;
     }
 
-    .cart-drawer {
-        width: 450px;
-    }
-
-    .quick-add-btn {
-        width: 56px;
-        height: 56px;
-        font-size: 28px;
+    .menu-card-content {
+        padding: var(--spacing-sm);
     }
 
     .category-tab {
-        padding: var(--spacing-sm) var(--spacing-xl);
-    }
-}
-
-/* ============ Portrait mode ============ */
-
-@media (max-width: 768px) {
-    .app-header {
-        padding: var(--spacing-xs) var(--spacing-sm);
-    }
-
-    .brand-logo {
-        font-size: 24px;
-    }
-
-    .table-number {
-        font-size: 16px;
+        min-height: 40px;
+        height: 40px;
+        padding: var(--spacing-xs) var(--spacing-lg);
     }
 
     .btn-call-staff {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        font-size: 12px;
-    }
-
-    .category-tab {
-        padding: var(--spacing-xs) var(--spacing-md);
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 14px;
         min-height: 40px;
     }
+}
 
-    .category-tab .cat-icon {
-        font-size: 18px;
-    }
+/* ============ Tablet Portrait (600px - 1023px) ============ */
 
-    .category-tab .cat-label {
-        font-size: 12px;
-    }
-
+@media (min-width: 600px) and (max-width: 1023px) {
     .menu-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: var(--spacing-sm);
-    }
-
-    .menu-card-image {
-        height: 100px;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: var(--spacing-md);
     }
 
     .menu-card-name {
@@ -1048,24 +1168,124 @@ body {
     .menu-card-price {
         font-size: 16px;
     }
+}
 
-    .quick-add-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
+/* ============ Tablet Landscape / iPad - PRIMARY TARGET (min-width: 1024px) ============ */
+
+@media (min-width: 1024px) {
+    .menu-section {
+        padding: var(--spacing-sm) var(--spacing-md);
     }
 
-    .floating-cart-bar {
-        padding: var(--spacing-xs) var(--spacing-sm);
+    .menu-grid {
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: var(--spacing-sm);
     }
 
-    .floating-cart-total {
+    .menu-card-name {
+        font-size: 14px;
+    }
+
+    .menu-card-price {
         font-size: 18px;
     }
 
+    .menu-card-content {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .cart-drawer {
+        width: 450px;
+    }
+
+    .quick-add-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+
+    .category-tab {
+        padding: var(--spacing-xs) var(--spacing-lg);
+    }
+
+    .floating-cart-total {
+        font-size: 22px;
+    }
+
     .floating-cart-btn {
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-size: 14px;
+        padding: var(--spacing-sm) var(--spacing-xl);
+        font-size: 15px;
+    }
+
+    .pagination {
+        gap: var(--spacing-xl);
+    }
+}
+
+/* ============ Large Tablet / Desktop (min-width: 1366px) ============ */
+
+@media (min-width: 1366px) {
+    .menu-grid {
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+    }
+
+    .menu-card-name {
+        font-size: 15px;
+    }
+
+    .menu-card-price {
+        font-size: 20px;
+    }
+
+    .quick-add-btn {
+        width: 52px;
+        height: 52px;
+        font-size: 26px;
+    }
+}
+
+/* ============ Landscape orientation hint ============ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    /* Very short landscape (phones) - single row */
+    :root {
+        --header-height: 40px;
+        --category-height: 36px;
+        --pagination-height: 36px;
+        --floating-bar-height: 44px;
+    }
+
+    .menu-grid {
+        grid-template-rows: 1fr;
+    }
+
+    .brand-logo {
+        font-size: 20px;
+    }
+
+    .category-tab {
+        min-height: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+}
+
+/* ============ iPad landscape specific (1024-1400px width, 600-900px height) ============ */
+
+@media (min-width: 1024px) and (max-width: 1400px) and (min-height: 600px) and (max-height: 900px) {
+    .menu-grid {
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+    }
+
+    .menu-card-content {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .menu-card-name {
+        font-size: 13px;
     }
 }
 
@@ -1317,8 +1537,8 @@ body {
 
 .menu-skeleton {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-sm);
 }
 
 .menu-card-skeleton {

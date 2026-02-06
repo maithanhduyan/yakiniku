@@ -1054,7 +1054,11 @@ function selectCategory(category) {
         el.classList.toggle('active', label && cat && label.textContent === cat.category_label);
     });
 
-    // Render menu items with pagination
+    // Scroll active tab into view
+    const activeTab = document.querySelector('.category-tab.active');
+    if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+    // Render menu items
     const cat = state.categories.find(c => c.category === category);
     if (cat) {
         renderMenuItems(cat.items);
@@ -1107,33 +1111,80 @@ function renderMenuItems(items) {
         `;
     }).join('');
 
-    updatePagination(state.currentPage, totalPages);
+    updatePageIndicator();
 }
 
-// Pagination functions
-function updatePagination(currentPage, totalPages) {
-    const pagination = document.getElementById('pagination');
-    const pageInfo = document.getElementById('pageInfo');
-    const prevBtn = document.getElementById('prevPage');
-    const nextBtn = document.getElementById('nextPage');
+// Page indicator dots (shows position within category)
+function updatePageIndicator() {
+    const cat = state.categories.find(c => c.category === state.currentCategory);
+    if (!cat) return;
+    const totalPages = Math.ceil(cat.items.length / state.itemsPerPage);
 
-    // Always show pagination (never hide)
-    pagination.style.display = 'flex';
-    pageInfo.textContent = totalPages > 0 ? `${currentPage} / ${totalPages}` : '1 / 1';
-    prevBtn.disabled = currentPage <= 1;
-    nextBtn.disabled = currentPage >= totalPages || totalPages <= 1;
+    let indicator = document.getElementById('pageIndicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'pageIndicator';
+        indicator.className = 'page-indicator';
+        const menuSection = document.getElementById('menuSection');
+        if (menuSection) menuSection.appendChild(indicator);
+    }
+
+    if (totalPages <= 1) {
+        indicator.style.display = 'none';
+        return;
+    }
+
+    indicator.style.display = 'flex';
+    indicator.innerHTML = Array.from({ length: totalPages }, (_, i) =>
+        `<span class="page-dot ${i + 1 === state.currentPage ? 'active' : ''}"></span>`
+    ).join('');
 }
 
 function changePage(delta) {
+    navigatePage(delta);
+}
+
+/**
+ * Navigate pages across categories in a circular loop.
+ * delta: +1 = next page/category, -1 = previous page/category
+ */
+function navigatePage(delta) {
     const cat = state.categories.find(c => c.category === state.currentCategory);
-    if (!cat) return;
+    if (!cat || state.categories.length === 0) return;
 
     const totalPages = Math.ceil(cat.items.length / state.itemsPerPage);
     const newPage = state.currentPage + delta;
 
     if (newPage >= 1 && newPage <= totalPages) {
+        // Stay in current category, just change page
         state.currentPage = newPage;
         renderMenuItems(cat.items);
+        return;
+    }
+
+    // Cross category boundary
+    const catIndex = state.categories.indexOf(cat);
+    const catCount = state.categories.length;
+
+    if (delta > 0) {
+        // Past last page → next category, page 1
+        const nextCatIndex = (catIndex + 1) % catCount;
+        selectCategory(state.categories[nextCatIndex].category);
+    } else {
+        // Before first page → previous category, last page
+        const prevCatIndex = (catIndex - 1 + catCount) % catCount;
+        const prevCat = state.categories[prevCatIndex];
+        state.currentCategory = prevCat.category;
+        state.currentPage = Math.ceil(prevCat.items.length / state.itemsPerPage) || 1;
+        // Update category tabs UI
+        document.querySelectorAll('.category-tab').forEach(el => {
+            const label = el.querySelector('.cat-label');
+            el.classList.toggle('active', label && label.textContent === prevCat.category_label);
+        });
+        // Scroll category tab into view
+        const activeTab = document.querySelector('.category-tab.active');
+        if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        renderMenuItems(prevCat.items);
     }
 }
 
@@ -1148,8 +1199,7 @@ function setupSwipeGestures() {
     let touchStartY = 0;
     let touchDeltaX = 0;
     let isSwiping = false;
-    const SWIPE_THRESHOLD = 60;  // Min distance to trigger page change
-    const ELASTIC_FACTOR = 0.3;  // Resistance when at boundary
+    const SWIPE_THRESHOLD = 50;  // Min distance to trigger navigation
 
     menuSection.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
@@ -1163,7 +1213,7 @@ function setupSwipeGestures() {
         const dx = e.touches[0].clientX - touchStartX;
         const dy = e.touches[0].clientY - touchStartY;
 
-        // Only activate horizontal swipe if dx > dy (not scrolling vertically)
+        // Only activate horizontal swipe if dx > dy
         if (!isSwiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
             isSwiping = true;
         }
@@ -1171,65 +1221,37 @@ function setupSwipeGestures() {
         if (!isSwiping) return;
         e.preventDefault();
 
-        const cat = state.categories.find(c => c.category === state.currentCategory);
-        const totalPages = cat ? Math.ceil(cat.items.length / state.itemsPerPage) : 1;
-        const atStart = state.currentPage <= 1;
-        const atEnd = state.currentPage >= totalPages;
-
-        // Apply elastic resistance at boundaries
-        if ((dx > 0 && atStart) || (dx < 0 && atEnd)) {
-            touchDeltaX = dx * ELASTIC_FACTOR;
-        } else {
-            touchDeltaX = dx;
-        }
-
-        menuGrid.style.transform = `translateX(${touchDeltaX}px)`;
-        menuGrid.style.opacity = Math.max(0.6, 1 - Math.abs(touchDeltaX) / 600);
+        touchDeltaX = dx;
+        menuGrid.style.transform = `translateX(${dx}px)`;
+        menuGrid.style.opacity = Math.max(0.5, 1 - Math.abs(dx) / 500);
     }, { passive: false });
 
     menuSection.addEventListener('touchend', () => {
-        menuGrid.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-
         if (Math.abs(touchDeltaX) > SWIPE_THRESHOLD) {
-            const cat = state.categories.find(c => c.category === state.currentCategory);
-            const totalPages = cat ? Math.ceil(cat.items.length / state.itemsPerPage) : 1;
+            const direction = touchDeltaX > 0 ? -1 : 1; // swipe right = prev, swipe left = next
 
-            if (touchDeltaX > 0 && state.currentPage > 1) {
-                // Swipe right → previous page
-                menuGrid.style.transform = 'translateX(100%)';
-                menuGrid.style.opacity = '0';
-                setTimeout(() => {
-                    changePage(-1);
-                    menuGrid.style.transition = 'none';
-                    menuGrid.style.transform = 'translateX(-60px)';
-                    menuGrid.style.opacity = '0.5';
-                    requestAnimationFrame(() => {
-                        menuGrid.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
-                        menuGrid.style.transform = 'translateX(0)';
-                        menuGrid.style.opacity = '1';
-                    });
-                }, 150);
-                return;
-            } else if (touchDeltaX < 0 && state.currentPage < totalPages) {
-                // Swipe left → next page
-                menuGrid.style.transform = 'translateX(-100%)';
-                menuGrid.style.opacity = '0';
-                setTimeout(() => {
-                    changePage(1);
-                    menuGrid.style.transition = 'none';
-                    menuGrid.style.transform = 'translateX(60px)';
-                    menuGrid.style.opacity = '0.5';
-                    requestAnimationFrame(() => {
-                        menuGrid.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
-                        menuGrid.style.transform = 'translateX(0)';
-                        menuGrid.style.opacity = '1';
-                    });
-                }, 150);
-                return;
-            }
+            // Carousel: new content enters from the direction finger is moving
+            // Swipe left (dx<0) → next page, content slides in from RIGHT (same as finger direction)
+            // Swipe right (dx>0) → prev page, content slides in from LEFT
+            const enterFrom = touchDeltaX > 0 ? '-100%' : '100%';
+
+            // Immediately swap content and animate in
+            navigatePage(direction);
+            menuGrid.style.transition = 'none';
+            menuGrid.style.transform = `translateX(${enterFrom})`;
+            menuGrid.style.opacity = '0.3';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    menuGrid.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease';
+                    menuGrid.style.transform = 'translateX(0)';
+                    menuGrid.style.opacity = '1';
+                });
+            });
+            return;
         }
 
         // Bounce back (elastic return)
+        menuGrid.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
         menuGrid.style.transform = 'translateX(0)';
         menuGrid.style.opacity = '1';
     }, { passive: true });

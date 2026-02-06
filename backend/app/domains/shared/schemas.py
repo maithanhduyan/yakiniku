@@ -1,4 +1,4 @@
-﻿"""
+"""
 Shared Schemas - Base schemas for cross-domain use
 """
 from pydantic import BaseModel

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Dashboard Router - Staff management interface
 HTMX-powered for real-time updates
 """
@@ -214,7 +214,7 @@ async def update_booking_note(
         booking.staff_note = staff_note
         await db.commit()
 
-    return HTMLResponse(f'<span class="text-green-400">âœ“ ä¿å­˜ã—ã¾ã—ãŸ</span>')
+    return HTMLResponse(f'<span class="text-green-400">✓ 保存しました</span>')
 
 
 # ============================================

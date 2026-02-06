@@ -1,4 +1,4 @@
-﻿"""
+"""
 Kitchen Router - Kitchen Display System APIs
 Team: kitchen
 """
@@ -189,10 +189,10 @@ def format_wait_time(seconds: float) -> str:
 def get_urgency_level(seconds: float) -> str:
     """Get urgency level based on wait time"""
     if seconds < 60:
-        return "new"      # âšª < 1 min
+        return "new"      # ⚪ < 1 min
     elif seconds < 180:
-        return "normal"   # ðŸŸ¢ 1-3 min
+        return "normal"   # 🟢 1-3 min
     elif seconds < 300:
-        return "warning"  # ðŸŸ¡ 3-5 min
+        return "warning"  # 🟡 3-5 min
     else:
-        return "urgent"   # ðŸ”´ > 5 min
+        return "urgent"   # 🔴 > 5 min

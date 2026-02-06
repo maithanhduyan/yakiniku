@@ -1,4 +1,4 @@
-﻿"""
+"""
 POS Router - Point of Sale APIs
 Team: pos
 """

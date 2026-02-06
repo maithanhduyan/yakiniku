@@ -1,4 +1,4 @@
-﻿"""
+"""
 Booking Schemas
 """
 from pydantic import BaseModel, Field

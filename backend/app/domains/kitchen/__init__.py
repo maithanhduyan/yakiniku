@@ -1,4 +1,4 @@
-﻿"""
+"""
 Kitchen Domain - Kitchen Display System (KDS)
 Team: kitchen
 """

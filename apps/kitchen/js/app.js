@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Kitchen Display System - 焼肉ヅアン
  * Station-based Layout với Item Timer
  * Calm Kitchen Design

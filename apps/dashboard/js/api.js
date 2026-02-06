@@ -1,4 +1,4 @@
-﻿/**
+/**
  * API Client for Dashboard
  * REST API wrapper with authentication
  */

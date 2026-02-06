@@ -1,4 +1,4 @@
-﻿"""
+"""
 Menu Router - Menu items API for table ordering
 """
 from fastapi import APIRouter, Depends, HTTPException
@@ -68,7 +68,7 @@ async def get_menu_by_category(
     for item in items:
         cat = item.category
         if cat not in categories_dict:
-            info = CATEGORY_INFO.get(cat, {"label": cat, "icon": "ðŸ“¦"})
+            info = CATEGORY_INFO.get(cat, {"label": cat, "icon": "📦"})
             categories_dict[cat] = {
                 "category": cat,
                 "category_label": info["label"],

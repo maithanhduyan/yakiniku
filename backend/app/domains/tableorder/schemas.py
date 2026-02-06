@@ -1,4 +1,4 @@
-﻿"""
+"""
 Order Schemas
 """
 from pydantic import BaseModel, Field

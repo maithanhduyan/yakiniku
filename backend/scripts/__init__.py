@@ -1,2 +1,2 @@
-﻿# Scripts package
+# Scripts package
 

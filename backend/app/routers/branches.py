@@ -1,4 +1,4 @@
-﻿"""
+"""
 Branches Router - Branch management
 """
 from fastapi import APIRouter, Depends, HTTPException

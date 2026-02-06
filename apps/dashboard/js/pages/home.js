@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Home Page - Dashboard Overview
  */
 const HomePage = {

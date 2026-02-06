@@ -1,4 +1,4 @@
-﻿"""
+"""
 Order Models - Re-export from legacy models
 """
 # Re-export from legacy models

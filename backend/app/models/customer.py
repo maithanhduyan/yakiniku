@@ -1,4 +1,4 @@
-﻿"""
+"""
 Customer Models - Global and Per-Branch
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey

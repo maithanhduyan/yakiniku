@@ -1,4 +1,4 @@
-﻿"""
+"""
 Orders Router - Table ordering API
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -399,10 +399,10 @@ async def call_staff(
 
     # Map call types to Japanese
     call_type_labels = {
-        "assistance": "å‘¼ã³å‡ºã—",
-        "water": "ãŠæ°´",
-        "bill": "ãŠä¼šè¨ˆ",
-        "other": "ãã®ä»–"
+        "assistance": "呼び出し",
+        "water": "お水",
+        "bill": "お会計",
+        "other": "その他"
     }
 
     # TODO: Fix notification - need to add new NotificationType for orders

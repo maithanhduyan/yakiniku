@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Git pre-commit hook — encoding guard
+# Checks staged text files for BOM, mojibake, CRLF
+#
+# Install: copy to .git/hooks/pre-commit (or use pre-commit framework)
+
+# Find the repo root
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PYTHON="${REPO_ROOT}/backend/.venv/Scripts/python.exe"
+
+# Fallback for Linux/macOS
+if [ ! -f "$PYTHON" ]; then
+    PYTHON="${REPO_ROOT}/backend/.venv/bin/python"
+fi
+
+if [ ! -f "$PYTHON" ]; then
+    PYTHON="python3"
+fi
+
+# Run encoding check on staged files
+exec "$PYTHON" "${REPO_ROOT}/backend/scripts/check_encoding.py" --git-staged

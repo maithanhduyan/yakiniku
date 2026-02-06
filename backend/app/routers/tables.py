@@ -1,4 +1,4 @@
-﻿"""
+"""
 Tables Router - Table management and AI optimization API
 """
 from fastapi import APIRouter, Depends, HTTPException, Query

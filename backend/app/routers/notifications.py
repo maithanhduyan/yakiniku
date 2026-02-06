@@ -1,4 +1,4 @@
-﻿"""
+"""
 Notification Router - SSE endpoint for real-time notifications
 """
 from fastapi import APIRouter, Request, Query

@@ -1,4 +1,4 @@
-﻿"""
+"""
 AI Table Optimization Service
 Tối ưu hóa việc xếp bàn và quản lý capacity nhà hàng
 """

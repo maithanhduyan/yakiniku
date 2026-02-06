@@ -1,4 +1,4 @@
-﻿"""
+"""
 WebSocket Router for Real-time Dashboard Communication
 """
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
@@ -29,7 +29,7 @@ class ConnectionManager:
         self.active_connections[branch_code].add(websocket)
         self.subscriptions[websocket] = set()
 
-        print(f"ðŸ“¡ WebSocket connected: branch={branch_code}, total={len(self.active_connections[branch_code])}")
+        print(f"📡 WebSocket connected: branch={branch_code}, total={len(self.active_connections[branch_code])}")
 
         # Send connection confirmation
         await websocket.send_json({
@@ -48,13 +48,13 @@ class ConnectionManager:
         if websocket in self.subscriptions:
             del self.subscriptions[websocket]
 
-        print(f"ðŸ“¡ WebSocket disconnected: branch={branch_code}")
+        print(f"📡 WebSocket disconnected: branch={branch_code}")
 
     def subscribe(self, websocket: WebSocket, channel: str):
         """Subscribe to a channel"""
         if websocket in self.subscriptions:
             self.subscriptions[websocket].add(channel)
-            print(f"ðŸ“¡ Subscribed to channel: {channel}")
+            print(f"📡 Subscribed to channel: {channel}")
 
     def unsubscribe(self, websocket: WebSocket, channel: str):
         """Unsubscribe from a channel"""
@@ -66,7 +66,7 @@ class ConnectionManager:
         try:
             await websocket.send_json(message)
         except Exception as e:
-            print(f"âŒ Failed to send personal message: {e}")
+            print(f"❌ Failed to send personal message: {e}")
 
     async def broadcast_to_branch(self, branch_code: str, message: dict, channel: str = None):
         """Broadcast message to all connections in a branch"""
@@ -186,15 +186,15 @@ async def dashboard_websocket(
 
                 else:
                     # Handle other message types
-                    print(f"ðŸ“¨ Received: {msg_type}")
+                    print(f"📨 Received: {msg_type}")
 
             except json.JSONDecodeError:
-                print(f"âŒ Invalid JSON received")
+                print(f"❌ Invalid JSON received")
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, branch)
     except Exception as e:
-        print(f"âŒ WebSocket error: {e}")
+        print(f"❌ WebSocket error: {e}")
         manager.disconnect(websocket, branch)
 
 

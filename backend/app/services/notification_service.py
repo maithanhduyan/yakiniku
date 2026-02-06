@@ -1,4 +1,4 @@
-﻿"""
+"""
 Notification Service - Real-time notifications using SSE
 """
 import asyncio

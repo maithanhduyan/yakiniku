@@ -1,4 +1,4 @@
-﻿"""
+"""
 SQLAlchemy Models
 """
 from app.models.branch import Branch

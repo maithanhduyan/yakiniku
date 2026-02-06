@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ========================================
  * Yakiniku JIAN (ヅアン) - Main Application Script
  * Mobile-First Booking Experience

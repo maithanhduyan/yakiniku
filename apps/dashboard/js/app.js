@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dashboard Main Application
  * Handles routing, navigation, and initialization
  */

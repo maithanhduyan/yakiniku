@@ -1,4 +1,4 @@
-﻿"""
+"""
 Booking Model
 """
 from sqlalchemy import Column, String, Integer, Date, DateTime, ForeignKey, Enum

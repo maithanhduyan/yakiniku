@@ -1,0 +1,40 @@
+# Pre-commit hooks — runs automatically before every `git commit`
+# Install: pip install pre-commit && pre-commit install
+# Manual run: pre-commit run --all-files
+
+repos:
+  # Built-in hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Encoding & file hygiene
+      - id: check-byte-order-marker    # Rejects BOM (UTF-8 BOM = bad)
+      - id: check-yaml                 # Valid YAML
+      - id: check-json                 # Valid JSON
+      - id: check-toml                 # Valid TOML
+      - id: end-of-file-fixer          # Ensure files end with newline
+      - id: trailing-whitespace        # Remove trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: mixed-line-ending          # Enforce LF
+        args: [--fix=lf]
+      - id: check-added-large-files    # Prevent accidental large file commits
+        args: [--maxkb=500]
+      - id: check-merge-conflict       # Detect merge conflict markers
+
+  # Custom: encoding check using our script
+  - repo: local
+    hooks:
+      - id: check-encoding
+        name: Check file encoding (UTF-8, no mojibake)
+        entry: python backend/scripts/check_encoding.py --git-staged
+        language: python
+        types: [text]
+        pass_filenames: false
+
+  # Python code quality (optional but recommended)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.13
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format

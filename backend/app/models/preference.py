@@ -1,4 +1,4 @@
-﻿"""
+"""
 Customer Preference Model
 """
 from sqlalchemy import Column, String, Float, DateTime, ForeignKey

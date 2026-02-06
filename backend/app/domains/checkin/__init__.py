@@ -1,4 +1,4 @@
-﻿"""
+"""
 Check-in Domain - Customer Reception & Seating
 Team: checkin
 """

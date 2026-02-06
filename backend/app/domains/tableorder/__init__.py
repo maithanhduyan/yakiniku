@@ -1,4 +1,4 @@
-﻿"""
+"""
 Table Order Domain - Table Ordering System
 Team: table-order
 """

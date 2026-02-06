@@ -1,4 +1,4 @@
-﻿"""
+"""
 Booking Models - Re-export from legacy models with extensions
 """
 # Re-export from legacy models

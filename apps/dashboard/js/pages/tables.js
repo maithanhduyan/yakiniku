@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Tables Page - Table Management
  */
 const TablesPage = {

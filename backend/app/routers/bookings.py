@@ -1,4 +1,4 @@
-﻿"""
+"""
 Bookings Router - CRUD operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query

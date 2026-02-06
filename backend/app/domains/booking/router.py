@@ -1,4 +1,4 @@
-﻿"""
+"""
 Booking Router - Web Booking APIs
 Team: web
 """

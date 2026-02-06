@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Bookings Page - Booking Management
  */
 const BookingsPage = {

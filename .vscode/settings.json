@@ -32,6 +32,11 @@
     "files.eol": "\n",
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+
+    // ============ Encoding Protection ============
+    // Never save with BOM — VS Code defaults to UTF-8 without BOM
+    // If you see garbled text, do NOT re-save — run: python scripts/check_encoding.py . --fix
 
     // ============ Copilot Configuration ============
     "chat.agent.maxRequests": 5000,

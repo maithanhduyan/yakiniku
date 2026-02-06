@@ -1,4 +1,4 @@
-﻿"""
+"""
 Chat Schemas
 """
 from pydantic import BaseModel, Field

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Shared domain - common models and utilities used across all domains
 """
 from app.domains.shared.models import Branch, MenuItem, Table

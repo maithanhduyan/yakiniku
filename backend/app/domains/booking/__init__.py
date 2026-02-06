@@ -1,4 +1,4 @@
-﻿"""
+"""
 Booking Domain - Web/Customer Booking System
 Team: web
 """

@@ -1,4 +1,4 @@
-﻿"""
+"""
 FastAPI Application Entry Point
 """
 import signal

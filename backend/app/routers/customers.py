@@ -1,4 +1,4 @@
-﻿"""
+"""
 Customers Router - Customer lookup and preferences
 """
 from fastapi import APIRouter, Depends, HTTPException, Query

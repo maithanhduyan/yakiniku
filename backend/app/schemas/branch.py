@@ -1,4 +1,4 @@
-﻿"""
+"""
 Branch Schemas
 """
 from pydantic import BaseModel, Field

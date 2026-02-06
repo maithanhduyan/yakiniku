@@ -1,4 +1,4 @@
-﻿"""
+"""
 Order Model - Table orders for in-restaurant dining
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Numeric, ForeignKey

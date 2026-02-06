@@ -1,4 +1,4 @@
-﻿"""
+"""
 Chat Models - Message History and Extracted Insights
 """
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * POS Register App - 焼肉ヅアン
  * Point of Sale system for restaurant checkout
  */

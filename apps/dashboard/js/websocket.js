@@ -1,4 +1,4 @@
-﻿/**
+/**
  * WebSocket Manager for Dashboard
  * Handles real-time communication with backend
  */

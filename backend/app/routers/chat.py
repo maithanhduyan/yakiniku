@@ -1,4 +1,4 @@
-﻿"""
+"""
 Chat Router - AI-powered customer chat with automatic insight extraction
 """
 from fastapi import APIRouter, Depends, HTTPException

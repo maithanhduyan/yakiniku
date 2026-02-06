@@ -1,4 +1,4 @@
-﻿"""
+"""
 POS Domain - Point of Sale / Checkout
 Team: pos
 """

@@ -1,4 +1,4 @@
-﻿"""
+"""
 API Routers
 """
 from app.routers.bookings import router as bookings_router

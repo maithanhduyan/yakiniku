@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Check-in App - JavaScript
  * Customer reception and seating management
  */

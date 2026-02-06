@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Customers Page - Customer Management
  */
 const CustomersPage = {

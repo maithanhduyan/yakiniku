@@ -1,4 +1,4 @@
-﻿"""
+"""
 Order Schemas - Pydantic models for orders
 """
 from pydantic import BaseModel

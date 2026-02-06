@@ -1,4 +1,4 @@
-﻿"""
+"""
 Staff Model - Restaurant employees
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Enum as SQLEnum

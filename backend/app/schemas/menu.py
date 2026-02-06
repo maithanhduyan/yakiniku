@@ -1,4 +1,4 @@
-﻿"""
+"""
 Menu Schemas - Pydantic models for menu items
 """
 from pydantic import BaseModel

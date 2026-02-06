@@ -1,4 +1,4 @@
-﻿"""
+"""
 Pydantic Schemas
 """
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Database Connection and Session Management
 Async SQLAlchemy with aiosqlite/asyncpg
 """

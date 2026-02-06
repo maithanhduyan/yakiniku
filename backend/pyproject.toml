@@ -20,3 +20,9 @@ dependencies = [
     "typer[all]>=0.21.1",
     "uvicorn[standard]>=0.40.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.13",
+]

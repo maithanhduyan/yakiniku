@@ -1,4 +1,4 @@
-﻿"""
+"""
 Shared Models - Re-export from legacy models
 """
 # Re-export from legacy models

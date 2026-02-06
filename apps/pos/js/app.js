@@ -4,9 +4,17 @@
  */
 
 // ============ Configuration ============
+// Auto-detect: Dev (Live Server) → backend :8000 | Prod (Traefik) → same origin
+const _host = window.location.hostname;
+const _port = window.location.port;
+const _isDev = _port && !['80', '443', ''].includes(_port);
+const _proto = window.location.protocol;
+const _wsProto = _proto === 'https:' ? 'wss:' : 'ws:';
+const _base = _isDev ? `${_proto}//${_host}:8000` : `${_proto}//${_host}`;
+
 const CONFIG = {
-    API_BASE: 'http://localhost:8000/api',
-    WS_BASE: 'ws://localhost:8000/ws',
+    API_BASE: `${_base}/api`,
+    WS_BASE: `${_isDev ? 'ws:' : _wsProto}//${_host}${_isDev ? ':8000' : ''}/ws`,
     DEFAULT_BRANCH: 'hirama',
     TAX_RATE: 0.10,
     CURRENCY: '¥'

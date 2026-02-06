@@ -60,11 +60,29 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Static files for menu images (backend serves images)
+# Static files - backend serves everything
 try:
+    # Menu images and backend assets
     app.mount("/static", StaticFiles(directory="static"), name="static")
 except RuntimeError:
     print("⚠️ Static directory not found")
+
+try:
+    # Frontend apps: table-order, kitchen, dashboard, pos, checkin
+    import os
+    apps_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "apps")
+    if os.path.exists(apps_dir):
+        app.mount("/apps", StaticFiles(directory=apps_dir, html=True), name="apps")
+except Exception as e:
+    print(f"⚠️ Apps directory not found: {e}")
+
+try:
+    # Customer website
+    web_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "apps", "web")
+    if os.path.exists(web_dir):
+        app.mount("/web", StaticFiles(directory=web_dir, html=True), name="web")
+except Exception as e:
+    print(f"⚠️ Web directory not found: {e}")
 
 # CORS - allow web frontend
 app.add_middleware(

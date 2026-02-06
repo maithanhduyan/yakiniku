@@ -1,0 +1,5 @@
+acme.json
+.env
+*.log
+
+log/

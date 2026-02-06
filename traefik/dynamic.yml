@@ -1,0 +1,77 @@
+# ===========================================
+# Traefik Dynamic Configuration for localhost
+# ===========================================
+
+http:
+  # =========================================
+  # ROUTERS
+  # =========================================
+  routers:
+    # Static Assets Router (Images, CSS, JS) - Higher Priority for Caching
+    yakiniku-static:
+      rule: "Host(`yakiniku.io`, `www.yakiniku.io`) && PathPrefix(`/static`)"
+      service: yakiniku-backend
+      entryPoints:
+        - web
+      middlewares:
+        - static-cache-headers
+        - gzip
+      priority: 50
+
+    # Main Yakiniku Router
+    yakiniku:
+      rule: "Host(`yakiniku.io`, `www.yakiniku.io`)"
+      service: yakiniku-backend
+      entryPoints:
+        - web
+      middlewares:
+        - security-headers
+        - gzip
+      priority: 1
+
+    # Yakiniku WebSocket Router
+    yakiniku-websocket:
+      rule: "Host(`yakiniku.io`, `www.yakiniku.io`) && PathPrefix(`/ws`)"
+      service: yakiniku-backend
+      entryPoints:
+        - web
+      middlewares:
+        - security-headers
+      priority: 10
+
+  # =========================================
+  # SERVICES
+  # =========================================
+  services:
+    yakiniku-backend:
+      loadBalancer:
+        servers:
+          - url: "http://backend:8000"
+        passHostHeader: true
+
+  # =========================================
+  # MIDDLEWARES
+  # =========================================
+  middlewares:
+    # Security Headers
+    security-headers:
+      headers:
+        customFrameOptionsValue: "SAMEORIGIN"
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+
+    # Gzip Compression
+    gzip:
+      compress: true
+
+    # Static Assets Cache Headers (Images, CSS, JS)
+    static-cache-headers:
+      headers:
+        # Cache static assets for 1 year (immutable assets with hash)
+        customResponseHeaders:
+          Cache-Control: "public, max-age=31536000, immutable"
+          Vary: "Accept-Encoding"
+        # Security headers for static assets
+        contentTypeNosniff: true
+        browserXssFilter: true

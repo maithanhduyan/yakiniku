@@ -38,6 +38,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8082",
         "http://127.0.0.1:8083",
         "http://127.0.0.1:8084",
+        "http://yakiniku.io",
+        "http://www.yakiniku.io",
     ]
 
     # Multi-tenant

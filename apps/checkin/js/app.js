@@ -5,8 +5,15 @@
 
 // ============ Configuration ============
 
+// Auto-detect: Dev (Live Server) → backend :8000 | Prod (Traefik) → same origin
+const _host = window.location.hostname;
+const _port = window.location.port;
+const _isDev = _port && !['80', '443', ''].includes(_port);
+const _proto = window.location.protocol;
+const _base = _isDev ? `${_proto}//${_host}:8000` : `${_proto}//${_host}`;
+
 const CONFIG = {
-    API_BASE: 'http://localhost:8000/api',
+    API_BASE: `${_base}/api`,
     BRANCH_CODE: 'hirama',
     SCAN_INTERVAL: 100,      // ms between scans
     RESULT_DISPLAY_TIME: 8000,  // ms to show result

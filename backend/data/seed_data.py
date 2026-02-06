@@ -341,7 +341,7 @@ async def seed_menu_items(session: AsyncSession) -> int:
     count = 0
     for row in rows:
         image_filename = row.get("image_filename", "")
-        image_url = f"/images/menu/{image_filename}" if image_filename else None
+        image_url = f"/static/images/menu/{image_filename}" if image_filename else None
 
         item = MenuItem(
             id=row["id"],

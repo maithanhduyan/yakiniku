@@ -3,15 +3,23 @@
  * Yakiniku.io Platform
  */
 
-// Auto-detect API server based on current hostname
-// This allows the app to work from both localhost and internal network
-// Use the SAME hostname as the browser to avoid CORS issues
+// Auto-detect API server based on current hostname & port
+// Dev (Live Server :5500) → backend at :8000
+// Prod (Traefik :80/443) → same origin, no port needed
 const API_HOST = window.location.hostname;
+const _port = window.location.port;
+const _isDev = _port && !['80', '443', ''].includes(_port);
+const _proto = window.location.protocol;  // 'http:' or 'https:'
+const _wsProto = _proto === 'https:' ? 'wss:' : 'ws:';
+const API_BASE = _isDev
+    ? `${_proto}//${API_HOST}:8000`
+    : `${_proto}//${API_HOST}`;
 
 const CONFIG = {
-    // API endpoints
-    API_URL: `http://${API_HOST}:8000/api`,
-    WS_URL: `ws://${API_HOST}:8000/ws`,
+    // API endpoints (auto-detected)
+    API_BASE: API_BASE,
+    API_URL: `${API_BASE}/api`,
+    WS_URL: `${_isDev ? 'ws:' : _wsProto}//${API_HOST}${_isDev ? ':8000' : ''}/ws`,
 
     // Default branch
     BRANCH_CODE: 'hirama',

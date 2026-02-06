@@ -587,6 +587,18 @@ async function loadMenu() {
     }
 }
 
+// Default placeholder image (inline SVG data URI - works offline)
+const DEFAULT_IMAGE_PLACEHOLDER = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect fill="%23333" width="400" height="200"/><text x="200" y="90" text-anchor="middle" fill="%23888" font-size="48">🍖</text><text x="200" y="130" text-anchor="middle" fill="%23666" font-size="14" font-family="sans-serif">No Image</text></svg>`)}`;
+
+// Resolve image URL: backend-relative paths need full backend URL
+function getImageUrl(imageUrl) {
+    if (!imageUrl) return DEFAULT_IMAGE_PLACEHOLDER;
+    // Already absolute URL (http/https/data)
+    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) return imageUrl;
+    // Relative path from backend (e.g. /static/images/menu/harami.jpg)
+    return `${CONFIG.API_BASE}${imageUrl}`;
+}
+
 // Unsplash fallback images by category
 const UNSPLASH_IMAGES = {
     meat: {
@@ -1077,8 +1089,8 @@ function renderMenuItems(items) {
             <div class="menu-card ${inCart ? 'in-cart' : ''}" data-item-id="${item.id}">
                 ${cartQty > 0 ? `<div class="menu-card-cart-indicator">${cartQty}</div>` : ''}
                 <div class="menu-card-image-wrap" onclick="openItemModal('${item.id}')">
-                    <img class="menu-card-image" src="${item.image_url || ''}" alt="${item.name}" loading="lazy"
-                         onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                    <img class="menu-card-image" src="${getImageUrl(item.image_url)}" alt="${item.name}" loading="lazy"
+                         onerror="this.onerror=null;this.src=DEFAULT_IMAGE_PLACEHOLDER;">
                     ${item.is_popular ? `<span class="popular-badge">${t('menu.popular')}</span>` : ''}
                     ${item.is_spicy ? '<span class="spicy-badge">🌶️</span>' : ''}
                 </div>
@@ -1159,8 +1171,8 @@ function renderCartItems() {
 
     container.innerHTML = state.cart.map((item, index) => `
         <div class="cart-item">
-            <img class="cart-item-image" src="${item.image_url || ''}" alt="${item.name}"
-                 onerror="this.src='https://via.placeholder.com/60?text=No'">
+            <img class="cart-item-image" src="${getImageUrl(item.image_url)}" alt="${item.name}"
+                 onerror="this.onerror=null;this.src=DEFAULT_IMAGE_PLACEHOLDER;">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-price">¥${item.price.toLocaleString()}</div>
@@ -1304,7 +1316,9 @@ function openItemModal(itemId) {
     state.modalQty = 1;
     SessionLog.log('item_viewed', { item_id: item.id, item_name: item.name });
 
-    document.getElementById('modalImage').src = item.image_url || '';
+    const modalImg = document.getElementById('modalImage');
+    modalImg.onerror = function() { this.onerror = null; this.src = DEFAULT_IMAGE_PLACEHOLDER; };
+    modalImg.src = getImageUrl(item.image_url);
     document.getElementById('modalTitle').textContent = item.name;
     document.getElementById('modalDescription').textContent = item.description || '';
     document.getElementById('modalPrice').textContent = `¥${item.price.toLocaleString()}`;

@@ -11,7 +11,11 @@
     // ============================================
     // API CONFIGURATION
     // ============================================
-    const API_BASE = 'http://127.0.0.1:8000/api';
+    // Auto-detect: Dev → backend :8000 | Prod (Traefik) → same origin
+    const _h = window.location.hostname;
+    const _p = window.location.port;
+    const _d = _p && !['80','443',''].includes(_p);
+    const API_BASE = `${window.location.protocol}//${_h}${_d ? ':8000' : ''}/api`;
     const BRANCH_CODE = 'hirama';
 
     // ============================================

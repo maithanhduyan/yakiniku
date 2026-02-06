@@ -2,10 +2,18 @@
  * Dashboard Configuration
  * Yakiniku.io Platform
  */
+// Auto-detect: Dev (Live Server) → backend :8000 | Prod (Traefik) → same origin
+const _host = window.location.hostname;
+const _port = window.location.port;
+const _isDev = _port && !['80', '443', ''].includes(_port);
+const _proto = window.location.protocol;
+const _wsProto = _proto === 'https:' ? 'wss:' : 'ws:';
+const _apiBase = _isDev ? `${_proto}//${_host}:8000` : `${_proto}//${_host}`;
+
 const CONFIG = {
-    // API endpoints
-    API_URL: 'http://localhost:8000',
-    WS_URL: 'ws://localhost:8000/ws',
+    // API endpoints (auto-detected)
+    API_URL: _apiBase,
+    WS_URL: `${_isDev ? 'ws:' : _wsProto}//${_host}${_isDev ? ':8000' : ''}/ws`,
 
     // Default branch
     DEFAULT_BRANCH: 'hirama',

@@ -480,8 +480,19 @@ async function submitOrder() {
         // Show success
         showNotification(t('notify.orderSuccess'), 'success');
 
-        // Add to order history
-        state.orderHistory.push(result);
+        // Add to order history with individual items and timestamp
+        const orderTime = new Date();
+        const historyItems = orderData.items.map(item => ({
+            name: item.item_name,
+            quantity: item.quantity,
+            price: item.item_price,
+            notes: item.notes || '',
+            delivered: false,
+            orderedAt: orderTime.toISOString()
+        }));
+        state.orderHistory.push(...historyItems);
+        saveHistoryToStorage();
+        renderHistory();
 
     } catch (error) {
         console.error('Order error:', error);
@@ -949,6 +960,98 @@ function addToCartFromModal() {
     showNotification(t('notify.addedToCart', { name: itemName }), 'success');
 }
 
+// ============ Order History ============
+
+function openHistory() {
+    document.getElementById('historyOverlay').classList.add('open');
+    document.getElementById('historyDrawer').classList.add('open');
+    renderHistory();
+}
+
+function closeHistory() {
+    document.getElementById('historyOverlay').classList.remove('open');
+    document.getElementById('historyDrawer').classList.remove('open');
+}
+
+function renderHistory() {
+    const container = document.getElementById('historyItems');
+
+    if (state.orderHistory.length === 0) {
+        container.innerHTML = `<div class="history-empty">${t('history.empty')}</div>`;
+        document.getElementById('historyTotalItems').textContent = '0' + t('history.itemUnit');
+        document.getElementById('historyTotalAmount').textContent = '¥0';
+        return;
+    }
+
+    // Group items by orderedAt timestamp
+    const groups = {};
+    state.orderHistory.forEach(item => {
+        const key = item.orderedAt || 'unknown';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(item);
+    });
+
+    // Sort groups by time descending (newest first)
+    const sortedKeys = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+
+    let html = '';
+    sortedKeys.forEach(key => {
+        const time = key !== 'unknown' ? formatOrderTime(new Date(key)) : '---';
+        html += `<div class="history-order-group">`;
+        html += `<div class="history-order-time">${time}</div>`;
+        groups[key].forEach((item, idx) => {
+            const globalIdx = state.orderHistory.indexOf(item);
+            const statusClass = item.delivered ? 'delivered' : 'pending';
+            const statusIcon = item.delivered ? '✓' : '';
+            html += `
+                <div class="history-item" onclick="toggleDelivered(${globalIdx})">
+                    <span class="history-item-name">${item.name}</span>
+                    <span class="history-item-qty">×${item.quantity}</span>
+                    <span class="history-item-status ${statusClass}">${statusIcon}</span>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+
+    // Update footer totals
+    const totalItems = state.orderHistory.reduce((sum, i) => sum + i.quantity, 0);
+    const totalAmount = state.orderHistory.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    document.getElementById('historyTotalItems').textContent = totalItems + t('history.itemUnit');
+    document.getElementById('historyTotalAmount').textContent = `¥${totalAmount.toLocaleString()}`;
+}
+
+function toggleDelivered(index) {
+    if (index >= 0 && index < state.orderHistory.length) {
+        state.orderHistory[index].delivered = !state.orderHistory[index].delivered;
+        saveHistoryToStorage();
+        renderHistory();
+    }
+}
+
+function formatOrderTime(date) {
+    const h = date.getHours().toString().padStart(2, '0');
+    const m = date.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
+}
+
+function saveHistoryToStorage() {
+    try {
+        localStorage.setItem(`yakiniku_history_${TABLE_ID}`, JSON.stringify(state.orderHistory));
+    } catch (e) { /* ignore */ }
+}
+
+function loadHistoryFromStorage() {
+    try {
+        const saved = localStorage.getItem(`yakiniku_history_${TABLE_ID}`);
+        if (saved) {
+            state.orderHistory = JSON.parse(saved);
+        }
+    } catch (e) { /* ignore */ }
+}
+
 // ============ Notifications ============
 
 function showNotification(message, type = 'success', duration = 1500) {
@@ -981,5 +1084,9 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeItemModal();
         closeCart();
+        closeHistory();
     }
 });
+
+// Load order history from localStorage on startup
+loadHistoryFromStorage();

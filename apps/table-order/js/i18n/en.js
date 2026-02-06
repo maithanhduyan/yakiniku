@@ -65,6 +65,14 @@ const en = {
     'connection.statusOffline': 'Offline',
     'connection.offlineNotice': '⚠️ Real-time notifications are unavailable. You can still place orders normally.',
 
+    // Order History
+    'header.history': 'History',
+    'history.title': '📋 Order History',
+    'history.empty': 'No orders yet',
+    'history.totalItems': 'Total items',
+    'history.totalAmount': 'Total amount',
+    'history.itemUnit': ' items',
+
     // Loading
     'loading.text': 'Loading menu...',
     'loading.api': 'API',

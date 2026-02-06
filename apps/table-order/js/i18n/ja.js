@@ -65,6 +65,14 @@ const ja = {
     'connection.statusOffline': 'オフライン',
     'connection.offlineNotice': '⚠️ リアルタイム通知は現在利用できません。ご注文は通常通りお受けできます。',
 
+    // Order History
+    'header.history': '履歴',
+    'history.title': '📋 注文履歴',
+    'history.empty': 'まだ注文がありません',
+    'history.totalItems': '合計品数',
+    'history.totalAmount': '合計金額',
+    'history.itemUnit': '品',
+
     // Loading
     'loading.text': 'メニューを読み込み中...',
     'loading.api': 'API接続',

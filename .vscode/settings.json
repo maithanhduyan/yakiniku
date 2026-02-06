@@ -34,7 +34,7 @@
     "files.trimTrailingWhitespace": true,
 
     // ============ Copilot Configuration ============
-    "chat.agent.maxRequests": 200,
+    "chat.agent.maxRequests": 2000,
 
     // Prettier Configuration
     "prettier.tabWidth": 4,

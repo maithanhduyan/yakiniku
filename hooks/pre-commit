@@ -18,5 +18,9 @@ if [ ! -f "$PYTHON" ]; then
     PYTHON="python3"
 fi
 
+# Force UTF-8 for Python on Windows (prevents CP1252 print crashes)
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
+
 # Run encoding check on staged files
 exec "$PYTHON" "${REPO_ROOT}/backend/scripts/check_encoding.py" --git-staged

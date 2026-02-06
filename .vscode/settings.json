@@ -75,15 +75,21 @@
     // Terminal environment for uv
     "terminal.integrated.env.windows": {
         "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
-        "PATH": "${workspaceFolder}/backend/.venv/Scripts;${env:PATH}"
+        "PATH": "${workspaceFolder}/backend/.venv/Scripts;${env:PATH}",
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8"
     },
     "terminal.integrated.env.linux": {
         "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
-        "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}"
+        "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}",
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8"
     },
     "terminal.integrated.env.osx": {
         "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
-        "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}"
+        "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}",
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8"
     },
     "chat.tools.terminal.autoApprove": {
         "ForEach-Object": true

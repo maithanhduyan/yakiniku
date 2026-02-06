@@ -2,30 +2,18 @@
  * Kitchen Display System - 焼肉ヅアン
  * Station-based Layout với Item Timer
  * Calm Kitchen Design
+ *
+ * Dependencies (loaded before this file):
+ *   - config.js   → CONFIG global
+ *   - api.js      → API global (KitchenAPI)
+ *   - websocket.js → wsManager global (WebSocketManager)
+ *   - i18n.js     → I18N, t() globals
  */
 
 // ============ Configuration ============
-// Auto-detect: Dev (Live Server) → backend :8000 | Prod (Traefik) → same origin
-const _host = window.location.hostname;
-const _port = window.location.port;
-const _isDev = _port && !['80', '443', ''].includes(_port);
-const _proto = window.location.protocol;
-const _wsProto = _proto === 'https:' ? 'wss:' : 'ws:';
-const _base = _isDev ? `${_proto}//${_host}:8000` : `${_proto}//${_host}`;
-
-const CONFIG = {
-    API_BASE: `${_base}/api`,
-    WS_BASE: `${_isDev ? 'ws:' : _wsProto}//${_host}${_isDev ? ':8000' : ''}/ws`,
-    BRANCH_CODE: 'hirama',
-    REFRESH_INTERVAL: 30000,
-    TIMER_INTERVAL: 1000
-};
-
-// Time thresholds (seconds) - Default values, can be overridden by backend
-const THRESHOLDS = {
-    WARNING: 180,   // 3 min = yellow
-    URGENT: 300     // 5 min = red
-};
+// CONFIG, THRESHOLDS loaded from config.js
+// API loaded from api.js
+// wsManager loaded from websocket.js
 
 // Station definitions
 const STATIONS = {
@@ -109,18 +97,17 @@ async function init() {
     // Show loading overlay
     showLoading();
 
-    // Update threshold display
-    elements.thresholdWarning.textContent = THRESHOLDS.WARNING / 60;
-    elements.thresholdUrgent.textContent = THRESHOLDS.URGENT / 60;
+    // Update threshold display from CONFIG
+    elements.thresholdWarning.textContent = CONFIG.THRESHOLDS.WARNING / 60;
+    elements.thresholdUrgent.textContent = CONFIG.THRESHOLDS.URGENT / 60;
 
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(updateTimers, CONFIG.TIMER_INTERVAL);
 
     setupEventListeners();
-    loadConfig();
     await loadOrders();
-    connectWebSocket();
+    setupWebSocket();
 
     // Hide loading after initial load
     setTimeout(() => {
@@ -259,37 +246,13 @@ function updateClock() {
     });
 }
 
-// ============ Config from Backend ============
-async function loadConfig() {
-    try {
-        const response = await fetch(`${CONFIG.API_BASE}/kitchen/config?branch_code=${CONFIG.BRANCH_CODE}`);
-        if (response.ok) {
-            const config = await response.json();
-            if (config.warning_threshold) {
-                THRESHOLDS.WARNING = config.warning_threshold;
-                elements.thresholdWarning.textContent = THRESHOLDS.WARNING / 60;
-            }
-            if (config.urgent_threshold) {
-                THRESHOLDS.URGENT = config.urgent_threshold;
-                elements.thresholdUrgent.textContent = THRESHOLDS.URGENT / 60;
-            }
-        }
-    } catch (e) {
-        console.log('Using default thresholds');
-    }
-}
+// Config loaded from config.js (no backend config endpoint needed)
 
 // ============ API ============
 async function loadOrders() {
     try {
-        const response = await fetch(
-            `${CONFIG.API_BASE}/orders/kitchen?branch_code=${CONFIG.BRANCH_CODE}`
-        );
-
-        if (!response.ok) throw new Error('API Error');
-
-        const orders = await response.json();
-        processOrders(orders);
+        const data = await API.getOrders();
+        processOrders(data.orders || []);
         setOnline(true);
         updateLoadingStatus('api', 'success');
 
@@ -310,22 +273,27 @@ async function loadOrders() {
 
 function processOrders(orders) {
     // Flatten orders to individual items with order context
+    // Supports both domain API (snake_case) and demo data (camelCase)
     const items = [];
 
     orders.forEach(order => {
-        order.items.forEach(item => {
-            if (!item.completed) {
+        const orderItems = order.items || [];
+        orderItems.forEach(item => {
+            // Domain API: item.status, Demo: item.completed
+            const isDone = item.status === 'ready' || item.status === 'served' || item.completed;
+            if (!isDone) {
                 items.push({
                     id: `${order.id}-${item.id}`,
                     orderId: order.id,
-                    orderNumber: order.orderNumber,
-                    tableNumber: order.tableNumber,
-                    name: item.name,
+                    itemId: item.id,
+                    orderNumber: order.order_number ?? order.orderNumber,
+                    tableNumber: order.table_number ?? order.tableNumber,
+                    name: item.name ?? item.item_name,
                     quantity: item.quantity,
-                    note: item.note,
-                    completed: item.completed || false,
-                    createdAt: order.createdAt,
-                    station: detectStation(item.name)
+                    note: item.notes ?? item.note ?? '',
+                    completed: false,
+                    createdAt: order.created_at ?? order.createdAt,
+                    station: detectStation(item.name ?? item.item_name ?? '')
                 });
             }
         });
@@ -407,47 +375,55 @@ function detectStation(itemName) {
     return 'side'; // Default to side dishes
 }
 
-// ============ WebSocket ============
-function connectWebSocket() {
-    try {
-        const ws = new WebSocket(`${CONFIG.WS_BASE}/kitchen?branch=${CONFIG.BRANCH_CODE}`);
+// ============ WebSocket (via wsManager module) ============
+function setupWebSocket() {
+    // Handle new orders from WebSocket
+    wsManager.on('new_order', (data) => {
+        const tableNum = data?.table_number || data?.tableNumber || '??';
+        showNotification(t('notify.newOrder', { table: tableNum }));
+        playSound();
+        loadOrders(); // Refresh full list from API
+    });
 
-        ws.onopen = () => {
-            console.log('WebSocket connected');
-            setOnline(true);
-            updateLoadingStatus('ws', 'success');
-        };
+    // Handle order status updates
+    wsManager.on('order_update', () => {
+        loadOrders();
+    });
 
-        ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                handleWSMessage(data);
-            } catch (e) {}
-        };
+    // Handle item-level updates
+    wsManager.on('item_update', () => {
+        loadOrders();
+    });
 
-        ws.onclose = () => {
-            setOnline(false);
-            updateLoadingStatus('ws', 'error');
-            setTimeout(connectWebSocket, 5000);
-        };
+    // Handle connection events
+    wsManager.on('connected', () => {
+        setOnline(true);
+        updateLoadingStatus('ws', 'success');
+    });
 
-        ws.onerror = () => {
-            setOnline(false);
-            updateLoadingStatus('ws', 'error');
-        };
-    } catch (error) {
-        console.warn('WebSocket not available');
-    }
+    wsManager.on('disconnected', () => {
+        setOnline(false);
+        updateLoadingStatus('ws', 'error');
+    });
+
+    wsManager.on('failed', () => {
+        updateLoadingStatus('ws', 'error');
+        console.warn('[WS] All reconnect attempts failed');
+    });
+
+    // Connect
+    wsManager.connect();
 }
 
 function handleWSMessage(data) {
+    // Legacy handler — kept for compatibility, main handling via wsManager.on()
     if (data.type === 'new_order') {
-        showNotification(t('notify.newOrder', { table: data.tableNumber }));
+        const tableNum = data.data?.table_number || data.data?.tableNumber || '??';
+        showNotification(t('notify.newOrder', { table: tableNum }));
         playSound();
         loadOrders();
     } else if (data.type === 'order_update' || data.type === 'config_update') {
         loadOrders();
-        if (data.type === 'config_update') loadConfig();
     }
 }
 
@@ -624,11 +600,10 @@ function closeCancelModal() {
 
 async function sendItemComplete(item) {
     try {
-        await fetch(`${CONFIG.API_BASE}/orders/${item.orderId}/items/${item.id.split('-')[1]}/complete`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
-        });
+        // Use the domain API — mark item as done via its own ID
+        await API.completeItem(item.itemId || item.id.split('-')[1]);
     } catch (e) {
+        console.warn('Failed to mark item complete on backend:', e);
         // Silently fail - local state already updated
     }
 }
@@ -639,8 +614,8 @@ function getElapsedSeconds(createdAt) {
 }
 
 function getStatusClass(seconds) {
-    if (seconds >= THRESHOLDS.URGENT) return 'status-urgent';
-    if (seconds >= THRESHOLDS.WARNING) return 'status-warning';
+    if (seconds >= CONFIG.THRESHOLDS.URGENT) return 'status-urgent';
+    if (seconds >= CONFIG.THRESHOLDS.WARNING) return 'status-warning';
     return '';
 }
 
@@ -679,9 +654,9 @@ function updateStats() {
 
     state.items.forEach(item => {
         const elapsed = getElapsedSeconds(item.createdAt);
-        if (elapsed >= THRESHOLDS.URGENT) {
+        if (elapsed >= CONFIG.THRESHOLDS.URGENT) {
             urgent++;
-        } else if (elapsed >= THRESHOLDS.WARNING) {
+        } else if (elapsed >= CONFIG.THRESHOLDS.WARNING) {
             warning++;
         }
     });
@@ -705,7 +680,7 @@ function showNotification(text) {
 
     setTimeout(() => {
         elements.notification.classList.remove('show');
-    }, 4000);
+    }, CONFIG.TOAST_DURATION);
 }
 
 function toggleSound() {
@@ -792,7 +767,7 @@ async function logKitchenEvent(eventType, item, extraData = {}) {
         event_source: 'kitchen-display',
         branch_code: CONFIG.BRANCH_CODE,
         order_id: item.orderId,
-        order_item_id: item.id.split('-')[1],
+        order_item_id: item.itemId || item.id.split('-')[1],
         item_name: item.name,
         item_quantity: item.quantity,
         table_number: item.tableNumber,
@@ -803,11 +778,7 @@ async function logKitchenEvent(eventType, item, extraData = {}) {
     };
 
     try {
-        await fetch(`${CONFIG.API_BASE}/kitchen/events/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        await API.logEvent(payload);
     } catch (e) {
         console.warn('Failed to log kitchen event:', e);
     }
@@ -840,14 +811,12 @@ async function loadHistory() {
     const eventType = document.getElementById('historyTypeFilter')?.value || '';
 
     try {
-        let url = `${CONFIG.API_BASE}/kitchen/events/history?branch_code=${CONFIG.BRANCH_CODE}&limit=50&since_hours=24`;
-        if (station && station !== 'all') url += `&station=${station}`;
-        if (eventType) url += `&event_type=${eventType}`;
-
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('History API error');
-
-        const data = await response.json();
+        const data = await API.getHistory({
+            station,
+            event_type: eventType,
+            limit: 50,
+            since_hours: 24
+        });
         state.history = data.events || [];
         renderHistory(data);
     } catch (e) {

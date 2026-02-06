@@ -54,8 +54,12 @@ async def get_kitchen_orders(
         )
         table = table_result.scalar_one_or_none()
 
-        # Calculate wait time
-        wait_seconds = (datetime.utcnow() - order.created_at).total_seconds()
+        # Calculate wait time (handle both naive and aware datetimes)
+        now = datetime.utcnow()
+        created = order.created_at
+        if created.tzinfo is not None:
+            created = created.replace(tzinfo=None)
+        wait_seconds = (now - created).total_seconds()
 
         kitchen_orders.append({
             "id": order.id,

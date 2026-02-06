@@ -198,10 +198,57 @@ async def dashboard_websocket(
         manager.disconnect(websocket, branch)
 
 
+@router.websocket("/kitchen")
+async def kitchen_websocket(
+    websocket: WebSocket,
+    branch: str = Query(default="hirama")
+):
+    """WebSocket endpoint for Kitchen Display System (KDS) real-time updates"""
+    await manager.connect(websocket, branch)
+
+    # Auto-subscribe to orders channel so kitchen receives new orders
+    manager.subscribe(websocket, "orders")
+    manager.subscribe(websocket, "kitchen")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+
+            try:
+                message = json.loads(data)
+                msg_type = message.get("type")
+
+                if msg_type == "ping":
+                    await manager.send_personal(websocket, {"type": "pong"})
+                elif msg_type == "subscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        manager.subscribe(websocket, channel)
+                        await manager.send_personal(websocket, {
+                            "type": "subscribed",
+                            "channel": channel
+                        })
+                elif msg_type == "unsubscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        manager.unsubscribe(websocket, channel)
+                else:
+                    print(f"📨 Kitchen WS received: {msg_type}")
+
+            except json.JSONDecodeError:
+                pass
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, branch)
+    except Exception as e:
+        print(f"❌ Kitchen WebSocket error: {e}")
+        manager.disconnect(websocket, branch)
+
+
 # Helper functions to broadcast events from other parts of the app
 
 async def broadcast_order_event(branch_code: str, event_type: str, data: dict):
-    """Broadcast order-related events to table-order clients"""
+    """Broadcast order-related events to table-order AND kitchen clients"""
     await manager.broadcast_to_branch(branch_code, {
         "type": event_type,
         "data": data,

@@ -16,8 +16,9 @@ from app.domains.tableorder.schemas import (
     OrderCreate, OrderResponse, OrderListResponse,
     TableSessionCreate, TableSessionResponse
 )
-from app.domains.shared.models import MenuItem
+from app.domains.shared.models import MenuItem, Table
 from app.domains.tableorder.events import EventType, EventSource
+from app.routers.websocket import broadcast_order_event
 from app.domains.tableorder.event_service import EventService
 
 router = APIRouter()
@@ -167,8 +168,27 @@ async def create_order(
         source=EventSource.TABLE_ORDER
     )
 
-    # TODO: Send to kitchen via WebSocket and log GATEWAY_SENT
-    # await event_service.log_gateway_sent(...)
+    # Send to kitchen via WebSocket
+    try:
+        # Get table number for kitchen display
+        table_result = await db.execute(
+            select(Table).where(Table.id == order_data.table_id)
+        )
+        table = table_result.scalar_one_or_none()
+        table_number = table.table_number if table else order_data.table_id
+
+        await broadcast_order_event(order_data.branch_code, "new_order", {
+            "order_id": order.id,
+            "order_number": order.order_number,
+            "table_id": order_data.table_id,
+            "table_number": table_number,
+            "session_id": order_data.session_id,
+            "status": order.status,
+            "items": items_data,
+            "created_at": order.created_at.isoformat()
+        })
+    except Exception as e:
+        print(f"⚠️ WebSocket broadcast failed (non-blocking): {e}")
 
     return OrderResponse.model_validate(order)
 

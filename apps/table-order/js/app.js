@@ -6,7 +6,41 @@
 // Get table info from URL params or localStorage
 const urlParams = new URLSearchParams(window.location.search);
 const TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || 'demo-table-1';
-const SESSION_ID = urlParams.get('session') || localStorage.getItem('session_id') || generateSessionId();
+
+// SESSION_ID is generated on WELCOME → ORDERING transition, not on page load
+let SESSION_ID = localStorage.getItem('session_id') || null;
+
+// ============ Session Log (analytics, fire-and-forget) ============
+
+const SessionLog = {
+    _key: () => `session_log_${TABLE_ID}`,
+    log(type, meta = {}) {
+        try {
+            const logs = JSON.parse(localStorage.getItem(this._key()) || '[]');
+            logs.push({ type, ts: Date.now(), ...meta });
+            localStorage.setItem(this._key(), JSON.stringify(logs));
+        } catch (e) { /* analytics, not critical */ }
+    },
+    flush() {
+        try {
+            const logs = JSON.parse(localStorage.getItem(this._key()) || '[]');
+            if (!logs.length) return;
+            const payload = JSON.stringify({
+                table_id: TABLE_ID,
+                session_id: SESSION_ID,
+                entries: logs.map(l => ({ type: l.type, ts: l.ts, meta: l }))
+            });
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon?.(`${CONFIG.API_URL}/tableorder/session-log`, blob);
+            localStorage.removeItem(this._key());
+        } catch (e) { /* best-effort */ }
+    },
+    clear() { localStorage.removeItem(this._key()); }
+};
+
+// Flush analytics periodically + on reconnect
+setInterval(() => { if (navigator.onLine) SessionLog.flush(); }, 60000);
+window.addEventListener('online', () => SessionLog.flush());
 
 // ============ State ============
 
@@ -20,17 +54,18 @@ let state = {
     tableNumber: 'T5',
     guestCount: 4,
     sessionId: SESSION_ID,
+    sessionPhase: localStorage.getItem('session_phase') || CONFIG.SESSION_PHASES.WELCOME,
     orderHistory: [],
     isOnline: false,
     wsConnected: false,
     wsRetryCount: 0,
     maxWsRetries: 3,
     isLoading: true,
-    apiStatus: 'pending', // pending, success, error
-    wsStatus: 'pending',  // pending, success, error
+    apiStatus: 'pending',
+    wsStatus: 'pending',
     // Pagination
     currentPage: 1,
-    itemsPerPage: 10  // Default for tablet landscape (5 cols × 2 rows)
+    itemsPerPage: 10
 };
 
 // ============ Dynamic Grid Layout ============
@@ -150,22 +185,320 @@ function hideConnectionBar() {
     }
 }
 
+// ============ Session State Machine ============
+
+function transitionTo(newPhase) {
+    const currentPhase = state.sessionPhase;
+    const allowed = CONFIG.SESSION_TRANSITIONS[currentPhase];
+    if (!allowed || !allowed.includes(newPhase)) {
+        console.warn(`Invalid transition: ${currentPhase} → ${newPhase}`);
+        return false;
+    }
+
+    console.log(`Session: ${currentPhase} → ${newPhase}`);
+    state.sessionPhase = newPhase;
+    localStorage.setItem('session_phase', newPhase);
+    SessionLog.log('phase_transition', { from: currentPhase, to: newPhase });
+
+    // Phase-specific actions
+    switch (newPhase) {
+        case CONFIG.SESSION_PHASES.ORDERING:
+            if (currentPhase === CONFIG.SESSION_PHASES.WELCOME) {
+                // New session — generate session ID
+                SESSION_ID = generateSessionId();
+                state.sessionId = SESSION_ID;
+                SessionLog.log('session_started', { session_id: SESSION_ID, table_id: TABLE_ID });
+            }
+            // Coming from BILL_REVIEW (追加注文) — just show ordering UI
+            showOrderingUI();
+            resetInactivityTimer();
+            break;
+
+        case CONFIG.SESSION_PHASES.BILL_REVIEW:
+            showBillReviewUI();
+            clearInactivityTimer();
+            // Notify backend: call bill (fire event directly, skip callStaff redirect)
+            fireCallStaffEvent('bill');
+            break;
+
+        case CONFIG.SESSION_PHASES.CLEANING:
+            showCleaningUI();
+            clearInactivityTimer();
+            SessionLog.log('session_ended', { session_id: SESSION_ID });
+            SessionLog.flush();
+            break;
+
+        case CONFIG.SESSION_PHASES.WELCOME:
+            // Clear session data
+            clearSessionData();
+            showWelcomeUI();
+            clearInactivityTimer();
+            break;
+    }
+
+    return true;
+}
+
+function showWelcomeUI() {
+    document.getElementById('welcomeScreen').classList.remove('hidden');
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('billReviewScreen').classList.add('hidden');
+    document.getElementById('cleaningScreen').classList.add('hidden');
+    // Update welcome table info
+    document.getElementById('welcomeTable').textContent = state.tableNumber;
+    document.getElementById('welcomeGuests').textContent = `${state.guestCount}${t('guest.suffix')}`;
+}
+
+function showOrderingUI() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.remove('hidden');
+    document.getElementById('billReviewScreen').classList.add('hidden');
+    document.getElementById('cleaningScreen').classList.add('hidden');
+    // Recalculate grid after container becomes visible
+    requestAnimationFrame(() => {
+        calculateItemsPerPage();
+        // Re-render current category
+        const cat = state.categories.find(c => c.category === state.currentCategory);
+        if (cat) renderMenuItems(cat.items);
+    });
+}
+
+function showBillReviewUI() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('billReviewScreen').classList.remove('hidden');
+    document.getElementById('cleaningScreen').classList.add('hidden');
+    renderBillReview();
+}
+
+function showCleaningUI() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('billReviewScreen').classList.add('hidden');
+    document.getElementById('cleaningScreen').classList.remove('hidden');
+    renderCleaningSummary();
+}
+
+function renderBillReview() {
+    const container = document.getElementById('billReviewItems');
+
+    if (state.orderHistory.length === 0) {
+        container.innerHTML = `<div class="history-empty">${t('history.empty')}</div>`;
+        document.getElementById('billTotalItems').textContent = '0' + t('history.itemUnit');
+        document.getElementById('billTotalAmount').textContent = '¥0';
+        return;
+    }
+
+    // Reuse history rendering logic - group by time
+    const groups = {};
+    state.orderHistory.forEach(item => {
+        const key = item.orderedAt || 'unknown';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(item);
+    });
+
+    const sortedKeys = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+
+    let html = '';
+    sortedKeys.forEach(key => {
+        const time = key !== 'unknown' ? formatOrderTime(new Date(key)) : '---';
+        html += `<div class="history-order-group">`;
+        html += `<div class="history-order-time">${time}</div>`;
+        groups[key].forEach(item => {
+            const statusClass = item.delivered ? 'delivered' : 'pending';
+            const statusIcon = item.delivered ? '✓' : '';
+            html += `
+                <div class="history-item">
+                    <span class="history-item-name">${item.name}</span>
+                    <span class="history-item-qty">×${item.quantity}</span>
+                    <span class="history-item-price">¥${(item.price * item.quantity).toLocaleString()}</span>
+                    <span class="history-item-status ${statusClass}">${statusIcon}</span>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+
+    const totalItems = state.orderHistory.reduce((sum, i) => sum + i.quantity, 0);
+    const totalAmount = state.orderHistory.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    document.getElementById('billTotalItems').textContent = totalItems + t('history.itemUnit');
+    document.getElementById('billTotalAmount').textContent = `¥${totalAmount.toLocaleString()}`;
+}
+
+function renderCleaningSummary() {
+    // Count unique order times = number of orders
+    const orderTimes = new Set(state.orderHistory.map(i => i.orderedAt));
+    const totalItems = state.orderHistory.reduce((sum, i) => sum + i.quantity, 0);
+    const totalAmount = state.orderHistory.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+    document.getElementById('cleaningOrders').textContent = orderTimes.size;
+    document.getElementById('cleaningItems').textContent = totalItems + t('history.itemUnit');
+    document.getElementById('cleaningTotal').textContent = `¥${totalAmount.toLocaleString()}`;
+}
+
+function clearSessionData() {
+    // Clear per-session data
+    state.cart = [];
+    state.orderHistory = [];
+    state.sessionId = null;
+    SESSION_ID = null;
+    state.currentPage = 1;
+    state.currentCategory = 'meat';
+
+    // Clear localStorage session keys
+    localStorage.removeItem('session_id');
+    localStorage.removeItem('session_phase');
+    localStorage.removeItem('table_order_cart');
+    localStorage.removeItem(`yakiniku_history_${TABLE_ID}`);
+    SessionLog.clear();
+
+    // Reset UI
+    updateCartBadge();
+    renderCartItems();
+    renderHistory();
+}
+
+// ============ Inactivity Timer ============
+
+let inactivityTimer = null;
+
+function resetInactivityTimer() {
+    clearInactivityTimer();
+    if (state.sessionPhase !== CONFIG.SESSION_PHASES.ORDERING) return;
+    inactivityTimer = setTimeout(() => {
+        if (state.sessionPhase === CONFIG.SESSION_PHASES.ORDERING) {
+            showInactivityWarning();
+            SessionLog.log('inactivity_warning');
+        }
+    }, CONFIG.INACTIVITY_TIMEOUT);
+}
+
+function clearInactivityTimer() {
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
+}
+
+function showInactivityWarning() {
+    // Don't show duplicate
+    if (document.getElementById('inactivityWarning')) return;
+    const warning = document.createElement('div');
+    warning.id = 'inactivityWarning';
+    warning.className = 'inactivity-warning';
+    warning.innerHTML = `
+        <span class="inactivity-warning-text">${t('inactivity.warning')}</span>
+        <button class="inactivity-dismiss-btn" onclick="dismissInactivityWarning()">${t('inactivity.dismiss')}</button>
+    `;
+    document.body.appendChild(warning);
+}
+
+function dismissInactivityWarning() {
+    const warning = document.getElementById('inactivityWarning');
+    if (warning) warning.remove();
+    resetInactivityTimer();
+}
+
+// Reset inactivity on any touch during ordering
+document.addEventListener('touchstart', () => {
+    if (state.sessionPhase === CONFIG.SESSION_PHASES.ORDERING) {
+        dismissInactivityWarning();
+        resetInactivityTimer();
+    }
+}, { passive: true });
+
+document.addEventListener('click', () => {
+    if (state.sessionPhase === CONFIG.SESSION_PHASES.ORDERING) {
+        resetInactivityTimer();
+    }
+});
+
+// ============ Long-Press Handler (Cleaning Reset) ============
+
+function setupLongPress() {
+    const btn = document.getElementById('cleaningResetBtn');
+    if (!btn) return;
+
+    let pressTimer = null;
+
+    const startPress = (e) => {
+        e.preventDefault();
+        btn.classList.add('pressing');
+        pressTimer = setTimeout(() => {
+            btn.classList.remove('pressing');
+            // Transition back to WELCOME
+            transitionTo(CONFIG.SESSION_PHASES.WELCOME);
+        }, CONFIG.LONG_PRESS_DURATION);
+    };
+
+    const endPress = () => {
+        btn.classList.remove('pressing');
+        if (pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+    };
+
+    btn.addEventListener('touchstart', startPress, { passive: false });
+    btn.addEventListener('mousedown', startPress);
+    btn.addEventListener('touchend', endPress);
+    btn.addEventListener('touchcancel', endPress);
+    btn.addEventListener('mouseup', endPress);
+    btn.addEventListener('mouseleave', endPress);
+}
+
 // ============ Initialization ============
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize i18n
     I18N.init();
 
-    // Show loading overlay
-    showLoading();
-
-    // Load saved cart
+    // Load saved cart and history
     loadCartFromStorage();
+    loadHistoryFromStorage();
 
     // Setup table info
     setupTableInfo();
 
-    // Load menu with loading state
+    // Setup long-press handler for cleaning screen
+    setupLongPress();
+
+    // Setup welcome start button
+    const startBtn = document.getElementById('welcomeStartBtn');
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            transitionTo(CONFIG.SESSION_PHASES.ORDERING);
+        });
+    }
+
+    // Setup bill review add-more button
+    const addMoreBtn = document.getElementById('billAddMoreBtn');
+    if (addMoreBtn) {
+        addMoreBtn.addEventListener('click', () => {
+            transitionTo(CONFIG.SESSION_PHASES.ORDERING);
+        });
+    }
+
+    // Recover session phase from localStorage
+    const savedPhase = state.sessionPhase;
+    if (savedPhase === CONFIG.SESSION_PHASES.ORDERING && (state.cart.length > 0 || state.orderHistory.length > 0)) {
+        // Resume ordering session
+        showOrderingUI();
+        resetInactivityTimer();
+    } else if (savedPhase === CONFIG.SESSION_PHASES.BILL_REVIEW) {
+        showBillReviewUI();
+    } else if (savedPhase === CONFIG.SESSION_PHASES.CLEANING) {
+        showCleaningUI();
+    } else {
+        // Default: WELCOME
+        state.sessionPhase = CONFIG.SESSION_PHASES.WELCOME;
+        showWelcomeUI();
+    }
+
+    // Show loading and load menu (needed for ordering)
+    showLoading();
     await loadMenu();
 
     // Setup WebSocket for real-time updates
@@ -175,7 +508,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCartBadge();
 
     // Calculate dynamic items per page based on viewport
-    // Delay slightly to ensure layout is settled
     requestAnimationFrame(() => {
         calculateItemsPerPage();
     });
@@ -190,7 +522,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => calculateItemsPerPage(), 300);
     });
 
-    // Hide loading after initial load (with minimum display time)
+    // Hide loading after initial load
     setTimeout(() => {
         hideLoading();
         showConnectionBar(state.isOnline);
@@ -446,6 +778,7 @@ async function submitOrder() {
             table_id: TABLE_ID,
             session_id: state.sessionId,
             branch_code: CONFIG.BRANCH_CODE,
+            client_order_id: crypto.randomUUID ? crypto.randomUUID() : 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             items: state.cart.map(item => ({
                 menu_item_id: item.id,
                 quantity: item.quantity,
@@ -464,23 +797,15 @@ async function submitOrder() {
             body: JSON.stringify(orderData)
         });
 
+        console.log('[API] POST /api/tableorder/ →', JSON.stringify(orderData, null, 2));
+
         if (!response.ok) {
             throw new Error('Order failed');
         }
 
         const result = await response.json();
 
-        // Clear cart
-        state.cart = [];
-        saveCartToStorage();
-        updateCartBadge();
-        closeCart();
-        renderCartItems();
-
-        // Show success
-        showNotification(t('notify.orderSuccess'), 'success');
-
-        // Add to order history with individual items and timestamp
+        // ATOMIC-ISH: Save history BEFORE clearing cart (crash recovery)
         const orderTime = new Date();
         const historyItems = orderData.items.map(item => ({
             name: item.item_name,
@@ -492,6 +817,24 @@ async function submitOrder() {
         }));
         state.orderHistory.push(...historyItems);
         saveHistoryToStorage();
+
+        // Now clear cart (safe — history already saved)
+        state.cart = [];
+        saveCartToStorage();
+        updateCartBadge();
+        closeCart();
+        renderCartItems();
+
+        // Show success
+        showNotification(t('notify.orderSuccess'), 'success');
+
+        // Log analytics
+        SessionLog.log('order_submitted', {
+            order_id: result.id || result.order_id,
+            items_count: orderData.items.length,
+            total: historyItems.reduce((s, i) => s + i.price * i.quantity, 0)
+        });
+
         renderHistory();
 
     } catch (error) {
@@ -503,7 +846,29 @@ async function submitOrder() {
     }
 }
 
+// Fire call-staff event to backend (fire-and-forget, no redirect logic)
+function fireCallStaffEvent(callType) {
+    fetch(`${CONFIG.API_URL}/tableorder/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            table_id: TABLE_ID,
+            session_id: state.sessionId,
+            call_type: callType
+        })
+    }).catch(err => console.warn('fireCallStaffEvent failed (OK in demo):', err));
+}
+
 async function callStaff(callType) {
+    // If pressing "会計" during ordering, transition to BILL_REVIEW
+    if (callType === 'bill' && state.sessionPhase === CONFIG.SESSION_PHASES.ORDERING) {
+        if (state.orderHistory.length > 0) {
+            transitionTo(CONFIG.SESSION_PHASES.BILL_REVIEW);
+            return;
+        }
+        // No orders yet — just notify staff
+    }
+
     try {
         const response = await fetch(`${CONFIG.API_URL}/tableorder/call-staff?branch_code=${CONFIG.BRANCH_CODE}`, {
             method: 'POST',
@@ -631,6 +996,17 @@ function handleWebSocketMessage(data) {
         case 'menu_updated':
             loadMenu();
             break;
+        case 'session_paid':
+            // POS confirmed payment → transition to CLEANING
+            if (state.sessionPhase === CONFIG.SESSION_PHASES.BILL_REVIEW ||
+                state.sessionPhase === CONFIG.SESSION_PHASES.ORDERING) {
+                SessionLog.log('session_paid', { source: 'pos_websocket' });
+                // Force transition: set phase directly since ORDERING→CLEANING not in normal transitions
+                state.sessionPhase = CONFIG.SESSION_PHASES.BILL_REVIEW;
+                localStorage.setItem('session_phase', CONFIG.SESSION_PHASES.BILL_REVIEW);
+                transitionTo(CONFIG.SESSION_PHASES.CLEANING);
+            }
+            break;
     }
 }
 
@@ -704,7 +1080,7 @@ function renderMenuItems(items) {
                 <div class="menu-card-content">
                     <h3 class="menu-card-name" onclick="openItemModal('${item.id}')">${item.name}</h3>
                     <div class="menu-card-footer">
-                        <span class="menu-card-price">¥${item.price.toLocaleString()}</span>
+                        <span class="menu-card-price">¥${Number(item.price).toLocaleString()}</span>
                         <button class="quick-add-btn" onclick="quickAddToCart('${item.id}')" aria-label="${t('menu.add')}">
                             ${cartQty > 0 ? `<span class="quick-add-qty">${cartQty}</span>` : '＋'}
                         </button>
@@ -831,6 +1207,7 @@ function addToCart(item, quantity = 1, notes = '') {
 
     saveCartToStorage();
     updateCartBadge();
+    SessionLog.log('item_added', { item_id: item.id, item_name: item.name, qty: quantity });
 
     // Re-render current category to show cart indicator
     const cat = state.categories.find(c => c.category === state.currentCategory);
@@ -920,6 +1297,7 @@ function openItemModal(itemId) {
 
     state.currentItem = item;
     state.modalQty = 1;
+    SessionLog.log('item_viewed', { item_id: item.id, item_name: item.name });
 
     document.getElementById('modalImage').src = item.image_url || '';
     document.getElementById('modalTitle').textContent = item.name;
@@ -1087,6 +1465,3 @@ document.addEventListener('keydown', (e) => {
         closeHistory();
     }
 });
-
-// Load order history from localStorage on startup
-loadHistoryFromStorage();

@@ -34,7 +34,7 @@
     "files.trimTrailingWhitespace": true,
 
     // ============ Copilot Configuration ============
-    "chat.agent.maxRequests": 2000,
+    "chat.agent.maxRequests": 5000,
 
     // Prettier Configuration
     "prettier.tabWidth": 4,
@@ -79,5 +79,8 @@
     "terminal.integrated.env.osx": {
         "VIRTUAL_ENV": "${workspaceFolder}/backend/.venv",
         "PATH": "${workspaceFolder}/backend/.venv/bin:${env:PATH}"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "ForEach-Object": true
     }
 }

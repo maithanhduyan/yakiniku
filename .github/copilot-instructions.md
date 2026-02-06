@@ -1,110 +1,120 @@
-# Yakiniku.io - AI Agent Instructions
+# Yakiniku.io — AI Agent Instructions
 
 ## Project Overview
-Multi-tenant Japanese Yakiniku (BBQ) restaurant platform with modular apps: customer website, table ordering (iPad), kitchen display, POS, check-in kiosk, and admin dashboard.
+Multi-tenant Japanese Yakiniku (BBQ) restaurant platform. Vanilla JS frontend apps + FastAPI async backend. Default branch: `hirama`.
 
 ## Architecture
 
 ```
-yakiniku/
-├── apps/                   # Frontend applications (Vanilla JS)
-│   ├── web/                # Customer website + booking
-│   ├── table-order/        # iPad ordering (offline-capable)
-│   ├── kitchen/            # Kitchen display system
-│   ├── pos/                # Point of sale
-│   ├── checkin/            # Self check-in kiosk
-│   └── dashboard/          # Admin SPA
-├── backend/                # FastAPI + SQLAlchemy (async)
-│   └── app/
-│       ├── domains/        # Domain-driven modules (NEW)
-│       │   ├── tableorder/ # Event-sourced order system
-│       │   ├── kitchen/
-│       │   ├── pos/
-│       │   └── checkin/
-│       ├── routers/        # Legacy REST endpoints
-│       └── models/         # SQLAlchemy models
-└── shared/                 # Cross-app config & branding
+apps/                         # Vanilla JS frontends (no build step)
+├── table-order/              # iPad ordering — 4-phase session lifecycle, offline-capable
+├── kitchen/                  # KDS display — WebSocket-driven
+├── dashboard/                # Admin SPA — class-based page routing
+├── pos/                      # Point of sale
+├── checkin/                  # Self check-in kiosk (largest domain: 539 lines)
+└── web/                      # Customer website + booking
+backend/app/
+├── domains/                  # New features go HERE (not routers/)
+│   ├── tableorder/           # Event-sourced: router, schemas, events, event_service, event_router
+│   ├── kitchen/              # KDS: router only (imports shared models)
+│   ├── pos/                  # Checkout: router + schemas
+│   ├── checkin/              # ✅ Has OWN models (CheckIn, WaitingList with real FKs)
+│   ├── booking/              # CRUD: router + schemas (re-exports legacy models)
+│   └── shared/               # Cross-domain re-exports: Order, Table, Branch models + base schemas
+├── routers/                  # Legacy REST endpoints (kept for backward compat)
+├── models/                   # SQLAlchemy models (source of truth for DB schema)
+└── services/                 # notification (SSE), chat (OpenAI), table_optimization
 ```
 
-## Development Commands
+## Development
 
 ```bash
-# Backend (required first) - Use VS Code task "Backend: Start"
+# Use VS Code task "Backend: Start" or:
 cd backend && .venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Frontends via Live Server (port 5500) — NO build step needed:
+# http://127.0.0.1:5500/apps/table-order/
+# http://127.0.0.1:5500/apps/kitchen/
+# http://127.0.0.1:5500/apps/dashboard/
+
+# Seed DB (CSV-driven, drops all tables first):
+cd backend && .venv\Scripts\python.exe -m data.seed_data
 ```
 
-**Frontend URLs** (Live Server port 5500):
-- `http://127.0.0.1:5500/apps/table-order/`
-- `http://127.0.0.1:5500/apps/kitchen/`
-- `http://127.0.0.1:5500/apps/dashboard/`
+- **No automated tests exist** — use Playwright MCP for E2E testing
+- **No migrations** — uses `Base.metadata.create_all`; schema changes require drop+recreate
+- **Dual DB**: SQLite (dev, auto-detected from URL) / PostgreSQL (prod, asyncpg)
+- Package manager: `uv` — Python ≥3.13
 
 ## Critical Patterns
 
-### 1. Frontend Config Pattern (`apps/*/js/config.js`)
-Each app has frozen CONFIG object with API_HOST auto-detection:
+### Frontend CONFIG (every app: `apps/*/js/config.js`)
 ```javascript
-const API_HOST = window.location.hostname;  // Avoids CORS issues
-const CONFIG = {
-    API_URL: `http://${API_HOST}:8000/api`,
-    WS_URL: `ws://${API_HOST}:8000/ws`,
-    BRANCH_CODE: 'hirama',  // Default branch
-};
+const API_HOST = window.location.hostname;  // Dynamic — avoids CORS mismatch
+const CONFIG = { API_URL: `http://${API_HOST}:8000/api`, WS_URL: `ws://${API_HOST}:8000/ws`, BRANCH_CODE: 'hirama' };
+Object.freeze(CONFIG);
 ```
+⚠️ Dashboard config hardcodes `localhost:8000` — inconsistent with table-order's dynamic pattern.
 
-### 2. Domain-Driven Backend (`backend/app/domains/`)
-New features go in domains, not routers:
-- `domains/tableorder/` - Event-sourced with `events.py`, `event_service.py`
-- Each domain: `router.py`, `models.py`, `schemas.py`
-- Registered in `main.py` under "Domain Routers" section
+### Table-Order: 4-Phase Session State Machine
+`WELCOME → ORDERING → BILL_REVIEW → CLEANING → WELCOME` (cyclic). Defined in `config.js` as `SESSION_PHASES` + `SESSION_TRANSITIONS`. Transitions validated by `transitionTo()` in app.js. Phase persisted in localStorage for crash recovery.
+- WELCOME→ORDERING: generates new `session_id`
+- ORDERING→BILL_REVIEW: fires `call-staff` event, renders bill summary
+- BILL_REVIEW→ORDERING: "追加注文" (add more) allowed
+- CLEANING→WELCOME: requires 3s long-press, calls `clearSessionData()`
 
-### 3. Demo Mode (No FK Constraints)
-Models allow demo data without seeded DB:
-- `Order.table_id` - No FK to tables
-- `OrderItem.menu_item_id` - No FK to menu_items
-- Frontend sends `item_name`, `item_price` with orders
-
-### 4. Event Sourcing (`tableorder/events.py`)
+### Domain Router Registration (`backend/app/main.py`)
+Two-tier system — both coexist:
 ```python
-EventType.ORDER_CREATED, GATEWAY_SENT, GATEWAY_FAILED  # Track delivery
-EventSource.TABLE_ORDER, KITCHEN, POS, SYSTEM          # Origin tracking
+# Legacy: app.include_router(menu.router, prefix="/api/menu")
+# Domain: app.include_router(tableorder_router, prefix="/api/tableorder")
 ```
+New features → create domain in `domains/`, register under "Domain Routers" section.
 
-### 5. CORS Configuration (`backend/app/config.py`)
-Allowed origins include both `localhost` and `127.0.0.1` variants for ports 5500, 8080-8084.
+### Event Sourcing (tableorder only)
+- `events.py`: `EventType` enum (25+ types), `EventSource` enum, `OrderEvent` model (append-only)
+- `event_service.py`: `EventService` — log events, query timelines, detect gateway failures
+- Correlation chain: `correlation_id` + `sequence_number` link related events across systems
+
+### Demo Mode (No FK Constraints on Orders)
+`Order.table_id`, `OrderItem.menu_item_id` — intentionally NO foreign keys. Frontend sends denormalized `item_name`, `item_price` with every order so the system works without seeded data.
+
+### WebSocket (`backend/app/routers/websocket.py`)
+- `/ws?branch_code=&table_id=` — table-order connections (auto-subscribes to `orders` + `table:{id}`)
+- `/ws/dashboard?branch=` — dashboard connections (manual subscribe/unsubscribe)
+- Channel pub/sub via `ConnectionManager` singleton, branch-scoped
+- Frontend `WebSocketManager` class: auto-reconnect, event emitter pattern, `on(event, callback)` returns unsubscribe fn
 
 ## API Conventions
 
-- **Trailing slash required**: POST `/api/tableorder/` (not `/api/tableorder`)
-- **Branch code**: Query param `?branch_code=hirama` or header `X-Branch`
-- **WebSocket**: `ws://host:8000/ws?branch_code=hirama&table_id=xxx`
+- **Trailing slash required on POST**: `/api/tableorder/` (not `/api/tableorder`)
+- **Multi-tenancy**: `?branch_code=hirama` query param on most endpoints
+- **CORS**: Both `localhost` and `127.0.0.1` for ports 5500, 8080-8084 (`backend/app/config.py`)
+- **IDs**: UUID v4 as `String(36)`, never auto-increment — `default=lambda: str(uuid.uuid4())`
+- **Async everywhere**: `async def` endpoints, `AsyncSession`, `await session.execute()`
+- **Price type**: `Numeric(10,0)` in DB → arrives as string in JSON. Frontend must `Number(price)` before `.toLocaleString()`
 
-## Testing with Playwright MCP
+## Language Convention
+- **UI text**: Japanese (日本語) — translations in `apps/*/js/i18n/{ja,en}.js`
+- **Code/comments**: English
+- **Internal docs/comments**: Vietnamese (in services, some models)
 
-1. Start backend first (task "Backend: Start")
-2. Navigate to `http://127.0.0.1:5500/apps/table-order/`
-3. Test flows: Menu → Cart → Submit Order
-4. Check backend logs for `200 OK`
+## Common Pitfalls
 
-## Language Usage
-- **UI**: Japanese (日本語)
-- **Code/Comments**: English
-- **Internal docs**: Vietnamese
+| Symptom | Cause & Fix |
+|---------|------------|
+| CORS error on POST | Missing trailing slash in URL, or hostname mismatch (use `window.location.hostname`) |
+| Menu API returns empty | `branch_code` mismatch — DB has `hirama`, check query param |
+| Grid shows wrong item count | `calculateItemsPerPage()` ran while container was `hidden` — use `requestAnimationFrame` after showing |
+| Price shows without commas | DB returns string "1800" — wrap with `Number()` before `toLocaleString()` |
+| WebSocket 403 | No matching endpoint — table-order uses `/ws`, dashboard uses `/ws/dashboard` |
+| FK violation | Order/OrderItem fields are intentionally FK-free for demo mode |
 
-## Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| CORS error on submit | Ensure URL has trailing slash, use same hostname |
-| FK violation on demo | Models should not have FK constraints for demo fields |
-| WebSocket 403 | Expected in demo mode, app falls back to offline |
-| Menu not loading | Check `branch_code` param, uses offline fallback |
-
-## Key Files
-- [backend/app/main.py](backend/app/main.py) - Router registration
-- [backend/app/config.py](backend/app/config.py) - CORS origins, DB URL
-- [apps/table-order/js/config.js](apps/table-order/js/config.js) - Frontend config pattern
-- [backend/app/domains/tableorder/events.py](backend/app/domains/tableorder/events.py) - Event types
-
-## Documentation
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Multi-tenant design
-- [docs/BACKEND.md](docs/BACKEND.md) - API & database schema
+## Key Reference Files
+- [backend/app/main.py](backend/app/main.py) — Router registration (legacy + domain)
+- [backend/app/config.py](backend/app/config.py) — CORS origins, DB URL, default branch
+- [backend/app/domains/tableorder/events.py](backend/app/domains/tableorder/events.py) — Event types & OrderEvent model
+- [backend/app/domains/tableorder/event_service.py](backend/app/domains/tableorder/event_service.py) — Event sourcing service
+- [apps/table-order/js/config.js](apps/table-order/js/config.js) — Frontend config + session phases
+- [apps/table-order/js/app.js](apps/table-order/js/app.js) — State machine, SessionLog, offline fallback
+- [backend/app/routers/websocket.py](backend/app/routers/websocket.py) — WebSocket connection manager

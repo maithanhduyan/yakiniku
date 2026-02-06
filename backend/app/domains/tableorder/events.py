@@ -41,6 +41,7 @@ class EventType(str, Enum):
     SESSION_STARTED = "session.started"
     SESSION_ENDED = "session.ended"
     SESSION_PAID = "session.paid"
+    SESSION_LOG = "session.log"
 
     # Staff call events
     CALL_STAFF = "call.staff"

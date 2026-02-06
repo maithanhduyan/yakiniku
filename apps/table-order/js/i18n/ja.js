@@ -78,6 +78,37 @@ const ja = {
     'loading.api': 'API接続',
     'loading.realtime': 'リアルタイム',
 
+    // Session - Welcome Screen
+    'welcome.title': '焼肉ジナン',
+    'welcome.subtitle': 'テーブルオーダーシステム',
+    'welcome.start': 'タッチして注文を始める',
+    'welcome.tableLabel': 'テーブル',
+    'welcome.guestsLabel': 'お客様',
+    'welcome.langHint': '🌐 English available',
+
+    // Session - Bill Review Screen
+    'bill.title': '📋 ご注文内容',
+    'bill.subtitle': 'スタッフがお会計をご用意いたします',
+    'bill.addMore': '＋ 追加注文',
+    'bill.waiting': 'お会計を準備中です...',
+    'bill.totalItems': '合計品数',
+    'bill.totalAmount': 'お会計金額',
+
+    // Session - Cleaning Screen
+    'cleaning.title': 'ありがとうございました',
+    'cleaning.subtitle': 'またのお越しをお待ちしております',
+    'cleaning.summary': 'セッション概要',
+    'cleaning.orders': '注文回数',
+    'cleaning.items': '合計品数',
+    'cleaning.total': 'お会計金額',
+    'cleaning.reset': 'リセット',
+    'cleaning.resetHint': '3秒長押しでリセット',
+    'cleaning.resetting': 'リセット中...',
+
+    // Session - Inactivity
+    'inactivity.warning': '🔔 30分間操作がありません',
+    'inactivity.dismiss': '閉じる',
+
     // Demo menu items - Meat
     'demo.meat.wagyu_harami': '和牛上ハラミ',
     'demo.meat.wagyu_harami.desc': '口の中でほどける柔らかさと濃厚な味わい。当店自慢の一品',

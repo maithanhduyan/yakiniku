@@ -84,6 +84,7 @@
 ├── pyproject.toml
 ├── scripts
 │   ├── __init__.py
+│   ├── fix_encoding_all.py
 │   └── seed_enhanced_menu.py
 ├── static
 │   ├── css
@@ -675,7 +676,7 @@ __all__ = [
 
 ## File ./backend\app\domains\checkin\models.py:
 ```python
-﻿"""
+"""
 Check-in Models
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text
@@ -687,11 +688,11 @@ from app.database import Base
 
 
 class WaitingStatus(str, enum.Enum):
-    WAITING = "waiting"         # Äang Ä‘á»£i
-    CALLED = "called"           # ÄÃ£ gá»i
-    SEATED = "seated"           # ÄÃ£ ngá»“i
-    CANCELLED = "cancelled"     # Há»§y (khÃ¡ch bá» vá»)
-    NO_SHOW = "no_show"         # KhÃ´ng Ä‘áº¿n
+    WAITING = "waiting"         # 待機中
+    CALLED = "called"           # 呼び出し済み
+    SEATED = "seated"           # 着席済み
+    CANCELLED = "cancelled"     # キャンセル
+    NO_SHOW = "no_show"         # 来店なし
 
 
 class WaitingList(Base):
@@ -707,7 +708,7 @@ class WaitingList(Base):
     guest_count = Column(Integer, nullable=False)
 
     # Queue management
-    queue_number = Column(Integer, nullable=False)  # Sá»‘ thá»© tá»±
+    queue_number = Column(Integer, nullable=False)  # 順番
     status = Column(String(20), default=WaitingStatus.WAITING.value, index=True)
 
     # Estimated wait time
@@ -751,12 +752,11 @@ class CheckInLog(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-
 ```
 
 ## File ./backend\app\domains\checkin\router.py:
 ```python
-﻿"""
+"""
 Check-in Router - Customer Reception APIs
 Team: checkin
 """
@@ -804,7 +804,7 @@ async def scan_qr_code(
         return QRScanResult(
             success=False,
             check_in_type=CheckInType.booking,
-            message="äºˆç´„ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚\nã‚¹ã‚¿ãƒƒãƒ•ã«ãŠå£°ãŒã‘ãã ã•ã„ã€‚"
+            message="予約が見つかりませんでした。\nスタッフにお声がけください。"
         )
 
     # Check booking date
@@ -814,13 +814,13 @@ async def scan_qr_code(
             return QRScanResult(
                 success=False,
                 check_in_type=CheckInType.booking,
-                message=f"ã“ã®äºˆç´„ã¯ {booking.date} ã§ã—ãŸã€‚\nã‚¹ã‚¿ãƒƒãƒ•ã«ãŠå£°ãŒã‘ãã ã•ã„ã€‚"
+                message=f"この予約は {booking.date} でした。\nスタッフにお声がけください。"
             )
         else:
             return QRScanResult(
                 success=False,
                 check_in_type=CheckInType.booking,
-                message=f"äºˆç´„æ—¥ã¯ {booking.date} ã§ã™ã€‚\nå½“æ—¥ã«ãŠè¶Šã—ãã ã•ã„ã€‚",
+                message=f"予約日は {booking.date} です。\n当日にお越しください。",
                 booking_id=booking.id,
                 guest_name=booking.guest_name,
                 booking_time=booking.time
@@ -833,7 +833,7 @@ async def scan_qr_code(
             return QRScanResult(
                 success=True,
                 check_in_type=CheckInType.booking,
-                message=f"æ—¢ã«ãƒã‚§ãƒƒã‚¯ã‚¤ãƒ³æ¸ˆã¿ã§ã™ã€‚\nãŠå¸­ã¸ã©ã†ãžã€‚",
+                message=f"既にチェックイン済みです。\nお席へどうぞ。",
                 booking_id=booking.id,
                 guest_name=booking.guest_name,
                 guest_count=booking.guests,
@@ -874,7 +874,7 @@ async def scan_qr_code(
         return QRScanResult(
             success=True,
             check_in_type=CheckInType.booking,
-            message=f"{booking.guest_name}æ§˜\nã„ã‚‰ã£ã—ã‚ƒã„ã¾ã›ï¼\n\nãŠå¸­ã¸ã”æ¡ˆå†…ã„ãŸã—ã¾ã™ã€‚",
+            message=f"{booking.guest_name}様\nいらっしゃいませ！\n\nお席へご案内いたします。",
             booking_id=booking.id,
             guest_name=booking.guest_name,
             guest_count=booking.guests,
@@ -890,7 +890,7 @@ async def scan_qr_code(
         return QRScanResult(
             success=True,
             check_in_type=CheckInType.booking,
-            message=f"{booking.guest_name}æ§˜\nã„ã‚‰ã£ã—ã‚ƒã„ã¾ã›ï¼\n\nåªä»Šæº€å¸­ã®ãŸã‚ã€å°‘ã€…ãŠå¾…ã¡ãã ã•ã„ã€‚",
+            message=f"{booking.guest_name}様\nいらっしゃいませ！\n\n只今満席のため、少々お待ちください。",
             booking_id=booking.id,
             guest_name=booking.guest_name,
             guest_count=booking.guests,
@@ -1080,7 +1080,7 @@ async def assign_table(
         table_number=table.table_number,
         table_zone=table.zone,
         session_id=session.id,
-        message=f"ãƒ†ãƒ¼ãƒ–ãƒ« {table.table_number} ã«æ¡ˆå†…ã—ã¾ã—ãŸ"
+        message=f"テーブル {table.table_number} に案内しました"
     )
 
 
@@ -1104,7 +1104,7 @@ async def call_waiting_customer(
     await db.commit()
 
     return {
-        "message": f"ç•ªå· {waiting.queue_number} - {waiting.customer_name}æ§˜ã‚’ãŠå‘¼ã³ã—ã¾ã—ãŸ",
+        "message": f"番号 {waiting.queue_number} - {waiting.customer_name}様をお呼びしました",
         "queue_number": waiting.queue_number,
         "customer_name": waiting.customer_name
     }
@@ -1299,7 +1299,7 @@ async def log_checkin_event(
 
 ## File ./backend\app\domains\checkin\schemas.py:
 ```python
-﻿"""
+"""
 Check-in Schemas
 """
 from pydantic import BaseModel, Field
@@ -1317,8 +1317,8 @@ class WaitingStatusEnum(str, Enum):
 
 
 class CheckInType(str, Enum):
-    booking = "booking"      # CÃ³ Ä‘áº·t trÆ°á»›c
-    walkin = "walkin"        # KhÃ¡ch vÃ£ng lai
+    booking = "booking"      # 予約あり
+    walkin = "walkin"        # ウォークイン
 
 
 # QR Scan response
@@ -1401,8 +1401,7 @@ class CheckInDashboard(BaseModel):
     available_tables: list[dict]
 
     # Stats
-    stats: dict  # checked_in_today, waiting_count, available_tables_count
-
+    stats: Optional[dict] = None
 
 ```
 
@@ -1914,7 +1913,7 @@ async def close_table(
 
 ## File ./backend\app\domains\pos\schemas.py:
 ```python
-﻿"""
+"""
 POS Schemas
 """
 from pydantic import BaseModel
@@ -1932,10 +1931,10 @@ class PaymentMethod(str, Enum):
 
 
 class TableStatusEnum(str, Enum):
-    available = "available"    # ç©ºå¸­
-    occupied = "occupied"      # ä½¿ç”¨ä¸­
-    pending_payment = "pending_payment"  # æœªä¼šè¨ˆ
-    cleaning = "cleaning"      # æ¸…æŽƒä¸­
+    available = "available"    # 空席
+    occupied = "occupied"      # 使用中
+    pending_payment = "pending_payment"  # 未会計
+    cleaning = "cleaning"      # 清掃中
 
 
 class CheckoutRequest(BaseModel):
@@ -1975,7 +1974,6 @@ class TableOverview(BaseModel):
 class POSDashboard(BaseModel):
     tables: list[TableOverview]
     summary: dict  # occupied, available, pending_payment counts
-
 
 ```
 
@@ -2117,6 +2115,7 @@ class EventType(str, Enum):
     SESSION_STARTED = "session.started"
     SESSION_ENDED = "session.ended"
     SESSION_PAID = "session.paid"
+    SESSION_LOG = "session.log"
 
     # Staff call events
     CALL_STAFF = "call.staff"
@@ -3004,6 +3003,50 @@ from app.domains.tableorder.events import EventType, EventSource
 from app.domains.tableorder.event_service import EventService
 
 router = APIRouter()
+
+
+# ============ Session Log Schema ============
+
+class SessionLogEntry(BaseModel):
+    type: str
+    ts: float
+    meta: Optional[dict] = None
+
+
+class SessionLogRequest(BaseModel):
+    session_id: str
+    table_id: str
+    entries: list[SessionLogEntry]
+
+
+# ============ Session Log Endpoint ============
+
+@router.post("/session-log")
+async def receive_session_log(
+    log_data: SessionLogRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Receive analytics/session log from table-order frontend.
+    Fire-and-forget: accepts the data and logs it.
+    In production, this would be stored for analytics.
+    """
+    event_service = EventService(db)
+
+    # Log as a single SESSION_LOG event with all entries
+    await event_service.log_event(
+        event_type=EventType.SESSION_LOG if hasattr(EventType, 'SESSION_LOG') else EventType.SESSION_STARTED,
+        event_source=EventSource.TABLE_ORDER,
+        branch_code="hirama",
+        table_id=log_data.table_id,
+        session_id=log_data.session_id,
+        data={
+            "entries": [e.model_dump() for e in log_data.entries],
+            "entry_count": len(log_data.entries)
+        }
+    )
+
+    return {"status": "ok", "received": len(log_data.entries)}
 
 
 # ============ Call Staff Schema ============
@@ -3972,7 +4015,7 @@ class ItemOptionAssignment(Base):
 
 ## File ./backend\app\models\menu.py:
 ```python
-﻿"""
+"""
 Menu Model - Menu items and categories
 """
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Numeric
@@ -3984,13 +4027,13 @@ from app.database import Base
 
 
 class MenuCategory(str, enum.Enum):
-    MEAT = "meat"           # è‚‰é¡ž
-    DRINKS = "drinks"       # é£²ç‰©
-    SALAD = "salad"         # ã‚µãƒ©ãƒ€
-    RICE = "rice"           # ã”é£¯ãƒ»éºº
-    SIDE = "side"           # ã‚µã‚¤ãƒ‰ãƒ¡ãƒ‹ãƒ¥ãƒ¼
-    DESSERT = "dessert"     # ãƒ‡ã‚¶ãƒ¼ãƒˆ
-    SET = "set"             # ã‚»ãƒƒãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼
+    MEAT = "meat"           # 肉類
+    DRINKS = "drinks"       # 飲物
+    SALAD = "salad"         # サラダ
+    RICE = "rice"           # ご飯・麺
+    SIDE = "side"           # サイドメニュー
+    DESSERT = "dessert"     # デザート
+    SET = "set"             # セットメニュー
 
 
 class MenuItem(Base):
@@ -4001,9 +4044,9 @@ class MenuItem(Base):
     branch_code = Column(String(50), nullable=False, index=True)
 
     # Item identity
-    name = Column(String(100), nullable=False)          # ä¸Šãƒãƒ©ãƒŸ
+    name = Column(String(100), nullable=False)          # 上ハラミ
     name_en = Column(String(100))                       # Premium Harami
-    description = Column(Text)                          # èª¬æ˜Ž
+    description = Column(Text)                          # 説明
 
     # Category & Display
     category = Column(String(30), nullable=False, index=True)  # meat, drinks, etc.
@@ -4011,7 +4054,7 @@ class MenuItem(Base):
     display_order = Column(Integer, default=0)          # Sort order in menu
 
     # Pricing
-    price = Column(Numeric(10, 0), nullable=False)      # Â¥1,800
+    price = Column(Numeric(10, 0), nullable=False)      # ¥1,800
     tax_rate = Column(Numeric(4, 2), default=10.0)      # 10%
 
     # Image
@@ -4024,8 +4067,8 @@ class MenuItem(Base):
     # Flags
     is_available = Column(Boolean, default=True)        # Currently available
     is_popular = Column(Boolean, default=False)         # Show as recommended
-    is_spicy = Column(Boolean, default=False)           # è¾›ã„
-    is_vegetarian = Column(Boolean, default=False)      # ãƒ™ã‚¸ã‚¿ãƒªã‚¢ãƒ³
+    is_spicy = Column(Boolean, default=False)           # 辛い
+    is_vegetarian = Column(Boolean, default=False)      # ベジタリアン
     allergens = Column(String(200))                     # egg, milk, wheat, etc.
 
     # Timestamps
@@ -4033,8 +4076,7 @@ class MenuItem(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     def __repr__(self):
-        return f"<MenuItem {self.name} Â¥{self.price}>"
-
+        return f"<MenuItem {self.name} ¥{self.price}>"
 
 ```
 
@@ -4053,12 +4095,12 @@ from app.database import Base
 
 
 class OrderStatus(str, enum.Enum):
-    PENDING = "pending"         # æ³¨æ–‡å—ä»˜ä¸­ - Just placed
-    CONFIRMED = "confirmed"     # ç¢ºèªæ¸ˆã¿ - Confirmed by kitchen
-    PREPARING = "preparing"     # èª¿ç†ä¸­ - Being prepared
-    READY = "ready"             # å®Œæˆ - Ready to serve
-    SERVED = "served"           # æä¾›æ¸ˆã¿ - Delivered to table
-    CANCELLED = "cancelled"     # ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+    PENDING = "pending"         # 注文受付中 - Just placed
+    CONFIRMED = "confirmed"     # 確認済み - Confirmed by kitchen
+    PREPARING = "preparing"     # 調理中 - Being prepared
+    READY = "ready"             # 完成 - Ready to serve
+    SERVED = "served"           # 提供済み - Delivered to table
+    CANCELLED = "cancelled"     # キャンセル
 
 
 class Order(Base):
@@ -4105,7 +4147,7 @@ class OrderItem(Base):
     quantity = Column(Integer, default=1, nullable=False)
 
     # Special requests
-    notes = Column(String(200))  # "ã‚ˆãç„¼ã", "ã‚¿ãƒ¬å¤šã‚"
+    notes = Column(String(200))  # "よく焼き", "タレ多め"
 
     # Status (for kitchen tracking individual items)
     status = Column(String(20), default=OrderStatus.PENDING.value)
@@ -4176,7 +4218,7 @@ class CustomerPreference(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     branch_customer_id = Column(String(36), ForeignKey("branch_customers.id"), nullable=False)
 
-    preference = Column(String(255), nullable=False)  # 'ãƒ¬ãƒåˆºã—', 'åŽšåˆ‡ã‚Š'
+    preference = Column(String(255), nullable=False)  # 'レバ刺し', '厚切り'
     category = Column(String(50))  # 'meat', 'cooking', 'allergy', 'occasion'
     note = Column(String(500))  # Additional context
 
@@ -4188,7 +4230,6 @@ class CustomerPreference(Base):
 
     # Relationships
     branch_customer = relationship("BranchCustomer", back_populates="preferences")
-
 
 ```
 
@@ -4331,7 +4372,7 @@ class Staff(Base):
     # Identity
     employee_id = Column(String(20), unique=True, nullable=False)  # S001, S002...
     name = Column(String(255), nullable=False)
-    name_kana = Column(String(255))  # ãƒ•ãƒªã‚¬ãƒŠ
+    name_kana = Column(String(255))  # フリガナ
 
     # Contact
     phone = Column(String(20))
@@ -4348,7 +4389,6 @@ class Staff(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
 
 ```
 
@@ -4715,9 +4755,9 @@ async def create_booking(
             raise HTTPException(
                 status_code=409,
                 detail={
-                    "message": "ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ã€ã”å¸Œæœ›ã®æ™‚é–“ã¯æº€å¸­ã§ã™ã€‚",
+                    "message": "申し訳ございません、ご希望の時間は満席です。",
                     "alternatives": alt_times,
-                    "suggestion": f"ä»£ã‚ã‚Šã« {', '.join(alt_times)} ã¯ã„ã‹ãŒã§ã—ã‚‡ã†ã‹ï¼Ÿ" if alt_times else None
+                    "suggestion": f"代わりに {', '.join(alt_times)} はいかがでしょうか？" if alt_times else None
                 }
             )
     else:
@@ -4774,7 +4814,7 @@ async def create_booking(
     # Send real-time notification to staff dashboard
     await notify_new_booking(
         branch_code=db_booking.branch_code,
-        guest_name=db_booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+        guest_name=db_booking.guest_name or "ゲスト",
         booking_date=db_booking.date.isoformat(),
         booking_time=db_booking.time,
         guests=db_booking.guests,
@@ -4882,7 +4922,6 @@ async def delete_booking(
 
     await db.delete(booking)
     await db.commit()
-
 
 ```
 
@@ -5020,10 +5059,10 @@ async def seed_default_branch(
 
     hirama = Branch(
         code="hirama",
-        name="Yakiniku å¹³é–“æœ¬åº—",
+        name="Yakiniku 平間本店",
         subdomain="hirama",
         phone="044-789-8413",
-        address="ã€’211-0013 ç¥žå¥ˆå·çœŒå·å´Žå¸‚ä¸­åŽŸåŒºä¸Šå¹³é–“XXXX",
+        address="〒211-0013 神奈川県川崎市中原区上平間XXXX",
         theme_primary_color="#d4af37",
         theme_bg_color="#1a1a1a",
         closed_days=[2],
@@ -5566,7 +5605,7 @@ async def booking_detail(
     booking = result.scalar_one_or_none()
 
     if not booking:
-        return HTMLResponse("<p>äºˆç´„ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“</p>", status_code=404)
+        return HTMLResponse("<p>予約が見つかりません</p>", status_code=404)
 
     # Get customer info if exists
     customer = None
@@ -5599,7 +5638,7 @@ async def update_booking_status(
     booking = result.scalar_one_or_none()
 
     if not booking:
-        return HTMLResponse("<p>ã‚¨ãƒ©ãƒ¼</p>", status_code=404)
+        return HTMLResponse("<p>エラー</p>", status_code=404)
 
     old_status = booking.status
     booking.status = status
@@ -5610,7 +5649,7 @@ async def update_booking_status(
     if status == "confirmed" and old_status != "confirmed":
         await notify_booking_confirmed(
             branch_code=booking.branch_code,
-            guest_name=booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+            guest_name=booking.guest_name or "ゲスト",
             booking_date=booking.date.isoformat(),
             booking_time=booking.time,
             booking_id=booking.id,
@@ -5618,7 +5657,7 @@ async def update_booking_status(
     elif status == "cancelled" and old_status != "cancelled":
         await notify_booking_cancelled(
             branch_code=booking.branch_code,
-            guest_name=booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+            guest_name=booking.guest_name or "ゲスト",
             booking_date=booking.date.isoformat(),
             booking_time=booking.time,
             booking_id=booking.id,
@@ -5715,7 +5754,7 @@ async def customer_detail(
     customer = result.scalar_one_or_none()
 
     if not customer:
-        return HTMLResponse("<p>é¡§å®¢ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“</p>", status_code=404)
+        return HTMLResponse("<p>顧客が見つかりません</p>", status_code=404)
 
     # Get booking history
     result = await db.execute(
@@ -5776,10 +5815,10 @@ async def toggle_vip_status(
         customer.is_vip = not customer.is_vip
         await db.commit()
 
-        status = "VIP ã«è¨­å®šã—ã¾ã—ãŸ â­" if customer.is_vip else "VIP ã‚’è§£é™¤ã—ã¾ã—ãŸ"
+        status = "VIP に設定しました ⭐" if customer.is_vip else "VIP を解除しました"
         return HTMLResponse(f'<span class="text-primary">{status}</span>')
 
-    return HTMLResponse("<span>ã‚¨ãƒ©ãƒ¼</span>", status_code=404)
+    return HTMLResponse("<span>エラー</span>", status_code=404)
 
 
 # ============================================
@@ -6001,17 +6040,17 @@ async def seed_tables_dashboard(
         select(Table).where(Table.branch_code == branch_code).limit(1)
     )
     if existing.scalar_one_or_none():
-        return HTMLResponse('<div class="text-yellow-400 p-4">ãƒ†ãƒ¼ãƒ–ãƒ«ã¯æ—¢ã«è¨­å®šã•ã‚Œã¦ã„ã¾ã™ã€‚ãƒšãƒ¼ã‚¸ã‚’æ›´æ–°ã—ã¦ãã ã•ã„ã€‚</div>')
+        return HTMLResponse('<div class="text-yellow-400 p-4">テーブルは既に設定されています。ページを更新してください。</div>')
 
     tables_config = [
-        {"table_number": "A1", "name": "çª“éš›å¸­A", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "A2", "name": "çª“éš›å¸­B", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "B1", "name": "ä¸­å¤®å¸­A", "max_capacity": 4, "zone": "B"},
-        {"table_number": "B2", "name": "ä¸­å¤®å¸­B", "max_capacity": 4, "zone": "B"},
-        {"table_number": "C1", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­A", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C2", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­B", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C3", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­C", "max_capacity": 6, "zone": "C"},
-        {"table_number": "VIP1", "name": "å€‹å®¤", "max_capacity": 8, "zone": "VIP", "table_type": "private", "priority": 10},
+        {"table_number": "A1", "name": "窓際席A", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "A2", "name": "窓際席B", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "B1", "name": "中央席A", "max_capacity": 4, "zone": "B"},
+        {"table_number": "B2", "name": "中央席B", "max_capacity": 4, "zone": "B"},
+        {"table_number": "C1", "name": "グループ席A", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C2", "name": "グループ席B", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C3", "name": "グループ席C", "max_capacity": 6, "zone": "C"},
+        {"table_number": "VIP1", "name": "個室", "max_capacity": 8, "zone": "VIP", "table_type": "private", "priority": 10},
     ]
 
     for config in tables_config:
@@ -6031,7 +6070,7 @@ async def seed_tables_dashboard(
 
     await db.commit()
 
-    return HTMLResponse('<div class="text-green-400 p-4">âœ… 8ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’ç”Ÿæˆã—ã¾ã—ãŸã€‚ãƒšãƒ¼ã‚¸ã‚’æ›´æ–°ã—ã¦ãã ã•ã„ã€‚</div>')
+    return HTMLResponse('<div class="text-green-400 p-4">✅ 8テーブルを生成しました。ページを更新してください。</div>')
 
 
 @router.post("/tables/create", response_class=HTMLResponse)
@@ -6060,7 +6099,7 @@ async def create_table_dashboard(
         )
     )
     if existing.scalar_one_or_none():
-        return HTMLResponse('<div class="text-red-400 p-4">âŒ ã“ã®ãƒ†ãƒ¼ãƒ–ãƒ«ç•ªå·ã¯æ—¢ã«å­˜åœ¨ã—ã¾ã™</div>')
+        return HTMLResponse('<div class="text-red-400 p-4">❌ このテーブル番号は既に存在します</div>')
 
     table = Table(
         branch_code=branch_code,
@@ -6077,8 +6116,7 @@ async def create_table_dashboard(
     db.add(table)
     await db.commit()
 
-    return HTMLResponse(f'<div class="text-green-400 p-4">âœ… {table_number} ã‚’è¿½åŠ ã—ã¾ã—ãŸã€‚ãƒšãƒ¼ã‚¸ã‚’æ›´æ–°ã—ã¦ãã ã•ã„ã€‚</div>')
-
+    return HTMLResponse(f'<div class="text-green-400 p-4">✅ {table_number} を追加しました。ページを更新してください。</div>')
 
 ```
 
@@ -6101,13 +6139,13 @@ router = APIRouter()
 
 # Category labels and icons for UI
 CATEGORY_INFO = {
-    "meat": {"label": "è‚‰é¡ž", "icon": "ðŸ¥©"},
-    "drinks": {"label": "é£²ç‰©", "icon": "ðŸº"},
-    "salad": {"label": "ã‚µãƒ©ãƒ€", "icon": "ðŸ¥—"},
-    "rice": {"label": "ã”é£¯ãƒ»éºº", "icon": "ðŸš"},
-    "side": {"label": "ã‚µã‚¤ãƒ‰ãƒ¡ãƒ‹ãƒ¥ãƒ¼", "icon": "ðŸŸ"},
-    "dessert": {"label": "ãƒ‡ã‚¶ãƒ¼ãƒˆ", "icon": "ðŸ¨"},
-    "set": {"label": "ã‚»ãƒƒãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼", "icon": "ðŸ±"},
+    "meat": {"label": "肉類", "icon": "🥩"},
+    "drinks": {"label": "飲物", "icon": "🍺"},
+    "salad": {"label": "サラダ", "icon": "🥗"},
+    "rice": {"label": "ご飯・麺", "icon": "🍚"},
+    "side": {"label": "サイドメニュー", "icon": "🍟"},
+    "dessert": {"label": "デザート", "icon": "🍨"},
+    "set": {"label": "セットメニュー", "icon": "🍱"},
 }
 
 
@@ -6209,7 +6247,6 @@ async def get_menu_item(
         raise HTTPException(status_code=404, detail="Menu item not found")
 
     return item
-
 
 ```
 
@@ -7177,16 +7214,16 @@ async def seed_tables(
 
     tables_config = [
         # 4-seat regular tables
-        {"table_number": "A1", "name": "çª“éš›å¸­A", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "A2", "name": "çª“éš›å¸­B", "max_capacity": 4, "zone": "A", "has_window": True},
-        {"table_number": "B1", "name": "ä¸­å¤®å¸­A", "max_capacity": 4, "zone": "B"},
-        {"table_number": "B2", "name": "ä¸­å¤®å¸­B", "max_capacity": 4, "zone": "B"},
+        {"table_number": "A1", "name": "窓際席A", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "A2", "name": "窓際席B", "max_capacity": 4, "zone": "A", "has_window": True},
+        {"table_number": "B1", "name": "中央席A", "max_capacity": 4, "zone": "B"},
+        {"table_number": "B2", "name": "中央席B", "max_capacity": 4, "zone": "B"},
         # 6-seat tables
-        {"table_number": "C1", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­A", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C2", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­B", "max_capacity": 6, "zone": "C"},
-        {"table_number": "C3", "name": "ã‚°ãƒ«ãƒ¼ãƒ—å¸­C", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C1", "name": "グループ席A", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C2", "name": "グループ席B", "max_capacity": 6, "zone": "C"},
+        {"table_number": "C3", "name": "グループ席C", "max_capacity": 6, "zone": "C"},
         # VIP room
-        {"table_number": "VIP1", "name": "å€‹å®¤", "max_capacity": 8, "zone": "VIP",
+        {"table_number": "VIP1", "name": "個室", "max_capacity": 8, "zone": "VIP",
          "table_type": "private", "priority": 10},
     ]
 
@@ -7214,7 +7251,6 @@ async def seed_tables(
         "seeded": True,
         "tables": created,
     }
-
 
 ```
 
@@ -7328,6 +7364,46 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+@router.websocket("")
+async def table_websocket(
+    websocket: WebSocket,
+    branch_code: str = Query(default="hirama"),
+    table_id: str = Query(default="")
+):
+    """WebSocket endpoint for table-order app real-time updates"""
+    await manager.connect(websocket, branch_code)
+
+    # Auto-subscribe to orders channel for this table
+    manager.subscribe(websocket, "orders")
+    if table_id:
+        manager.subscribe(websocket, f"table:{table_id}")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                msg_type = message.get("type")
+
+                if msg_type == "ping":
+                    await manager.send_personal(websocket, {"type": "pong"})
+                elif msg_type == "subscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        manager.subscribe(websocket, channel)
+                else:
+                    print(f"📨 Table WS received: {msg_type}")
+
+            except json.JSONDecodeError:
+                pass
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, branch_code)
+    except Exception as e:
+        print(f"❌ Table WebSocket error: {e}")
+        manager.disconnect(websocket, branch_code)
+
+
 @router.websocket("/dashboard")
 async def dashboard_websocket(
     websocket: WebSocket,
@@ -7382,6 +7458,15 @@ async def dashboard_websocket(
 
 # Helper functions to broadcast events from other parts of the app
 
+async def broadcast_order_event(branch_code: str, event_type: str, data: dict):
+    """Broadcast order-related events to table-order clients"""
+    await manager.broadcast_to_branch(branch_code, {
+        "type": event_type,
+        "data": data,
+        "channel": "orders"
+    }, channel="orders")
+
+
 async def broadcast_booking_created(branch_code: str, booking: dict):
     """Broadcast new booking event"""
     await manager.broadcast_to_branch(branch_code, {
@@ -7419,7 +7504,6 @@ async def broadcast_notification(branch_code: str, title: str, message: str):
             "timestamp": datetime.now().isoformat()
         }
     })
-
 
 ```
 
@@ -7847,7 +7931,7 @@ __all__ = [
 
 ## File ./backend\app\services\chat_service.py:
 ```python
-﻿"""
+"""
 AI Chat Service - OpenAI Integration
 Handles chat conversations with customer context
 Extracts customer preferences automatically
@@ -7865,49 +7949,49 @@ from app.models.preference import CustomerPreference
 
 
 # System prompt for the restaurant assistant
-SYSTEM_PROMPT = """ã‚ãªãŸã¯ã€Œç„¼è‚‰ãƒ¬ã‚¹ãƒˆãƒ©ãƒ³ã€ã®AIã‚¢ã‚·ã‚¹ã‚¿ãƒ³ãƒˆã§ã™ã€‚ä¸å¯§ã§æ¸©ã‹ã„æŽ¥å®¢ã‚’å¿ƒãŒã‘ã¦ãã ã•ã„ã€‚
+SYSTEM_PROMPT = """あなたは「焼肉レストラン」のAIアシスタントです。丁寧で温かい接客を心がけてください。
 
-## åº—èˆ—æƒ…å ±
-- åº—å: ç„¼è‚‰ãƒ¬ã‚¹ãƒˆãƒ©ãƒ³ï¼ˆå¹³é–“æœ¬åº—ï¼‰
-- ä½æ‰€: ã€’211-0013 ç¥žå¥ˆå·çœŒå·å´Žå¸‚ä¸­åŽŸåŒºä¸Šå¹³é–“
-- é›»è©±: 044-789-8413
-- å–¶æ¥­æ™‚é–“: 17:00 - 23:00ï¼ˆL.O. 22:30ï¼‰
-- å®šä¼‘æ—¥: ç«æ›œæ—¥
-- å¸­æ•°: 30å¸­ï¼ˆå€‹å®¤ã‚ã‚Šï¼‰
+## 店舗情報
+- 店名: 焼肉レストラン（平間本店）
+- 住所: 〒211-0013 神奈川県川崎市中原区上平間
+- 電話: 044-789-8413
+- 営業時間: 17:00 - 23:00（L.O. 22:30）
+- 定休日: 火曜日
+- 席数: 30席（個室あり）
 
-## ãƒ¡ãƒ‹ãƒ¥ãƒ¼ï¼ˆç¨Žè¾¼ä¾¡æ ¼ï¼‰
-ã€æ¥µä¸Šå’Œç‰›ã€‘
-- ç‰¹é¸é»’æ¯›å’Œç‰›ã‚«ãƒ«ãƒ“ Â¥2,800
-- å’Œç‰›ä¸Šãƒãƒ©ãƒŸ Â¥1,800
-- ç‰¹é¸ç››ã‚Šåˆã‚ã› Â¥4,500ã€œ
+## メニュー（税込価格）
+【極上和牛】
+- 特選黒毛和牛カルビ ¥2,800
+- 和牛上ハラミ ¥1,800
+- 特選盛り合わせ ¥4,500〜
 
-ã€ã‚¿ãƒ³ãƒ»èµ¤èº«ã€‘
-- åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡© Â¥2,200
-- ä¸Šã‚¿ãƒ³å¡© Â¥1,600
-- ç‰›ãƒ’ãƒ¬ Â¥2,400
+【タン・赤身】
+- 厚切り上タン塩 ¥2,200
+- 上タン塩 ¥1,600
+- 牛ハレ ¥2,400
 
-ã€ãƒ›ãƒ«ãƒ¢ãƒ³ã€‘
-- ä¸ŠãƒŸãƒŽ Â¥980
-- ã‚·ãƒžãƒãƒ§ã‚¦ Â¥880
-- ãƒãƒ„ Â¥780
-- ãƒ†ãƒƒãƒãƒ£ãƒ³ Â¥880
+【ホルモン】
+- 上ミノ ¥980
+- シマチョウ ¥880
+- ハツ ¥780
+- テッチャン ¥880
 
-ã€ãã®ä»–ã€‘
-- ãƒ“ãƒ“ãƒ³ãƒ Â¥980
-- å†·éºº Â¥1,100
-- å„ç¨®ã‚µãƒ©ãƒ€ Â¥580ã€œ
+【その他】
+- ビビンバ ¥980
+- 冷麺 ¥1,100
+- 各種サラダ ¥580〜
 
-## ãƒ«ãƒ¼ãƒ«
-1. æ—¥æœ¬èªžã§ä¸å¯§ã«å¿œç­”
-2. çµµæ–‡å­—ã‚’é©åº¦ã«ä½¿ç”¨ï¼ˆðŸ¥©ðŸ–ðŸ”¥âœ¨ãªã©ï¼‰
-3. äºˆç´„ã¯é›»è©±ã¾ãŸã¯ã‚¦ã‚§ãƒ–ã‚µã‚¤ãƒˆã‚’æ¡ˆå†…
-4. ãƒ¬ãƒåˆºã—ãªã©ç”Ÿè‚‰ã®æä¾›ã¯æ³•å¾‹ä¸Šã§ããªã„ã“ã¨ã‚’èª¬æ˜Ž
-5. ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼å¯¾å¿œå¯èƒ½ã ãŒã€è©³ç´°ã¯æ¥åº—æ™‚ã«ç¢ºèªã‚’æŽ¨å¥¨
-6. è¨˜å¿µæ—¥ãƒ»æŽ¥å¾…ã®ç‰¹åˆ¥å¯¾å¿œå¯èƒ½
-7. å›žç­”ã¯ç°¡æ½”ã«ï¼ˆ3-4æ–‡ä»¥å†…ï¼‰
-8. ä¸æ˜Žãªè³ªå•ã¯é›»è©±ã§ã®å•ã„åˆã‚ã›ã‚’æ¡ˆå†…
+## ルール
+1. 日本語で丁寧に応答
+2. 絵文字を適度に使用（🥩🖐🔥✨など）
+3. 予約は電話またはウェブサイトを案内
+4. レバ刺しなど生肉の提供は法律上できないことを説明
+5. アレルギー対応可能だが、詳細は来店時に確認を推奨
+6. 記念日・接待の特別対応可能
+7. 回答は簡潔に（3-4文以内）
+8. 不明な質問は電話での問い合わせを案内
 
-## é¡§å®¢æƒ…å ±
+## 顧客情報
 {customer_context}
 """
 
@@ -7929,7 +8013,7 @@ class ChatService:
     ) -> str:
         """Build customer context string for the AI"""
         if not phone and not name:
-            return "æ–°è¦ã®ãŠå®¢æ§˜ã§ã™ã€‚"
+            return "新規のお客様です。"
 
         # Try to find customer by phone first
         query = select(GlobalCustomer)
@@ -7943,8 +8027,8 @@ class ChatService:
 
         if not global_customer:
             if name:
-                return f"ãŠåå‰: {name}æ§˜ï¼ˆæ–°è¦ã®ãŠå®¢æ§˜ï¼‰"
-            return "æ–°è¦ã®ãŠå®¢æ§˜ã§ã™ã€‚"
+                return f"お名前: {name}様（新規のお客様）"
+            return "新規のお客様です。"
 
         # Get branch-specific data
         result = await db.execute(
@@ -7957,22 +8041,22 @@ class ChatService:
         )
         branch_customer = result.scalar_one_or_none()
 
-        context_parts = [f"ãŠåå‰: {global_customer.name}æ§˜"]
+        context_parts = [f"お名前: {global_customer.name}様"]
 
         if branch_customer:
-            context_parts.append(f"æ¥åº—å›žæ•°: {branch_customer.visit_count}å›ž")
+            context_parts.append(f"来店回数: {branch_customer.visit_count}回")
 
             if branch_customer.is_vip:
-                context_parts.append("VIPã®ãŠå®¢æ§˜ã§ã™ ðŸŒŸ")
+                context_parts.append("VIPのお客様です 🌟")
 
             if branch_customer.preferences:
                 prefs = [p.preference for p in branch_customer.preferences]
-                context_parts.append(f"ãŠå¥½ã¿ã®éƒ¨ä½: {', '.join(prefs)}")
+                context_parts.append(f"お好みの部位: {', '.join(prefs)}")
 
                 # Add notes
                 notes = [p.note for p in branch_customer.preferences if p.note]
                 if notes:
-                    context_parts.append(f"å‚™è€ƒ: {'; '.join(notes)}")
+                    context_parts.append(f"備考: {'; '.join(notes)}")
 
         return "\n".join(context_parts)
 
@@ -8033,17 +8117,17 @@ class ChatService:
         lower = message.lower()
 
         responses = {
-            'ãŠã™ã™ã‚': 'æœ¬æ—¥ã®ãŠã™ã™ã‚ã¯ï¼š\n\nðŸ¥‡ ç‰¹é¸é»’æ¯›å’Œç‰›ã‚«ãƒ«ãƒ“ Â¥2,800\nðŸ¥ˆ åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡© Â¥2,200\nðŸ¥‰ å’Œç‰›ä¸Šãƒãƒ©ãƒŸ Â¥1,800\n\nã©ã‚Œã‚‚æ–°é®®ã§çµ¶å“ã§ã™ï¼',
-            'ãƒ¬ãƒåˆºã—': 'ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ãŒã€ç¾åœ¨ãƒ¬ãƒåˆºã—ã¯æ³•å¾‹ã«ã‚ˆã‚Šæä¾›ã§ãã¾ã›ã‚“ã€‚ä»£ã‚ã‚Šã«ä½Žæ¸©èª¿ç†ã®ãƒ¬ãƒãƒ¼ã¯ã„ã‹ãŒã§ã™ã‹ï¼Ÿ',
-            'ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼': 'ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼å¯¾å¿œå¯èƒ½ã§ã™ã€‚ã”æ¥åº—æ™‚ã«ã‚¹ã‚¿ãƒƒãƒ•ã«ãŠç”³ã—ä»˜ã‘ãã ã•ã„ã€‚è©³ç´°ã¯ãŠé›»è©±ï¼ˆ044-789-8413ï¼‰ã§ã‚‚ã”ç›¸è«‡ã„ãŸã ã‘ã¾ã™ã€‚',
-            'è¨˜å¿µæ—¥': 'è¨˜å¿µæ—¥ã®ã”äºˆå®šã§ã™ã­ï¼ðŸŽ‰ ç‰¹åˆ¥ãƒ‡ã‚¶ãƒ¼ãƒˆãƒ—ãƒ¬ãƒ¼ãƒˆãƒ»ãŠèŠ±ã®ã”ç”¨æ„ãƒ»å€‹å®¤ã®ã”äºˆç´„ãªã©æ‰¿ã‚Šã¾ã™ã€‚',
-            'äºˆç´„': 'ã”äºˆç´„ã¯ã“ã®ãƒšãƒ¼ã‚¸ã®ã€Œã”äºˆç´„ã€ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã‹ã‚‰ã€ã¾ãŸã¯ãŠé›»è©±ï¼ˆ044-789-8413ï¼‰ã§æ‰¿ã£ã¦ãŠã‚Šã¾ã™ã€‚',
-            'å–¶æ¥­': 'å–¶æ¥­æ™‚é–“: 17:00 - 23:00ï¼ˆL.O. 22:30ï¼‰\nå®šä¼‘æ—¥: ç«æ›œæ—¥\n\nçš†æ§˜ã®ã”æ¥åº—ã‚’ãŠå¾…ã¡ã—ã¦ãŠã‚Šã¾ã™ï¼',
-            'ãƒ›ãƒ«ãƒ¢ãƒ³': 'ãƒ›ãƒ«ãƒ¢ãƒ³ãƒ¡ãƒ‹ãƒ¥ãƒ¼ï¼š\nãƒ»ä¸ŠãƒŸãƒŽ Â¥980\nãƒ»ã‚·ãƒžãƒãƒ§ã‚¦ Â¥880\nãƒ»ãƒãƒ„ Â¥780\n\næ–°é®®ãªãƒ›ãƒ«ãƒ¢ãƒ³ã‚’ã”ç”¨æ„ã—ã¦ãŠã‚Šã¾ã™ï¼',
-            'ã‚¿ãƒ³': 'åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©ï¼ˆÂ¥2,200ï¼‰ãŒå¤§äººæ°—ã§ã™ï¼ðŸ”¥ æ­¯ã”ãŸãˆã¨è‚‰æ±ãŒæº¢ã‚Œã‚‹é€¸å“ã§ã™ã€‚',
-            'ã‚«ãƒ«ãƒ“': 'ç‰¹é¸é»’æ¯›å’Œç‰›ã‚«ãƒ«ãƒ“ï¼ˆÂ¥2,800ï¼‰ã¯å£ã®ä¸­ã§ã¨ã‚ã‘ã‚‹ç¾Žå‘³ã—ã•ã§ã™ï¼âœ¨',
-            'å€‹å®¤': 'å€‹å®¤ã¯4åæ§˜ã€œã”åˆ©ç”¨ã„ãŸã ã‘ã¾ã™ã€‚æŽ¥å¾…ã‚„ã”å®¶æ—ã§ã®ãŠé£Ÿäº‹ã«æœ€é©ã§ã™ã€‚ã”äºˆç´„æ™‚ã«ãŠç”³ã—ä»˜ã‘ãã ã•ã„ã€‚',
-            'ã‚³ãƒ¼ã‚¹': 'ã‚³ãƒ¼ã‚¹æ–™ç†ã¯Â¥5,000ã€œã”ç”¨æ„ã—ã¦ãŠã‚Šã¾ã™ã€‚è©³ç´°ã¯ãŠé›»è©±ã«ã¦ãŠå•ã„åˆã‚ã›ãã ã•ã„ã€‚',
+            'おすすめ': '本日のおすすめは：\n\n🥇 特選黒毛和牛カルビ ¥2,800\n🥈 厚切り上タン塩 ¥2,200\n🥉 和牛上ハラミ ¥1,800\n\nどれも新鮮で絶品です！',
+            'レバ刺し': '申し訳ございませんが、現在レバ刺しは法律により提供できません。代わりに低温調理のレバーはいかがですか？',
+            'アレルギー': 'アレルギー対応可能です。ご来店時にスタッフにお申し付けください。詳細はお電話（044-789-8413）でもご相談いただけます。',
+            '記念日': '記念日のご予定ですね！🎉 特別デザートプレート・お花のご用意・個室のご予約など承ります。',
+            '予約': 'ご予約はこのページの「ご予約」セクションから、またはお電話（044-789-8413）で承っております。',
+            '営業': '営業時間: 17:00 - 23:00（L.O. 22:30）\n定休日: 火曜日\n\n皆様のご来店をお待ちしております！',
+            'ホルモン': 'ホルモンメニュー：\n・上ミノ ¥980\n・シマチョウ ¥880\n・ハツ ¥780\n\n新鮮なホルモンをご用意しております！',
+            'タン': '厚切り上タン塩（¥2,200）が大人気です！🔥 歯ごたえと肉汁が溢れる逸品です。',
+            'カルビ': '特選黒毛和牛カルビ（¥2,800）は口の中でとろける美味しさです！✨',
+            '個室': '個室は4名様〜ご利用いただけます。接待やご家族でのお食事に最適です。ご予約時にお申し付けください。',
+            'コース': 'コース料理は¥5,000〜ご用意しております。詳細はお電話にてお問い合わせください。',
         }
 
         for keyword, response in responses.items():
@@ -8051,8 +8135,8 @@ class ChatService:
                 return response
 
         # Default response
-        greeting = f"{customer_name}æ§˜ã€" if customer_name else ""
-        return f'{greeting}ã‚ã‚ŠãŒã¨ã†ã”ã–ã„ã¾ã™ï¼ã”è³ªå•ã‚’æ‰¿ã‚Šã¾ã—ãŸã€‚\n\nè©³ã—ãã¯ãŠé›»è©±ï¼ˆ044-789-8413ï¼‰ã§ãŠå•ã„åˆã‚ã›ãã ã•ã„ã€‚'
+        greeting = f"{customer_name}様、" if customer_name else ""
+        return f'{greeting}ありがとうございます！ご質問を承りました。\n\n詳しくはお電話（044-789-8413）でお問い合わせください。'
 
 
 # Singleton instance
@@ -8062,22 +8146,22 @@ chat_service = ChatService()
 # ============================================
 # INSIGHT EXTRACTION PROMPT
 # ============================================
-EXTRACTION_PROMPT = """ä¼šè©±ã‹ã‚‰ãŠå®¢æ§˜ã®å¥½ã¿ã‚„é‡è¦ãªæƒ…å ±ã‚’æŠ½å‡ºã—ã¦ãã ã•ã„ã€‚
+EXTRACTION_PROMPT = """会話からお客様の好みや重要な情報を抽出してください。
 
-æŠ½å‡ºã™ã‚‹ã‚«ãƒ†ã‚´ãƒª:
-- meat: ãŠè‚‰ã®å¥½ã¿ï¼ˆä¾‹: ã‚¿ãƒ³å¥½ãã€ãƒãƒ©ãƒŸãŒå¥½ãã€åŽšåˆ‡ã‚Šæ´¾ï¼‰
-- cooking: èª¿ç†æ³•ã®å¥½ã¿ï¼ˆä¾‹: ãƒ¬ã‚¢æ´¾ã€ã‚ˆãç„¼ãã€å¡©æ´¾ã€ã‚¿ãƒ¬æ´¾ï¼‰
-- allergy: ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼ã‚„é£Ÿäº‹åˆ¶é™ï¼ˆä¾‹: ç”²æ®»é¡žã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼ã€ãƒ™ã‚¸ã‚¿ãƒªã‚¢ãƒ³ï¼‰
-- occasion: åˆ©ç”¨ã‚·ãƒ¼ãƒ³ï¼ˆä¾‹: è¨˜å¿µæ—¥ã€æŽ¥å¾…ã€å®¶æ—é€£ã‚Œï¼‰
-- other: ãã®ä»–ã®é‡è¦æƒ…å ±ï¼ˆä¾‹: å€‹å®¤å¸Œæœ›ã€å­ä¾›é€£ã‚Œï¼‰
+抽出するカテゴリ:
+- meat: お肉の好み（例: タン好き、ハラミが好き、厚切り派）
+- cooking: 調理法の好み（例: レア派、よく焼き、塩派、タレ派）
+- allergy: アレルギーや食事制限（例: 甲殻類アレルギー、ベジタリアン）
+- occasion: 利用シーン（例: 記念日、接待、家族連れ）
+- other: その他の重要情報（例: 個室希望、子供連れ）
 
-ä¼šè©±å†…å®¹:
+会話内容:
 {conversation}
 
-JSONã§å›žç­”ã—ã¦ãã ã•ã„ã€‚è©²å½“ãŒãªã‘ã‚Œã°ç©ºé…åˆ—ã‚’è¿”ã—ã¦ãã ã•ã„:
+JSONで回答してください。該当がなければ空配列を返してください:
 {
   "insights": [
-    {"preference": "æŠ½å‡ºã—ãŸå¥½ã¿", "category": "ã‚«ãƒ†ã‚´ãƒª", "confidence": 0.0-1.0}
+    {"preference": "抽出した好み", "category": "カテゴリ", "confidence": 0.0-1.0}
   ]
 }
 """
@@ -8104,7 +8188,7 @@ class InsightExtractor:
 
         # Build conversation text
         conversation = "\n".join([
-            f"{'ãŠå®¢æ§˜' if m.get('role') == 'user' else 'ã‚¹ã‚¿ãƒƒãƒ•'}: {m.get('content', '')}"
+            f"{'お客様' if m.get('role') == 'user' else 'スタッフ'}: {m.get('content', '')}"
             for m in messages[-10:]
         ])
 
@@ -8112,7 +8196,7 @@ class InsightExtractor:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": "ã‚ãªãŸã¯é¡§å®¢åˆ†æžAIã§ã™ã€‚ä¼šè©±ã‹ã‚‰é¡§å®¢ã®å¥½ã¿ã‚’æŠ½å‡ºã—ã¦JSONå½¢å¼ã§è¿”ã—ã¦ãã ã•ã„ã€‚"},
+                    {"role": "system", "content": "あなたは顧客分析AIです。会話から顧客の好みを抽出してJSON形式で返してください。"},
                     {"role": "user", "content": EXTRACTION_PROMPT.format(conversation=conversation)}
                 ],
                 max_tokens=500,
@@ -8137,31 +8221,31 @@ class InsightExtractor:
         # Keywords to detect
         keywords = {
             # Meat preferences
-            'ã‚¿ãƒ³': ('ã‚¿ãƒ³å¥½ã', 'meat'),
-            'ãƒãƒ©ãƒŸ': ('ãƒãƒ©ãƒŸå¥½ã', 'meat'),
-            'ã‚«ãƒ«ãƒ“': ('ã‚«ãƒ«ãƒ“å¥½ã', 'meat'),
-            'ãƒ›ãƒ«ãƒ¢ãƒ³': ('ãƒ›ãƒ«ãƒ¢ãƒ³å¥½ã', 'meat'),
-            'ãƒŸãƒŽ': ('ãƒŸãƒŽå¥½ã', 'meat'),
-            'èµ¤èº«': ('èµ¤èº«æ´¾', 'meat'),
-            'åŽšåˆ‡ã‚Š': ('åŽšåˆ‡ã‚Šæ´¾', 'meat'),
+            'タン': ('タン好き', 'meat'),
+            'ハラミ': ('ハラミ好き', 'meat'),
+            'カルビ': ('カルビ好き', 'meat'),
+            'ホルモン': ('ホルモン好き', 'meat'),
+            'ミノ': ('ミノ好き', 'meat'),
+            '赤身': ('赤身派', 'meat'),
+            '厚切り': ('厚切り派', 'meat'),
             # Cooking preferences
-            'ãƒ¬ã‚¢': ('ãƒ¬ã‚¢æ´¾', 'cooking'),
-            'ã‚¦ã‚§ãƒ«ãƒ€ãƒ³': ('ã‚ˆãç„¼ãæ´¾', 'cooking'),
-            'å¡©': ('å¡©æ´¾', 'cooking'),
-            'ã‚¿ãƒ¬': ('ã‚¿ãƒ¬æ´¾', 'cooking'),
-            'è¾›ã„': ('è¾›ã„ã‚‚ã®å¥½ã', 'cooking'),
+            'レア': ('レア派', 'cooking'),
+            'ウェルダン': ('よく焼き派', 'cooking'),
+            '塩': ('塩派', 'cooking'),
+            'タレ': ('タレ派', 'cooking'),
+            '辛い': ('辛いもの好き', 'cooking'),
             # Allergies
-            'ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼': ('ã‚¢ãƒ¬ãƒ«ã‚®ãƒ¼ã‚ã‚Šè¦ç¢ºèª', 'allergy'),
-            'ãƒ™ã‚¸ã‚¿ãƒªã‚¢ãƒ³': ('ãƒ™ã‚¸ã‚¿ãƒªã‚¢ãƒ³', 'allergy'),
+            'アレルギー': ('アレルギーあり要確認', 'allergy'),
+            'ベジタリアン': ('ベジタリアン', 'allergy'),
             # Occasions
-            'è¨˜å¿µæ—¥': ('è¨˜å¿µæ—¥åˆ©ç”¨', 'occasion'),
-            'èª•ç”Ÿæ—¥': ('èª•ç”Ÿæ—¥åˆ©ç”¨', 'occasion'),
-            'æŽ¥å¾…': ('æŽ¥å¾…åˆ©ç”¨', 'occasion'),
-            'ãƒ‡ãƒ¼ãƒˆ': ('ãƒ‡ãƒ¼ãƒˆåˆ©ç”¨', 'occasion'),
-            'å®¶æ—': ('å®¶æ—é€£ã‚Œ', 'occasion'),
+            '記念日': ('記念日利用', 'occasion'),
+            '誕生日': ('誕生日利用', 'occasion'),
+            '接待': ('接待利用', 'occasion'),
+            'デート': ('デート利用', 'occasion'),
+            '家族': ('家族連れ', 'occasion'),
             # Other
-            'å€‹å®¤': ('å€‹å®¤å¸Œæœ›', 'other'),
-            'å­ä¾›': ('å­ä¾›é€£ã‚Œ', 'other'),
+            '個室': ('個室希望', 'other'),
+            '子供': ('子供連れ', 'other'),
         }
 
         # Check all user messages
@@ -8292,7 +8376,7 @@ class NotificationManager:
 
     async def shutdown(self):
         """Signal all SSE connections to close gracefully"""
-        print("ðŸ“¡ Shutting down SSE connections...")
+        print("📡 Shutting down SSE connections...")
         self._shutdown_event.set()
 
         # Send shutdown signal to all queues
@@ -8307,7 +8391,7 @@ class NotificationManager:
             # Clear all clients
             self._clients.clear()
 
-        print("ðŸ“¡ All SSE connections closed")
+        print("📡 All SSE connections closed")
 
     async def connect(self, branch_code: str) -> asyncio.Queue:
         """Register a new SSE client connection"""
@@ -8318,7 +8402,7 @@ class NotificationManager:
                 self._clients[branch_code] = set()
             self._clients[branch_code].add(queue)
 
-        print(f"ðŸ“¡ SSE client connected for branch: {branch_code} (total: {len(self._clients[branch_code])})")
+        print(f"📡 SSE client connected for branch: {branch_code} (total: {len(self._clients[branch_code])})")
         return queue
 
     async def disconnect(self, branch_code: str, queue: asyncio.Queue):
@@ -8329,7 +8413,7 @@ class NotificationManager:
                 if not self._clients[branch_code]:
                     del self._clients[branch_code]
 
-        print(f"ðŸ“¡ SSE client disconnected from branch: {branch_code}")
+        print(f"📡 SSE client disconnected from branch: {branch_code}")
 
     async def broadcast(self, branch_code: str, notification: Notification):
         """Send notification to all connected clients for a branch"""
@@ -8337,10 +8421,10 @@ class NotificationManager:
             clients = self._clients.get(branch_code, set()).copy()
 
         if not clients:
-            print(f"ðŸ“¡ No clients connected for branch: {branch_code}")
+            print(f"📡 No clients connected for branch: {branch_code}")
             return
 
-        print(f"ðŸ“¡ Broadcasting to {len(clients)} clients: {notification.title}")
+        print(f"📡 Broadcasting to {len(clients)} clients: {notification.title}")
 
         for queue in clients:
             try:
@@ -8386,13 +8470,13 @@ async def notify_new_booking(
     table_number: str = None,
 ):
     """Send notification for new booking"""
-    message = f"{guest_name}æ§˜ {guests}åæ§˜ - {booking_date} {booking_time}"
+    message = f"{guest_name}様 {guests}名様 - {booking_date} {booking_time}"
     if table_number:
         message += f" ({table_number})"
 
     notification = Notification(
         type=NotificationType.NEW_BOOKING,
-        title="ðŸ”” æ–°è¦äºˆç´„",
+        title="🔔 新規予約",
         message=message,
         data={
             "booking_id": booking_id,
@@ -8416,8 +8500,8 @@ async def notify_booking_cancelled(
     """Send notification for cancelled booking"""
     notification = Notification(
         type=NotificationType.BOOKING_CANCELLED,
-        title="âŒ äºˆç´„ã‚­ãƒ£ãƒ³ã‚»ãƒ«",
-        message=f"{guest_name}æ§˜ - {booking_date} {booking_time}",
+        title="❌ 予約キャンセル",
+        message=f"{guest_name}様 - {booking_date} {booking_time}",
         data={
             "booking_id": booking_id,
             "guest_name": guest_name,
@@ -8438,8 +8522,8 @@ async def notify_booking_confirmed(
     """Send notification for confirmed booking"""
     notification = Notification(
         type=NotificationType.BOOKING_CONFIRMED,
-        title="âœ… äºˆç´„ç¢ºèªå®Œäº†",
-        message=f"{guest_name}æ§˜ - {booking_date} {booking_time}",
+        title="✅ 予約確認完了",
+        message=f"{guest_name}様 - {booking_date} {booking_time}",
         data={
             "booking_id": booking_id,
             "guest_name": guest_name,
@@ -8458,8 +8542,8 @@ async def notify_vip_arrived(
     """Send notification when VIP customer arrives"""
     notification = Notification(
         type=NotificationType.VIP_ARRIVED,
-        title="â­ VIPæ¥åº—",
-        message=f"{customer_name}æ§˜ãŒã”æ¥åº—ã§ã™",
+        title="⭐ VIP来店",
+        message=f"{customer_name}様がご来店です",
         data={
             "customer_name": customer_name,
             "preferences": preferences or [],
@@ -8467,14 +8551,13 @@ async def notify_vip_arrived(
     )
     await notification_manager.broadcast(branch_code, notification)
 
-
 ```
 
 ## File ./backend\app\services\table_optimization.py:
 ```python
 ﻿"""
 AI Table Optimization Service
-Tá»‘i Æ°u hÃ³a viá»‡c xáº¿p bÃ n vÃ  quáº£n lÃ½ capacity nhÃ  hÃ ng
+Tối ưu hóa việc xếp bàn và quản lý capacity nhà hàng
 """
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
@@ -8491,16 +8574,16 @@ from app.models.booking import Booking, BookingStatus
 
 
 class OptimizationStrategy(str, Enum):
-    """Chiáº¿n lÆ°á»£c tá»‘i Æ°u hÃ³a"""
-    MAXIMIZE_CAPACITY = "maximize_capacity"      # Tá»‘i Ä‘a sá»‘ khÃ¡ch
-    MINIMIZE_WASTE = "minimize_waste"            # Giáº£m lÃ£ng phÃ­ gháº¿
-    VIP_PRIORITY = "vip_priority"                # Æ¯u tiÃªn VIP
-    QUICK_TURNOVER = "quick_turnover"            # Tá»‘i Ä‘a vÃ²ng quay bÃ n
+    """Chiến lược tối ưu hóa"""
+    MAXIMIZE_CAPACITY = "maximize_capacity"      # Tối đa số khách
+    MINIMIZE_WASTE = "minimize_waste"            # Giảm lãng phí ghế
+    VIP_PRIORITY = "vip_priority"                # Ưu tiên VIP
+    QUICK_TURNOVER = "quick_turnover"            # Tối đa vòng quay bàn
 
 
 @dataclass
 class TableSlot:
-    """ThÃ´ng tin 1 slot thá»i gian cá»§a bÃ n"""
+    """Thông tin 1 slot thời gian của bàn"""
     table_id: str
     table_number: str
     max_capacity: int
@@ -8512,7 +8595,7 @@ class TableSlot:
 
 @dataclass
 class TimeSlotSummary:
-    """Tá»•ng há»£p tÃ¬nh tráº¡ng 1 khung giá»"""
+    """Tổng hợp tình trạng 1 khung giờ"""
     time_slot: str
     total_tables: int
     available_tables: int
@@ -8526,18 +8609,18 @@ class TimeSlotSummary:
 
 @dataclass
 class TableSuggestion:
-    """Äá» xuáº¥t bÃ n cho booking"""
+    """Đề xuất bàn cho booking"""
     table_id: str
     table_number: str
     capacity: int
-    score: float  # 0-100, Ä‘iá»ƒm phÃ¹ há»£p
+    score: float  # 0-100, điểm phù hợp
     reason: str
-    waste: int  # Sá»‘ gháº¿ thá»«a
+    waste: int  # Số ghế thừa
 
 
 @dataclass
 class OptimizationInsight:
-    """Insight tá»« AI vá» tÃ¬nh tráº¡ng nhÃ  hÃ ng"""
+    """Insight từ AI về tình trạng nhà hàng"""
     type: str  # "warning", "suggestion", "opportunity"
     title: str
     message: str
@@ -8548,22 +8631,22 @@ class OptimizationInsight:
 
 class TableOptimizationService:
     """
-    AI Service Ä‘á»ƒ tá»‘i Æ°u hÃ³a viá»‡c xáº¿p bÃ n
+    AI Service để tối ưu hóa việc xếp bàn
 
     Features:
-    1. Äá» xuáº¥t bÃ n phÃ¹ há»£p cho sá»‘ khÃ¡ch
-    2. Cáº£nh bÃ¡o khi sáº¯p full
-    3. Gá»£i Ã½ thá»i gian thay tháº¿
-    4. PhÃ¢n tÃ­ch utilization
+    1. Đề xuất bàn phù hợp cho số khách
+    2. Cảnh báo khi sắp full
+    3. Gợi ý thời gian thay thế
+    4. Phân tích utilization
     """
 
-    # Thá»i gian trung bÃ¬nh 1 bá»¯a Äƒn (phÃºt)
+    # Thời gian trung bình 1 bữa ăn (phút)
     AVERAGE_DINING_TIME = 90
 
-    # Thá»i gian buffer giá»¯a cÃ¡c booking (phÃºt)
+    # Thời gian buffer giữa các booking (phút)
     TURNOVER_BUFFER = 30
 
-    # Slot duration (phÃºt)
+    # Slot duration (phút)
     SLOT_DURATION = 30
 
     def __init__(self, db: AsyncSession, branch_code: str):
@@ -8571,7 +8654,7 @@ class TableOptimizationService:
         self.branch_code = branch_code
 
     # ==========================================
-    # CORE: TÃ¬m bÃ n phÃ¹ há»£p
+    # CORE: Tìm bàn phù hợp
     # ==========================================
 
     async def find_best_tables(
@@ -8582,14 +8665,14 @@ class TableOptimizationService:
         strategy: OptimizationStrategy = OptimizationStrategy.MINIMIZE_WASTE
     ) -> List[TableSuggestion]:
         """
-        TÃ¬m bÃ n phÃ¹ há»£p nháº¥t cho sá»‘ khÃ¡ch
+        Tìm bàn phù hợp nhất cho số khách
 
         Strategy:
-        - MINIMIZE_WASTE: Chá»n bÃ n cÃ³ capacity gáº§n nháº¥t vá»›i sá»‘ khÃ¡ch
-        - MAXIMIZE_CAPACITY: Æ¯u tiÃªn bÃ n lá»›n Ä‘á»ƒ cÃ³ chá»— náº¿u khÃ¡ch thÃªm
-        - VIP_PRIORITY: Æ¯u tiÃªn bÃ n VIP/private
+        - MINIMIZE_WASTE: Chọn bàn có capacity gần nhất với số khách
+        - MAXIMIZE_CAPACITY: Ưu tiên bàn lớn để có chỗ nếu khách thêm
+        - VIP_PRIORITY: Ưu tiên bàn VIP/private
         """
-        # Láº¥y táº¥t cáº£ bÃ n available cho slot nÃ y
+        # Lấy tất cả bàn available cho slot này
         available_tables = await self._get_available_tables(booking_date, time_slot)
 
         if not available_tables:
@@ -8598,11 +8681,11 @@ class TableOptimizationService:
         suggestions = []
 
         for table in available_tables:
-            # Bá» qua bÃ n quÃ¡ nhá»
+            # Bỏ qua bàn quá nhỏ
             if table.max_capacity < guests:
                 continue
 
-            # TÃ­nh Ä‘iá»ƒm dá»±a trÃªn strategy
+            # Tính điểm dựa trên strategy
             score, reason = self._calculate_table_score(
                 table, guests, strategy
             )
@@ -8618,10 +8701,10 @@ class TableOptimizationService:
                 waste=waste
             ))
 
-        # Sáº¯p xáº¿p theo score giáº£m dáº§n
+        # Sắp xếp theo score giảm dần
         suggestions.sort(key=lambda x: x.score, reverse=True)
 
-        return suggestions[:5]  # Top 5 Ä‘á» xuáº¥t
+        return suggestions[:5]  # Top 5 đề xuất
 
     def _calculate_table_score(
         self,
@@ -8629,43 +8712,43 @@ class TableOptimizationService:
         guests: int,
         strategy: OptimizationStrategy
     ) -> Tuple[float, str]:
-        """TÃ­nh Ä‘iá»ƒm phÃ¹ há»£p cá»§a bÃ n"""
+        """Tính điểm phù hợp của bàn"""
         base_score = 100.0
         reason_parts = []
 
         waste = table.max_capacity - guests
 
         if strategy == OptimizationStrategy.MINIMIZE_WASTE:
-            # Giáº£m Ä‘iá»ƒm theo sá»‘ gháº¿ thá»«a
+            # Giảm điểm theo số ghế thừa
             waste_penalty = waste * 10
             base_score -= waste_penalty
 
             if waste == 0:
-                reason_parts.append("å®Œç’§ã«ãƒžãƒƒãƒ")
+                reason_parts.append("完璧にマッチ")
             elif waste <= 2:
-                reason_parts.append(f"ä½™ã‚Š{waste}å¸­")
+                reason_parts.append(f"余り{waste}席")
             else:
-                reason_parts.append(f"ä½™ã‚Š{waste}å¸­(å¤§ãã‚)")
+                reason_parts.append(f"余り{waste}席(大きめ)")
 
         elif strategy == OptimizationStrategy.MAXIMIZE_CAPACITY:
-            # Æ¯u tiÃªn bÃ n lá»›n hÆ¡n
+            # Ưu tiên bàn lớn hơn
             capacity_bonus = table.max_capacity * 5
             base_score += capacity_bonus
-            reason_parts.append(f"æœ€å¤§{table.max_capacity}åã¾ã§å¯¾å¿œ")
+            reason_parts.append(f"最大{table.max_capacity}名まで対応")
 
-        # Bonus cho cÃ¡c features
+        # Bonus cho các features
         if table.table_type == "private":
             base_score += 15
-            reason_parts.append("å€‹å®¤")
+            reason_parts.append("個室")
 
         if table.has_window:
             base_score += 5
-            reason_parts.append("çª“éš›")
+            reason_parts.append("窓際")
 
         # Priority bonus
         base_score += table.priority * 2
 
-        reason = "ã€".join(reason_parts) if reason_parts else "æ¨™æº–å¸­"
+        reason = "・".join(reason_parts) if reason_parts else "標準席"
 
         return max(0, min(100, base_score)), reason
 
@@ -8674,8 +8757,8 @@ class TableOptimizationService:
         booking_date: date,
         time_slot: str
     ) -> List[Table]:
-        """Láº¥y danh sÃ¡ch bÃ n cÃ²n trá»‘ng cho slot"""
-        # Láº¥y táº¥t cáº£ bÃ n cá»§a branch
+        """Lấy danh sách bàn còn trống cho slot"""
+        # Lấy tất cả bàn của branch
         tables_query = select(Table).where(
             and_(
                 Table.branch_code == self.branch_code,
@@ -8685,7 +8768,7 @@ class TableOptimizationService:
         tables_result = await self.db.execute(tables_query)
         all_tables = tables_result.scalars().all()
 
-        # Láº¥y cÃ¡c bÃ n Ä‘Ã£ Ä‘Æ°á»£c assign cho slot nÃ y
+        # Lấy các bàn đã được assign cho slot này
         booked_tables_query = select(TableAssignment.table_id).join(
             Booking
         ).where(
@@ -8699,7 +8782,7 @@ class TableOptimizationService:
         booked_result = await self.db.execute(booked_tables_query)
         booked_table_ids = {r[0] for r in booked_result.fetchall()}
 
-        # Lá»c ra bÃ n cÃ²n trá»‘ng
+        # Lọc ra bàn còn trống
         available = [t for t in all_tables if t.id not in booked_table_ids]
 
         return available
@@ -8715,7 +8798,7 @@ class TableOptimizationService:
         time_slot: str
     ) -> Dict[str, Any]:
         """
-        Kiá»ƒm tra xem cÃ³ thá»ƒ Ä‘áº·t bÃ n khÃ´ng
+        Kiểm tra xem có thể đặt bàn không
 
         Returns:
             {
@@ -8732,18 +8815,18 @@ class TableOptimizationService:
                 "available": True,
                 "tables": suggestions,
                 "alternatives": [],
-                "message": f"{len(suggestions)}å¸­ã”æ¡ˆå†…å¯èƒ½ã§ã™"
+                "message": f"{len(suggestions)}席ご案内可能です"
             }
 
-        # KhÃ´ng cÃ³ bÃ n -> tÃ¬m alternatives
+        # Không có bàn -> tìm alternatives
         alternatives = await self._find_alternative_slots(guests, booking_date, time_slot)
 
         return {
             "available": False,
             "tables": [],
             "alternatives": alternatives,
-            "message": "ç”³ã—è¨³ã”ã–ã„ã¾ã›ã‚“ã€ã”å¸Œæœ›ã®æ™‚é–“ã¯æº€å¸­ã§ã™ã€‚" +
-                      (f"ä»£ã‚ã‚Šã«{len(alternatives)}ã¤ã®æ™‚é–“å¸¯ãŒã”ã–ã„ã¾ã™ã€‚" if alternatives else "")
+            "message": "申し訳ございません、ご希望の時間は満席です。" +
+                      (f"代わりに{len(alternatives)}つの時間帯がございます。" if alternatives else "")
         }
 
     async def _find_alternative_slots(
@@ -8753,7 +8836,7 @@ class TableOptimizationService:
         requested_slot: str,
         range_hours: int = 2
     ) -> List[Dict]:
-        """TÃ¬m cÃ¡c slot thay tháº¿ trong vÃ²ng Â±range_hours"""
+        """Tìm các slot thay thế trong vòng ±range_hours"""
         alternatives = []
 
         # Parse requested time
@@ -8802,8 +8885,8 @@ class TableOptimizationService:
         self,
         target_date: date
     ) -> List[TimeSlotSummary]:
-        """Tá»•ng há»£p tÃ¬nh tráº¡ng táº¥t cáº£ cÃ¡c slot trong ngÃ y"""
-        # Láº¥y táº¥t cáº£ bÃ n
+        """Tổng hợp tình trạng tất cả các slot trong ngày"""
+        # Lấy tất cả bàn
         tables_query = select(Table).where(
             and_(
                 Table.branch_code == self.branch_code,
@@ -8815,7 +8898,7 @@ class TableOptimizationService:
 
         total_capacity = sum(t.max_capacity for t in all_tables)
 
-        # Láº¥y táº¥t cáº£ booking trong ngÃ y
+        # Lấy tất cả booking trong ngày
         bookings_query = select(Booking).where(
             and_(
                 Booking.branch_code == self.branch_code,
@@ -8872,12 +8955,12 @@ class TableOptimizationService:
         target_date: date
     ) -> List[OptimizationInsight]:
         """
-        Táº¡o insights vÃ  suggestions cho staff
+        Tạo insights và suggestions cho staff
 
         Examples:
-        - "20:00 sáº¯p full (7/8 bÃ n), cÃ¢n nháº¯c tá»« chá»‘i booking má»›i"
-        - "18:00 cÃ²n nhiá»u bÃ n 6 gháº¿, khÃ¡ch 2 ngÆ°á»i nÃªn chuyá»ƒn sang 4 gháº¿"
-        - "HÃ´m nay cÃ³ 3 VIP, Ä‘Ã£ reserve phÃ²ng riÃªng"
+        - "20:00 sắp full (7/8 bàn), cân nhắc từ chối booking mới"
+        - "18:00 còn nhiều bàn 6 ghế, khách 2 người nên chuyển sang 4 ghế"
+        - "Hôm nay có 3 VIP, đã reserve phòng riêng"
         """
         insights = []
 
@@ -8885,14 +8968,14 @@ class TableOptimizationService:
         summaries = await self.get_time_slot_summary(target_date)
 
         for summary in summaries:
-            # Warning: Sáº¯p full
+            # Warning: Sắp full
             if summary.utilization_rate >= 80:
                 insights.append(OptimizationInsight(
                     type="warning",
-                    title=f"âš ï¸ {summary.time_slot} æ··é›‘æ³¨æ„",
-                    message=f"åˆ©ç”¨çŽ‡{summary.utilization_rate}% - æ®‹ã‚Š{summary.available_tables}å¸­",
+                    title=f"⚠️ {summary.time_slot} 混雑注意",
+                    message=f"利用率{summary.utilization_rate}% - 残り{summary.available_tables}席",
                     priority=4 if summary.utilization_rate >= 90 else 3,
-                    action="æ–°è¦äºˆç´„ã‚’æŽ§ãˆã‚‹ã‹ã€ä»£æ›¿æ™‚é–“ã‚’ã”æ¡ˆå†…ãã ã•ã„",
+                    action="新規予約を控えるか、代替時間をご案内ください",
                     data={
                         "time_slot": summary.time_slot,
                         "utilization": summary.utilization_rate,
@@ -8900,14 +8983,14 @@ class TableOptimizationService:
                     }
                 ))
 
-            # Opportunity: Slot trá»‘ng
+            # Opportunity: Slot trống
             elif summary.utilization_rate < 30 and summary.time_slot >= "18:00":
                 insights.append(OptimizationInsight(
                     type="opportunity",
-                    title=f"ðŸ“ˆ {summary.time_slot} ç©ºãå¤šã‚",
-                    message=f"åˆ©ç”¨çŽ‡{summary.utilization_rate}% - {summary.available_tables}å¸­ç©ºã",
+                    title=f"📈 {summary.time_slot} 空き多め",
+                    message=f"利用率{summary.utilization_rate}% - {summary.available_tables}席空き",
                     priority=2,
-                    action="ãƒ—ãƒ­ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚„äºˆç´„è»¢æ›ã®æ©Ÿä¼š",
+                    action="プロモーションや予約転換の機会",
                     data={
                         "time_slot": summary.time_slot,
                         "available": summary.available_tables
@@ -8927,10 +9010,10 @@ class TableOptimizationService:
         self,
         target_date: date
     ) -> List[OptimizationInsight]:
-        """Kiá»ƒm tra lÃ£ng phÃ­ capacity"""
+        """Kiểm tra lãng phí capacity"""
         insights = []
 
-        # Láº¥y bookings vá»›i table assignment
+        # Lấy bookings với table assignment
         query = select(Booking, TableAssignment, Table).join(
             TableAssignment, Booking.id == TableAssignment.booking_id
         ).join(
@@ -8950,7 +9033,7 @@ class TableOptimizationService:
 
         for booking, assignment, table in rows:
             waste = table.max_capacity - booking.guests
-            if waste >= 3:  # 3+ gháº¿ thá»«a
+            if waste >= 3:  # 3+ ghế thừa
                 waste_cases.append({
                     "booking": booking,
                     "table": table,
@@ -8961,10 +9044,10 @@ class TableOptimizationService:
             total_waste = sum(c["waste"] for c in waste_cases)
             insights.append(OptimizationInsight(
                 type="suggestion",
-                title=f"ðŸ’¡ å¸­åŠ¹çŽ‡ã®æ”¹å–„å¯èƒ½",
-                message=f"{len(waste_cases)}ä»¶ã®äºˆç´„ã§åˆè¨ˆ{total_waste}å¸­ã®ä½™è£•ã‚ã‚Š",
+                title=f"💡 席効率の改善可能",
+                message=f"{len(waste_cases)}件の予約で合計{total_waste}席の余裕あり",
                 priority=2,
-                action="å°ã•ã„å¸­ã¸ã®å¤‰æ›´ã‚’æ¤œè¨Ž",
+                action="小さい席への変更を検討",
                 data={
                     "waste_cases": [
                         {
@@ -8991,7 +9074,7 @@ class TableOptimizationService:
         booking_date: date,
         time_slot: str
     ) -> Optional[TableAssignment]:
-        """Tá»± Ä‘á»™ng assign bÃ n cho booking"""
+        """Tự động assign bàn cho booking"""
         suggestions = await self.find_best_tables(guests, booking_date, time_slot)
 
         if not suggestions:
@@ -9018,7 +9101,7 @@ class TableOptimizationService:
         new_table_id: str,
         reason: str = ""
     ) -> Optional[TableAssignment]:
-        """Äá»•i bÃ n cho booking"""
+        """Đổi bàn cho booking"""
         # Delete old assignment
         old_query = select(TableAssignment).where(
             TableAssignment.booking_id == booking_id
@@ -9112,7 +9195,7 @@ class TableOptimizationService:
                 "time_str": time_str,
                 "slot_index": slot_index,  # Pre-calculated slot index
                 "guests": booking.guests,
-                "customer_name": booking.guest_name or "ã‚²ã‚¹ãƒˆ",
+                "customer_name": booking.guest_name or "ゲスト",
                 "status": booking.status,
                 "duration_slots": 3,  # 90 min = 3 slots of 30 min
                 "notes": booking.note or "",
@@ -9160,7 +9243,6 @@ async def get_optimization_service(
     """Factory function to get optimization service"""
     return TableOptimizationService(db, branch_code)
 
-
 ```
 
 ## File ./backend\app\services\__init__.py:
@@ -9172,6 +9254,985 @@ from app.services.chat_service import chat_service
 
 __all__ = ["chat_service"]
 
+
+```
+
+## File ./backend\scripts\fix_encoding_all.py:
+```python
+"""
+Fix encoding for all files with mojibake (corrupted Japanese text)
+"""
+import os
+from pathlib import Path
+
+# Base directory
+BASE_DIR = Path(__file__).parent.parent
+
+# ============================================
+# CHECKIN ROUTER - Japanese messages
+# ============================================
+CHECKIN_ROUTER = '''"""
+Check-in Router - Customer Reception APIs
+Team: checkin
+"""
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, and_
+from datetime import datetime, date, timedelta
+from typing import Optional
+import json
+
+from app.database import get_db
+from app.domains.checkin.models import WaitingList, WaitingStatus, CheckInLog
+from app.domains.checkin.schemas import (
+    QRScanResult, CheckInType, WalkInRegister, WaitingResponse,
+    WaitingListResponse, TableAssignment, TableAssignmentResult,
+    CheckInDashboard, WaitingStatusEnum
+)
+from app.domains.booking.models import Booking, BookingStatus
+from app.domains.tableorder.models import TableSession
+from app.domains.shared.models import Table
+
+router = APIRouter()
+
+
+@router.post("/scan", response_model=QRScanResult)
+async def scan_qr_code(
+    qr_token: str,
+    branch_code: str = "hirama",
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Scan QR code for check-in
+    Returns table assignment or waiting info
+    """
+    # Find booking by QR token
+    result = await db.execute(
+        select(Booking).where(
+            Booking.qr_token == qr_token,
+            Booking.branch_code == branch_code
+        )
+    )
+    booking = result.scalar_one_or_none()
+
+    if not booking:
+        return QRScanResult(
+            success=False,
+            check_in_type=CheckInType.booking,
+            message="予約が見つかりませんでした。\\nスタッフにお声がけください。"
+        )
+
+    # Check booking date
+    today = date.today()
+    if booking.date != today:
+        if booking.date < today:
+            return QRScanResult(
+                success=False,
+                check_in_type=CheckInType.booking,
+                message=f"この予約は {booking.date} でした。\\nスタッフにお声がけください。"
+            )
+        else:
+            return QRScanResult(
+                success=False,
+                check_in_type=CheckInType.booking,
+                message=f"予約日は {booking.date} です。\\n当日にお越しください。",
+                booking_id=booking.id,
+                guest_name=booking.guest_name,
+                booking_time=booking.time
+            )
+
+    # Check if already checked in
+    if booking.status == BookingStatus.CHECKED_IN.value:
+        if booking.assigned_table_id:
+            table = await get_table(db, booking.assigned_table_id)
+            return QRScanResult(
+                success=True,
+                check_in_type=CheckInType.booking,
+                message=f"既にチェックイン済みです。\\nお席へどうぞ。",
+                booking_id=booking.id,
+                guest_name=booking.guest_name,
+                guest_count=booking.guests,
+                table_assigned=True,
+                table_number=table.table_number if table else None,
+                table_zone=table.zone if table else None
+            )
+
+    # Try to find available table
+    available_table = await find_available_table(db, branch_code, booking.guests)
+
+    if available_table:
+        # Assign table immediately
+        booking.status = BookingStatus.CHECKED_IN.value
+        booking.assigned_table_id = available_table.id
+        booking.checked_in_at = datetime.utcnow()
+
+        # Create session
+        session = TableSession(
+            branch_code=branch_code,
+            table_id=available_table.id,
+            booking_id=booking.id,
+            guest_count=booking.guests
+        )
+        db.add(session)
+
+        # Log check-in
+        await log_checkin_event(
+            db, branch_code, "booking_checkin",
+            booking_id=booking.id,
+            table_id=available_table.id,
+            customer_name=booking.guest_name,
+            guest_count=booking.guests
+        )
+
+        await db.commit()
+
+        return QRScanResult(
+            success=True,
+            check_in_type=CheckInType.booking,
+            message=f"{booking.guest_name}様\\nいらっしゃいませ！\\n\\nお席へご案内いたします。",
+            booking_id=booking.id,
+            guest_name=booking.guest_name,
+            guest_count=booking.guests,
+            booking_time=booking.time,
+            table_assigned=True,
+            table_number=available_table.table_number,
+            table_zone=available_table.zone
+        )
+    else:
+        # Need to wait
+        queue_info = await get_queue_info(db, branch_code)
+
+        return QRScanResult(
+            success=True,
+            check_in_type=CheckInType.booking,
+            message=f"{booking.guest_name}様\\nいらっしゃいませ！\\n\\n只今満席のため、少々お待ちください。",
+            booking_id=booking.id,
+            guest_name=booking.guest_name,
+            guest_count=booking.guests,
+            booking_time=booking.time,
+            table_assigned=False,
+            need_to_wait=True,
+            estimated_wait_minutes=queue_info["estimated_wait"],
+            waiting_ahead=queue_info["waiting_count"]
+        )
+
+
+@router.post("/walkin", response_model=WaitingResponse)
+async def register_walkin(
+    data: WalkInRegister,
+    db: AsyncSession = Depends(get_db)
+):
+    """Register a walk-in customer to waiting list"""
+    # Get next queue number
+    result = await db.execute(
+        select(func.max(WaitingList.queue_number)).where(
+            WaitingList.branch_code == data.branch_code,
+            func.date(WaitingList.created_at) == date.today()
+        )
+    )
+    max_queue = result.scalar() or 0
+
+    # Calculate estimated wait
+    queue_info = await get_queue_info(db, data.branch_code)
+
+    # Create waiting entry
+    waiting = WaitingList(
+        branch_code=data.branch_code,
+        customer_name=data.customer_name,
+        customer_phone=data.customer_phone,
+        guest_count=data.guest_count,
+        queue_number=max_queue + 1,
+        estimated_wait_minutes=queue_info["estimated_wait"],
+        note=data.note
+    )
+
+    db.add(waiting)
+
+    # Log event
+    await log_checkin_event(
+        db, data.branch_code, "walkin_registered",
+        waiting_id=waiting.id,
+        customer_name=data.customer_name,
+        guest_count=data.guest_count
+    )
+
+    await db.commit()
+    await db.refresh(waiting)
+
+    return WaitingResponse(
+        id=waiting.id,
+        queue_number=waiting.queue_number,
+        customer_name=waiting.customer_name,
+        guest_count=waiting.guest_count,
+        status=WaitingStatusEnum(waiting.status),
+        estimated_wait_minutes=waiting.estimated_wait_minutes,
+        waiting_ahead=queue_info["waiting_count"],
+        created_at=waiting.created_at
+    )
+
+
+@router.get("/waiting", response_model=WaitingListResponse)
+async def get_waiting_list(
+    branch_code: str = "hirama",
+    db: AsyncSession = Depends(get_db)
+):
+    """Get current waiting list"""
+    result = await db.execute(
+        select(WaitingList).where(
+            WaitingList.branch_code == branch_code,
+            WaitingList.status.in_([WaitingStatus.WAITING.value, WaitingStatus.CALLED.value]),
+            func.date(WaitingList.created_at) == date.today()
+        ).order_by(WaitingList.queue_number)
+    )
+    waiting_list = result.scalars().all()
+
+    responses = []
+    for i, w in enumerate(waiting_list):
+        responses.append(WaitingResponse(
+            id=w.id,
+            queue_number=w.queue_number,
+            customer_name=w.customer_name,
+            guest_count=w.guest_count,
+            status=WaitingStatusEnum(w.status),
+            estimated_wait_minutes=w.estimated_wait_minutes,
+            waiting_ahead=i,
+            created_at=w.created_at
+        ))
+
+    # Calculate average wait
+    avg_wait = None
+    if waiting_list:
+        total_wait = sum(w.estimated_wait_minutes or 15 for w in waiting_list)
+        avg_wait = total_wait // len(waiting_list)
+
+    return WaitingListResponse(
+        waiting=responses,
+        total_waiting=len(responses),
+        average_wait_minutes=avg_wait
+    )
+
+
+@router.post("/assign-table", response_model=TableAssignmentResult)
+async def assign_table(
+    assignment: TableAssignment,
+    branch_code: str = "hirama",
+    db: AsyncSession = Depends(get_db)
+):
+    """Assign a table to booking or waiting customer"""
+    # Get table
+    table = await get_table(db, assignment.table_id)
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+
+    # Check if table is available
+    is_available = await check_table_available(db, assignment.table_id)
+    if not is_available:
+        raise HTTPException(status_code=400, detail="Table is not available")
+
+    customer_name = ""
+    guest_count = 1
+    booking_id = None
+    waiting_id = None
+
+    if assignment.booking_id:
+        # Assign to booking
+        result = await db.execute(
+            select(Booking).where(Booking.id == assignment.booking_id)
+        )
+        booking = result.scalar_one_or_none()
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+
+        booking.status = BookingStatus.CHECKED_IN.value
+        booking.assigned_table_id = assignment.table_id
+        booking.checked_in_at = datetime.utcnow()
+
+        customer_name = booking.guest_name
+        guest_count = booking.guests
+        booking_id = booking.id
+
+    elif assignment.waiting_id:
+        # Assign to waiting customer
+        result = await db.execute(
+            select(WaitingList).where(WaitingList.id == assignment.waiting_id)
+        )
+        waiting = result.scalar_one_or_none()
+        if not waiting:
+            raise HTTPException(status_code=404, detail="Waiting entry not found")
+
+        waiting.status = WaitingStatus.SEATED.value
+        waiting.assigned_table_id = assignment.table_id
+        waiting.seated_at = datetime.utcnow()
+
+        customer_name = waiting.customer_name
+        guest_count = waiting.guest_count
+        waiting_id = waiting.id
+
+    # Create table session
+    session = TableSession(
+        branch_code=branch_code,
+        table_id=assignment.table_id,
+        booking_id=booking_id,
+        guest_count=guest_count
+    )
+    db.add(session)
+
+    # Log event
+    await log_checkin_event(
+        db, branch_code, "table_assigned",
+        booking_id=booking_id,
+        waiting_id=waiting_id,
+        table_id=assignment.table_id,
+        customer_name=customer_name,
+        guest_count=guest_count
+    )
+
+    await db.commit()
+    await db.refresh(session)
+
+    return TableAssignmentResult(
+        success=True,
+        table_number=table.table_number,
+        table_zone=table.zone,
+        session_id=session.id,
+        message=f"テーブル {table.table_number} に案内しました"
+    )
+
+
+@router.post("/waiting/{waiting_id}/call")
+async def call_waiting_customer(
+    waiting_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Call next waiting customer"""
+    result = await db.execute(
+        select(WaitingList).where(WaitingList.id == waiting_id)
+    )
+    waiting = result.scalar_one_or_none()
+
+    if not waiting:
+        raise HTTPException(status_code=404, detail="Waiting entry not found")
+
+    waiting.status = WaitingStatus.CALLED.value
+    waiting.called_at = datetime.utcnow()
+
+    await db.commit()
+
+    return {
+        "message": f"番号 {waiting.queue_number} - {waiting.customer_name}様をお呼びしました",
+        "queue_number": waiting.queue_number,
+        "customer_name": waiting.customer_name
+    }
+
+
+@router.get("/dashboard", response_model=CheckInDashboard)
+async def get_checkin_dashboard(
+    branch_code: str = "hirama",
+    db: AsyncSession = Depends(get_db)
+):
+    """Get check-in dashboard data"""
+    today = date.today()
+    now = datetime.now()
+
+    # Get today's upcoming bookings (confirmed, not yet checked in)
+    bookings_result = await db.execute(
+        select(Booking).where(
+            Booking.branch_code == branch_code,
+            Booking.date == today,
+            Booking.status.in_([
+                BookingStatus.PENDING.value,
+                BookingStatus.CONFIRMED.value
+            ])
+        ).order_by(Booking.time)
+    )
+    bookings = bookings_result.scalars().all()
+
+    upcoming_bookings = [
+        {
+            "id": b.id,
+            "time": b.time,
+            "guest_name": b.guest_name,
+            "guest_count": b.guests,
+            "phone": b.guest_phone,
+            "status": b.status,
+            "note": b.note
+        }
+        for b in bookings
+    ]
+
+    # Get waiting list
+    waiting_result = await db.execute(
+        select(WaitingList).where(
+            WaitingList.branch_code == branch_code,
+            WaitingList.status.in_([WaitingStatus.WAITING.value, WaitingStatus.CALLED.value]),
+            func.date(WaitingList.created_at) == today
+        ).order_by(WaitingList.queue_number)
+    )
+    waiting_entries = waiting_result.scalars().all()
+
+    waiting_list = [
+        WaitingResponse(
+            id=w.id,
+            queue_number=w.queue_number,
+            customer_name=w.customer_name,
+            guest_count=w.guest_count,
+            status=WaitingStatusEnum(w.status),
+            estimated_wait_minutes=w.estimated_wait_minutes,
+            waiting_ahead=i,
+            created_at=w.created_at
+        )
+        for i, w in enumerate(waiting_entries)
+    ]
+
+    # Get available tables
+    tables_result = await db.execute(
+        select(Table).where(
+            Table.branch_code == branch_code,
+            Table.is_active == True
+        ).order_by(Table.table_number)
+    )
+    all_tables = tables_result.scalars().all()
+
+    available_tables = []
+    for table in all_tables:
+        if await check_table_available(db, table.id):
+            available_tables.append({
+                "id": table.id,
+                "table_number": table.table_number,
+                "capacity": table.capacity,
+                "zone": table.zone
+            })
+
+    # Stats
+    checked_in_result = await db.execute(
+        select(func.count(Booking.id)).where(
+            Booking.branch_code == branch_code,
+            Booking.date == today,
+            Booking.status == BookingStatus.CHECKED_IN.value
+        )
+    )
+    checked_in_count = checked_in_result.scalar() or 0
+
+    return CheckInDashboard(
+        upcoming_bookings=upcoming_bookings,
+        waiting_list=waiting_list,
+        available_tables=available_tables,
+        stats={
+            "checked_in_today": checked_in_count,
+            "waiting_count": len(waiting_list),
+            "available_tables_count": len(available_tables),
+            "upcoming_bookings_count": len(upcoming_bookings)
+        }
+    )
+
+
+# Helper functions
+async def get_table(db: AsyncSession, table_id: str) -> Optional[Table]:
+    result = await db.execute(select(Table).where(Table.id == table_id))
+    return result.scalar_one_or_none()
+
+
+async def check_table_available(db: AsyncSession, table_id: str) -> bool:
+    """Check if table has no active session"""
+    result = await db.execute(
+        select(TableSession).where(
+            TableSession.table_id == table_id,
+            TableSession.ended_at.is_(None)
+        )
+    )
+    session = result.scalar_one_or_none()
+    return session is None
+
+
+async def find_available_table(
+    db: AsyncSession,
+    branch_code: str,
+    guest_count: int
+) -> Optional[Table]:
+    """Find best available table for guest count"""
+    result = await db.execute(
+        select(Table).where(
+            Table.branch_code == branch_code,
+            Table.is_active == True,
+            Table.capacity >= guest_count
+        ).order_by(Table.capacity)  # Prefer smaller tables that fit
+    )
+    tables = result.scalars().all()
+
+    for table in tables:
+        if await check_table_available(db, table.id):
+            return table
+
+    return None
+
+
+async def get_queue_info(db: AsyncSession, branch_code: str) -> dict:
+    """Get current queue information"""
+    result = await db.execute(
+        select(func.count(WaitingList.id)).where(
+            WaitingList.branch_code == branch_code,
+            WaitingList.status == WaitingStatus.WAITING.value,
+            func.date(WaitingList.created_at) == date.today()
+        )
+    )
+    waiting_count = result.scalar() or 0
+
+    # Estimate ~15 min per group
+    estimated_wait = waiting_count * 15
+
+    return {
+        "waiting_count": waiting_count,
+        "estimated_wait": estimated_wait
+    }
+
+
+async def log_checkin_event(
+    db: AsyncSession,
+    branch_code: str,
+    event_type: str,
+    booking_id: str = None,
+    waiting_id: str = None,
+    table_id: str = None,
+    customer_name: str = None,
+    guest_count: int = None,
+    event_data: dict = None
+):
+    """Log check-in event"""
+    log = CheckInLog(
+        branch_code=branch_code,
+        event_type=event_type,
+        booking_id=booking_id,
+        waiting_id=waiting_id,
+        table_id=table_id,
+        customer_name=customer_name,
+        guest_count=guest_count,
+        event_data=json.dumps(event_data) if event_data else None
+    )
+    db.add(log)
+'''
+
+# ============================================
+# CHECKIN SCHEMAS
+# ============================================
+CHECKIN_SCHEMAS = '''"""
+Check-in Schemas
+"""
+from pydantic import BaseModel, Field
+from typing import Optional
+from datetime import datetime, date
+from enum import Enum
+
+
+class WaitingStatusEnum(str, Enum):
+    waiting = "waiting"
+    called = "called"
+    seated = "seated"
+    cancelled = "cancelled"
+    no_show = "no_show"
+
+
+class CheckInType(str, Enum):
+    booking = "booking"      # 予約あり
+    walkin = "walkin"        # ウォークイン
+
+
+# QR Scan response
+class QRScanResult(BaseModel):
+    success: bool
+    check_in_type: CheckInType
+    message: str  # Japanese message to display
+
+    # Booking info (if booking)
+    booking_id: Optional[str] = None
+    guest_name: Optional[str] = None
+    guest_count: Optional[int] = None
+    booking_time: Optional[str] = None
+
+    # Table assignment
+    table_assigned: bool = False
+    table_number: Optional[str] = None
+    table_zone: Optional[str] = None
+
+    # Waiting info (if need to wait)
+    need_to_wait: bool = False
+    queue_number: Optional[int] = None
+    estimated_wait_minutes: Optional[int] = None
+    waiting_ahead: Optional[int] = None  # Number of groups ahead
+
+
+# Walk-in registration
+class WalkInRegister(BaseModel):
+    branch_code: str = "hirama"
+    customer_name: str = Field(..., min_length=1, max_length=255)
+    customer_phone: Optional[str] = None
+    guest_count: int = Field(..., ge=1, le=20)
+    note: Optional[str] = None
+
+
+class WaitingResponse(BaseModel):
+    id: str
+    queue_number: int
+    customer_name: str
+    guest_count: int
+    status: WaitingStatusEnum
+    estimated_wait_minutes: Optional[int] = None
+    waiting_ahead: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class WaitingListResponse(BaseModel):
+    waiting: list[WaitingResponse]
+    total_waiting: int
+    average_wait_minutes: Optional[int] = None
+
+
+# Table assignment
+class TableAssignment(BaseModel):
+    table_id: str
+    booking_id: Optional[str] = None
+    waiting_id: Optional[str] = None
+
+
+class TableAssignmentResult(BaseModel):
+    success: bool
+    table_number: str
+    table_zone: Optional[str] = None
+    session_id: str
+    message: str
+
+
+# Dashboard for check-in screen
+class CheckInDashboard(BaseModel):
+    # Today's bookings
+    upcoming_bookings: list[dict]
+
+    # Current waiting list
+    waiting_list: list[WaitingResponse]
+
+    # Available tables
+    available_tables: list[dict]
+
+    # Stats
+    stats: Optional[dict] = None
+'''
+
+# ============================================
+# CHECKIN MODELS
+# ============================================
+CHECKIN_MODELS = '''"""
+Check-in Models
+"""
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy.sql import func
+import uuid
+import enum
+
+from app.database import Base
+
+
+class WaitingStatus(str, enum.Enum):
+    WAITING = "waiting"         # 待機中
+    CALLED = "called"           # 呼び出し済み
+    SEATED = "seated"           # 着席済み
+    CANCELLED = "cancelled"     # キャンセル
+    NO_SHOW = "no_show"         # 来店なし
+
+
+class WaitingList(Base):
+    """Waiting list for walk-in customers"""
+    __tablename__ = "waiting_list"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    branch_code = Column(String(50), nullable=False, index=True)
+
+    # Customer info
+    customer_name = Column(String(255), nullable=False)
+    customer_phone = Column(String(20))
+    guest_count = Column(Integer, nullable=False)
+
+    # Queue management
+    queue_number = Column(Integer, nullable=False)  # 順番
+    status = Column(String(20), default=WaitingStatus.WAITING.value, index=True)
+
+    # Estimated wait time
+    estimated_wait_minutes = Column(Integer)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    called_at = Column(DateTime(timezone=True))
+    seated_at = Column(DateTime(timezone=True))
+
+    # Link to table when seated
+    assigned_table_id = Column(String(36), ForeignKey("tables.id"))
+
+    # Notes
+    note = Column(String(500))
+
+
+class CheckInLog(Base):
+    """Log all check-in events for analytics"""
+    __tablename__ = "checkin_logs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    branch_code = Column(String(50), nullable=False, index=True)
+
+    # Event type
+    event_type = Column(String(50), nullable=False, index=True)
+    # Types: booking_checkin, walkin_registered, table_assigned,
+    #        customer_called, customer_seated, customer_left
+
+    # Related entities
+    booking_id = Column(String(36), ForeignKey("bookings.id"))
+    waiting_id = Column(String(36), ForeignKey("waiting_list.id"))
+    table_id = Column(String(36), ForeignKey("tables.id"))
+
+    # Details
+    customer_name = Column(String(255))
+    guest_count = Column(Integer)
+
+    # Context
+    event_data = Column(Text)  # JSON string for additional data
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+'''
+
+# ============================================
+# POS SCHEMAS
+# ============================================
+POS_SCHEMAS = '''"""
+POS Schemas
+"""
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+from decimal import Decimal
+from enum import Enum
+
+
+class PaymentMethod(str, Enum):
+    cash = "cash"
+    card = "card"
+    paypay = "paypay"
+    linepay = "linepay"
+
+
+class TableStatusEnum(str, Enum):
+    available = "available"    # 空席
+    occupied = "occupied"      # 使用中
+    pending_payment = "pending_payment"  # 未会計
+    cleaning = "cleaning"      # 清掃中
+
+
+class CheckoutRequest(BaseModel):
+    session_id: str
+    payment_method: PaymentMethod
+    discount_amount: Decimal = Decimal("0")
+    discount_reason: Optional[str] = None
+    received_amount: Optional[Decimal] = None  # For cash payment
+
+
+class CheckoutResponse(BaseModel):
+    session_id: str
+    table_number: str
+    subtotal: Decimal
+    tax: Decimal
+    discount: Decimal
+    total: Decimal
+    payment_method: str
+    change: Optional[Decimal] = None
+    receipt_number: str
+    completed_at: datetime
+
+
+class TableOverview(BaseModel):
+    id: str
+    table_number: str
+    capacity: int
+    zone: Optional[str] = None
+    status: TableStatusEnum
+    session_id: Optional[str] = None
+    guest_count: Optional[int] = None
+    current_total: Decimal = Decimal("0")
+    started_at: Optional[datetime] = None
+    order_count: int = 0
+
+
+class POSDashboard(BaseModel):
+    tables: list[TableOverview]
+    summary: dict  # occupied, available, pending_payment counts
+'''
+
+# ============================================
+# MENU MODEL
+# ============================================
+MENU_MODEL = '''"""
+Menu Model - Menu items and categories
+"""
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Numeric
+from sqlalchemy.sql import func
+import uuid
+import enum
+
+from app.database import Base
+
+
+class MenuCategory(str, enum.Enum):
+    MEAT = "meat"           # 肉類
+    DRINKS = "drinks"       # 飲物
+    SALAD = "salad"         # サラダ
+    RICE = "rice"           # ご飯・麺
+    SIDE = "side"           # サイドメニュー
+    DESSERT = "dessert"     # デザート
+    SET = "set"             # セットメニュー
+
+
+class MenuItem(Base):
+    """Menu item configuration"""
+    __tablename__ = "menu_items"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    branch_code = Column(String(50), nullable=False, index=True)
+
+    # Item identity
+    name = Column(String(100), nullable=False)          # 上ハラミ
+    name_en = Column(String(100))                       # Premium Harami
+    description = Column(Text)                          # 説明
+
+    # Category & Display
+    category = Column(String(30), nullable=False, index=True)  # meat, drinks, etc.
+    subcategory = Column(String(50))                    # beef, pork, chicken
+    display_order = Column(Integer, default=0)          # Sort order in menu
+
+    # Pricing
+    price = Column(Numeric(10, 0), nullable=False)      # ¥1,800
+    tax_rate = Column(Numeric(4, 2), default=10.0)      # 10%
+
+    # Image
+    image_url = Column(String(500))                     # Image path
+
+    # Kitchen info
+    prep_time_minutes = Column(Integer, default=5)      # Estimated prep time
+    kitchen_note = Column(String(200))                  # Instructions for kitchen
+
+    # Flags
+    is_available = Column(Boolean, default=True)        # Currently available
+    is_popular = Column(Boolean, default=False)         # Show as recommended
+    is_spicy = Column(Boolean, default=False)           # 辛い
+    is_vegetarian = Column(Boolean, default=False)      # ベジタリアン
+    allergens = Column(String(200))                     # egg, milk, wheat, etc.
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<MenuItem {self.name} ¥{self.price}>"
+'''
+
+# ============================================
+# BRANCH CUSTOMERS CSV
+# ============================================
+BRANCH_CUSTOMERS_CSV = """global_customer_id,branch_code,visit_count,last_visit,is_vip,notes,sentiment
+cust-001,hirama,15,2025-12-20 19:30:00,true,常連様。いつもタン塩を注文される,positive
+cust-002,hirama,8,2025-11-15 18:00:00,false,お子様連れで来店。個室希望,positive
+cust-003,hirama,3,2025-10-01 20:00:00,false,初回割引利用,neutral
+cust-004,hirama,22,2026-01-10 19:00:00,true,VIP。特別なお祝いでよく利用,very_positive
+cust-005,hirama,1,2025-08-05 18:30:00,false,一度きりの来店,neutral
+cust-006,hirama,12,2025-12-01 20:30:00,true,肉の焼き加減にこだわる。レア希望,positive
+cust-007,hirama,5,2025-09-20 19:00:00,false,アレルギー（甲殻類）あり,neutral
+cust-008,hirama,18,2026-01-25 18:30:00,true,ワイン好き。記念日利用多し,very_positive
+cust-009,hirama,2,2025-07-10 19:30:00,false,クーポン利用のみ,neutral
+cust-010,hirama,10,2025-11-30 20:00:00,true,大人数宴会でよく予約,positive
+cust-011,hirama,1,2025-06-01 18:00:00,false,料理の提供が遅いとクレーム,negative
+cust-012,hirama,7,2025-10-15 19:00:00,false,静かな席希望。デート利用,positive
+cust-013,hirama,4,2025-09-05 18:30:00,false,辛いもの好き,neutral
+cust-014,hirama,20,2026-02-01 19:30:00,true,会社の接待でよく利用。上質な肉希望,very_positive
+cust-015,hirama,3,2025-08-20 20:00:00,false,ベジタリアン向けメニュー希望,neutral
+cust-016,hirama,1,2025-07-15 18:00:00,false,予約時間に遅刻。30分待ち,neutral
+cust-017,hirama,9,2025-11-10 19:00:00,false,写真撮影好き。インスタ投稿,positive
+cust-018,hirama,25,2026-01-20 20:30:00,true,創業時からの常連様。最高級コース,very_positive
+cust-019,hirama,2,2025-08-01 18:30:00,false,価格について質問多い,neutral
+cust-020,hirama,6,2025-10-05 19:00:00,false,禁煙席希望。匂いに敏感,positive
+cust-021,hirama,1,2025-06-20 18:00:00,false,サービスに不満。二度と来ないと発言,very_negative
+cust-022,hirama,11,2025-12-10 19:30:00,true,誕生日ケーキ持ち込み許可済,positive
+cust-023,hirama,4,2025-09-15 20:00:00,false,飲み放題プラン好き,neutral
+cust-024,hirama,8,2025-11-01 18:30:00,false,子供用メニュー注文,positive
+cust-025,hirama,2,2025-07-25 19:00:00,false,前回の会計ミスで返金対応済,neutral
+cust-026,hirama,15,2025-12-25 20:00:00,true,クリスマス毎年予約。ロマンチックな席希望,very_positive
+cust-027,hirama,1,2025-06-10 18:00:00,false,メニューが分かりにくいとフィードバック,neutral
+cust-028,hirama,7,2025-10-20 19:30:00,false,ホルモン専門。通な注文,positive
+cust-029,hirama,3,2025-08-15 18:30:00,false,早めの時間帯希望。高齢者同伴,neutral
+cust-030,hirama,19,2026-01-15 20:00:00,true,ワイン会幹事。大口注文,very_positive
+cust-031,hirama,2,2025-07-05 19:00:00,false,席が狭いとコメント,negative
+cust-032,hirama,10,2025-11-20 18:00:00,true,スポーツ選手。タンパク質重視,positive
+cust-033,hirama,5,2025-09-25 19:30:00,false,デザート追加注文多し,positive
+cust-034,hirama,1,2025-06-25 20:00:00,false,予約キャンセル歴あり（無断）,negative
+cust-035,hirama,12,2025-12-05 18:30:00,true,日本酒詳しい。銘柄指定,positive
+cust-036,hirama,4,2025-09-10 19:00:00,false,外国人ゲスト同伴。英語メニュー必要,neutral
+cust-037,hirama,6,2025-10-10 20:00:00,false,赤ちゃん連れ。ベビーカー,positive
+cust-038,hirama,1,2025-06-15 18:00:00,false,量が少ないとクレーム,negative
+cust-039,hirama,8,2025-11-05 19:30:00,false,女子会利用。サラダ多め,positive
+cust-040,hirama,16,2025-12-30 20:00:00,true,年末年始は必ず予約,very_positive
+cust-041,hirama,3,2025-08-10 18:30:00,false,支払い分割希望,neutral
+cust-042,hirama,7,2025-10-25 19:00:00,false,スタッフの対応を褒めてくれた,positive
+cust-043,hirama,2,2025-07-20 20:00:00,false,駐車場について質問,neutral
+cust-044,hirama,13,2025-12-15 18:00:00,true,法人カード利用。領収書必要,positive
+cust-045,hirama,5,2025-09-30 19:30:00,false,アニバーサリープレート希望,positive
+cust-046,hirama,1,2025-06-30 18:30:00,false,料理が冷たいとクレーム,negative
+cust-047,hirama,9,2025-11-25 20:00:00,false,焼肉のたれ追加注文多し,neutral
+cust-048,hirama,4,2025-09-01 19:00:00,false,静かで落ち着いた雰囲気を評価,positive
+cust-049,hirama,2,2025-07-30 18:00:00,false,クーポンサイト経由,neutral
+cust-050,hirama,21,2026-01-05 19:30:00,true,最重要VIP。社長秘書から予約,very_positive
+"""
+
+
+def fix_all_files():
+    """Fix all files with encoding issues"""
+
+    # 1. Fix checkin router
+    checkin_router_path = BASE_DIR / "app" / "domains" / "checkin" / "router.py"
+    with open(checkin_router_path, 'w', encoding='utf-8') as f:
+        f.write(CHECKIN_ROUTER)
+    print(f"✅ Fixed {checkin_router_path}")
+
+    # 2. Fix checkin schemas
+    checkin_schemas_path = BASE_DIR / "app" / "domains" / "checkin" / "schemas.py"
+    with open(checkin_schemas_path, 'w', encoding='utf-8') as f:
+        f.write(CHECKIN_SCHEMAS)
+    print(f"✅ Fixed {checkin_schemas_path}")
+
+    # 3. Fix checkin models
+    checkin_models_path = BASE_DIR / "app" / "domains" / "checkin" / "models.py"
+    with open(checkin_models_path, 'w', encoding='utf-8') as f:
+        f.write(CHECKIN_MODELS)
+    print(f"✅ Fixed {checkin_models_path}")
+
+    # 4. Fix POS schemas
+    pos_schemas_path = BASE_DIR / "app" / "domains" / "pos" / "schemas.py"
+    with open(pos_schemas_path, 'w', encoding='utf-8') as f:
+        f.write(POS_SCHEMAS)
+    print(f"✅ Fixed {pos_schemas_path}")
+
+    # 5. Fix menu model
+    menu_model_path = BASE_DIR / "app" / "models" / "menu.py"
+    with open(menu_model_path, 'w', encoding='utf-8') as f:
+        f.write(MENU_MODEL)
+    print(f"✅ Fixed {menu_model_path}")
+
+    # 6. Fix branch_customers.csv
+    branch_customers_path = BASE_DIR / "data" / "branch_customers.csv"
+    with open(branch_customers_path, 'w', encoding='utf-8') as f:
+        f.write(BRANCH_CUSTOMERS_CSV.strip())
+    print(f"✅ Fixed {branch_customers_path}")
+
+    print("\n✅ All encoding issues fixed!")
+
+
+if __name__ == "__main__":
+    fix_all_files()
 
 ```
 

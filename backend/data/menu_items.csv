@@ -1,41 +1,41 @@
-id,branch_code,name,name_en,description,category,subcategory,price,display_order,is_available,is_popular,is_spicy,is_vegetarian,allergens,prep_time_minutes,kitchen_note,image_filename
-menu-001,JIAN,和牛上ハラミ,Premium Harami,口の中でほどける柔らかさと濃厚な味わい。当店自慢の一品,meat,beef,1800,1,true,true,false,false,,5,焼き加減はレアがおすすめ,harami.jpg
-menu-002,JIAN,厚切り上タン塩,Thick Sliced Beef Tongue,贅沢な厚切り。歯ごたえと肉汁が溢れます,meat,beef,2200,2,true,true,false,false,,6,厚切りのため中心まで火を通す,tan.jpg
-menu-003,JIAN,特選カルビ,Premium Kalbi,霜降りが美しい最高級カルビ,meat,beef,1800,3,true,true,false,false,,5,,kalbi.jpg
-menu-004,JIAN,カルビ,Kalbi,定番の人気メニュー。ジューシーな味わい,meat,beef,1500,4,true,false,false,false,,5,,kalbi_regular.jpg
-menu-005,JIAN,上ロース,Premium Sirloin,赤身の旨味が楽しめる上質なロース,meat,beef,1700,5,true,false,false,false,,5,,rosu.jpg
-menu-006,JIAN,ロース,Sirloin,あっさりとした赤身の美味しさ,meat,beef,1400,6,true,false,false,false,,5,,rosu_regular.jpg
-menu-007,JIAN,ホルモン盛り合わせ,Offal Assortment,新鮮なホルモンをたっぷり。ミノ・ハチノス・シマチョウ,meat,offal,1400,7,true,false,false,false,,7,新鮮なうちに提供,horumon.jpg
-menu-008,JIAN,特選盛り合わせ,Special Assortment,本日のおすすめ希少部位を贅沢に盛り合わせ,meat,beef,4500,8,true,true,false,false,,8,4種盛り,tokusenmori.jpg
-menu-009,JIAN,豚カルビ,Pork Kalbi,甘みのある豚バラ肉,meat,pork,900,9,true,false,false,false,,5,,buta_kalbi.jpg
-menu-010,JIAN,鶏もも,Chicken Thigh,柔らかくジューシーな鶏もも肉,meat,chicken,800,10,true,false,false,false,,5,,tori_momo.jpg
-menu-011,JIAN,生ビール,Draft Beer,キンキンに冷えた生ビール（中）,drinks,beer,600,1,true,false,false,false,,1,,beer.jpg
-menu-012,JIAN,瓶ビール,Bottled Beer,アサヒスーパードライ,drinks,beer,650,2,true,false,false,false,,1,,beer_bottle.jpg
-menu-013,JIAN,ハイボール,Highball,すっきり爽やかなウイスキーソーダ,drinks,whisky,500,3,true,false,false,false,,1,,highball.jpg
-menu-014,JIAN,レモンサワー,Lemon Sour,自家製レモンサワー。さっぱり飲みやすい,drinks,sour,500,4,true,false,false,false,,1,,lemon_sour.jpg
-menu-015,JIAN,梅酒サワー,Plum Wine Sour,甘酸っぱい梅酒ソーダ割り,drinks,sour,550,5,true,false,false,false,,1,,umeshu.jpg
-menu-016,JIAN,マッコリ,Makgeolli,韓国の伝統酒。まろやかな甘さ,drinks,korean,600,6,true,false,false,false,,1,,makgeolli.jpg
-menu-017,JIAN,焼酎（芋）,Sweet Potato Shochu,本格芋焼酎。ロック・水割り・お湯割り,drinks,shochu,500,7,true,false,false,false,,1,,shochu.jpg
-menu-018,JIAN,ウーロン茶,Oolong Tea,ソフトドリンク,drinks,soft,300,8,true,false,false,false,,1,,oolong.jpg
-menu-019,JIAN,コーラ,Cola,コカ・コーラ,drinks,soft,300,9,true,false,false,false,,1,,cola.jpg
-menu-020,JIAN,オレンジジュース,Orange Juice,100%果汁オレンジジュース,drinks,soft,350,10,true,false,false,false,,1,,orange.jpg
-menu-021,JIAN,チョレギサラダ,Korean Salad,韓国風ピリ辛サラダ。ごま油が香る,salad,,600,1,true,false,true,true,,3,,choregi.jpg
-menu-022,JIAN,シーザーサラダ,Caesar Salad,パルメザンチーズたっぷり,salad,,700,2,true,false,false,true,milk,3,,caesar.jpg
-menu-023,JIAN,ナムル盛り合わせ,Namul Assortment,3種のナムル（もやし・ほうれん草・大根）,salad,,500,3,true,false,false,true,,3,,namul.jpg
-menu-024,JIAN,キムチ盛り合わせ,Kimchi Assortment,白菜・カクテキ・オイキムチ,salad,,550,4,true,false,true,true,,2,,kimchi.jpg
-menu-025,JIAN,ライス,Rice,国産コシヒカリ使用,rice,,200,1,true,false,false,true,,2,,rice.jpg
-menu-026,JIAN,大盛りライス,Large Rice,国産コシヒカリ大盛り,rice,,300,2,true,false,false,true,,2,,rice_large.jpg
-menu-027,JIAN,石焼ビビンバ,Stone Pot Bibimbap,熱々の石鍋で提供。おこげが美味しい,rice,,1200,3,true,true,true,false,egg,8,石鍋を十分に熱する,bibimbap.jpg
-menu-028,JIAN,冷麺,Cold Noodles,韓国冷麺。さっぱりとした味わい,rice,,900,4,true,false,false,false,wheat,5,,reimen.jpg
-menu-029,JIAN,カルビクッパ,Kalbi Rice Soup,カルビ入りの韓国風スープご飯,rice,,950,5,true,false,true,false,,6,,kuppa.jpg
-menu-030,JIAN,わかめスープ,Seaweed Soup,韓国風わかめスープ,side,,350,1,true,false,false,true,,3,,wakame.jpg
-menu-031,JIAN,テールスープ,Oxtail Soup,コラーゲンたっぷり牛テールスープ,side,,800,2,true,false,false,false,,10,じっくり煮込み,tail_soup.jpg
-menu-032,JIAN,枝豆,Edamame,塩茹で枝豆,side,,350,3,true,false,false,true,,2,,edamame.jpg
-menu-033,JIAN,韓国海苔,Korean Seaweed,ごま油香る韓国海苔,side,,300,4,true,false,false,true,,1,,nori.jpg
-menu-034,JIAN,チヂミ,Korean Pancake,海鮮チヂミ。外はカリッと中はもっちり,side,,850,5,true,false,false,false,wheat|egg|seafood,10,,chijimi.jpg
-menu-035,JIAN,バニラアイス,Vanilla Ice Cream,濃厚バニラアイスクリーム,dessert,,400,1,true,false,false,true,milk,1,,vanilla_ice.jpg
-menu-036,JIAN,杏仁豆腐,Almond Tofu,手作り杏仁豆腐。なめらかな口当たり,dessert,,450,2,true,false,false,true,milk,1,,annin.jpg
-menu-037,JIAN,シャーベット,Sherbet,マンゴーシャーベット,dessert,,400,3,true,false,false,true,,1,,sherbet.jpg
-menu-038,JIAN,焼肉定食,Yakiniku Set,カルビ・ロース・ライス・スープ・サラダ,set,,1800,1,true,true,false,false,,15,ランチセット,teishoku.jpg
-menu-039,JIAN,上焼肉定食,Premium Yakiniku Set,上カルビ・上ロース・ライス・スープ・サラダ,set,,2500,2,true,false,false,false,,15,ランチセット,teishoku_premium.jpg
-menu-040,JIAN,女子会コース,Ladies Course,サラダ・お肉5種・デザート・ドリンク付き,set,,3500,3,true,false,false,false,,20,2名様より,ladies_course.jpg
+﻿id,branch_code,name,name_en,description,category,subcategory,price,display_order,is_available,is_popular,is_spicy,is_vegetarian,allergens,prep_time_minutes,kitchen_note,image_filename
+menu-001,hirama,å’Œç‰›ä¸Šãƒãƒ©ãƒŸ,Premium Harami,å£ã®ä¸­ã§ã»ã©ã‘ã‚‹æŸ”ã‚‰ã‹ã•ã¨æ¿ƒåŽšãªå‘³ã‚ã„ã€‚å½“åº—è‡ªæ…¢ã®ä¸€å“,meat,beef,1800,1,true,true,false,false,,5,ç„¼ãåŠ æ¸›ã¯ãƒ¬ã‚¢ãŒãŠã™ã™ã‚,harami.jpg
+menu-002,hirama,åŽšåˆ‡ã‚Šä¸Šã‚¿ãƒ³å¡©,Thick Sliced Beef Tongue,è´…æ²¢ãªåŽšåˆ‡ã‚Šã€‚æ­¯ã”ãŸãˆã¨è‚‰æ±ãŒæº¢ã‚Œã¾ã™,meat,beef,2200,2,true,true,false,false,,6,åŽšåˆ‡ã‚Šã®ãŸã‚ä¸­å¿ƒã¾ã§ç«ã‚’é€šã™,tan.jpg
+menu-003,hirama,ç‰¹é¸ã‚«ãƒ«ãƒ“,Premium Kalbi,éœœé™ã‚ŠãŒç¾Žã—ã„æœ€é«˜ç´šã‚«ãƒ«ãƒ“,meat,beef,1800,3,true,true,false,false,,5,,kalbi.jpg
+menu-004,hirama,ã‚«ãƒ«ãƒ“,Kalbi,å®šç•ªã®äººæ°—ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã€‚ã‚¸ãƒ¥ãƒ¼ã‚·ãƒ¼ãªå‘³ã‚ã„,meat,beef,1500,4,true,false,false,false,,5,,kalbi_regular.jpg
+menu-005,hirama,ä¸Šãƒ­ãƒ¼ã‚¹,Premium Sirloin,èµ¤èº«ã®æ—¨å‘³ãŒæ¥½ã—ã‚ã‚‹ä¸Šè³ªãªãƒ­ãƒ¼ã‚¹,meat,beef,1700,5,true,false,false,false,,5,,rosu.jpg
+menu-006,hirama,ãƒ­ãƒ¼ã‚¹,Sirloin,ã‚ã£ã•ã‚Šã¨ã—ãŸèµ¤èº«ã®ç¾Žå‘³ã—ã•,meat,beef,1400,6,true,false,false,false,,5,,rosu_regular.jpg
+menu-007,hirama,ãƒ›ãƒ«ãƒ¢ãƒ³ç››ã‚Šåˆã‚ã›,Offal Assortment,æ–°é®®ãªãƒ›ãƒ«ãƒ¢ãƒ³ã‚’ãŸã£ã·ã‚Šã€‚ãƒŸãƒŽãƒ»ãƒãƒãƒŽã‚¹ãƒ»ã‚·ãƒžãƒãƒ§ã‚¦,meat,offal,1400,7,true,false,false,false,,7,æ–°é®®ãªã†ã¡ã«æä¾›,horumon.jpg
+menu-008,hirama,ç‰¹é¸ç››ã‚Šåˆã‚ã›,Special Assortment,æœ¬æ—¥ã®ãŠã™ã™ã‚å¸Œå°‘éƒ¨ä½ã‚’è´…æ²¢ã«ç››ã‚Šåˆã‚ã›,meat,beef,4500,8,true,true,false,false,,8,4ç¨®ç››ã‚Š,tokusenmori.jpg
+menu-009,hirama,è±šã‚«ãƒ«ãƒ“,Pork Kalbi,ç”˜ã¿ã®ã‚ã‚‹è±šãƒãƒ©è‚‰,meat,pork,900,9,true,false,false,false,,5,,buta_kalbi.jpg
+menu-010,hirama,é¶ã‚‚ã‚‚,Chicken Thigh,æŸ”ã‚‰ã‹ãã‚¸ãƒ¥ãƒ¼ã‚·ãƒ¼ãªé¶ã‚‚ã‚‚è‚‰,meat,chicken,800,10,true,false,false,false,,5,,tori_momo.jpg
+menu-011,hirama,ç”Ÿãƒ“ãƒ¼ãƒ«,Draft Beer,ã‚­ãƒ³ã‚­ãƒ³ã«å†·ãˆãŸç”Ÿãƒ“ãƒ¼ãƒ«ï¼ˆä¸­ï¼‰,drinks,beer,600,1,true,false,false,false,,1,,beer.jpg
+menu-012,hirama,ç“¶ãƒ“ãƒ¼ãƒ«,Bottled Beer,ã‚¢ã‚µãƒ’ã‚¹ãƒ¼ãƒ‘ãƒ¼ãƒ‰ãƒ©ã‚¤,drinks,beer,650,2,true,false,false,false,,1,,beer_bottle.jpg
+menu-013,hirama,ãƒã‚¤ãƒœãƒ¼ãƒ«,Highball,ã™ã£ãã‚Šçˆ½ã‚„ã‹ãªã‚¦ã‚¤ã‚¹ã‚­ãƒ¼ã‚½ãƒ¼ãƒ€,drinks,whisky,500,3,true,false,false,false,,1,,highball.jpg
+menu-014,hirama,ãƒ¬ãƒ¢ãƒ³ã‚µãƒ¯ãƒ¼,Lemon Sour,è‡ªå®¶è£½ãƒ¬ãƒ¢ãƒ³ã‚µãƒ¯ãƒ¼ã€‚ã•ã£ã±ã‚Šé£²ã¿ã‚„ã™ã„,drinks,sour,500,4,true,false,false,false,,1,,lemon_sour.jpg
+menu-015,hirama,æ¢…é…’ã‚µãƒ¯ãƒ¼,Plum Wine Sour,ç”˜é…¸ã£ã±ã„æ¢…é…’ã‚½ãƒ¼ãƒ€å‰²ã‚Š,drinks,sour,550,5,true,false,false,false,,1,,umeshu.jpg
+menu-016,hirama,ãƒžãƒƒã‚³ãƒª,Makgeolli,éŸ“å›½ã®ä¼çµ±é…’ã€‚ã¾ã‚ã‚„ã‹ãªç”˜ã•,drinks,korean,600,6,true,false,false,false,,1,,makgeolli.jpg
+menu-017,hirama,ç„¼é…Žï¼ˆèŠ‹ï¼‰,Sweet Potato Shochu,æœ¬æ ¼èŠ‹ç„¼é…Žã€‚ãƒ­ãƒƒã‚¯ãƒ»æ°´å‰²ã‚Šãƒ»ãŠæ¹¯å‰²ã‚Š,drinks,shochu,500,7,true,false,false,false,,1,,shochu.jpg
+menu-018,hirama,ã‚¦ãƒ¼ãƒ­ãƒ³èŒ¶,Oolong Tea,ã‚½ãƒ•ãƒˆãƒ‰ãƒªãƒ³ã‚¯,drinks,soft,300,8,true,false,false,false,,1,,oolong.jpg
+menu-019,hirama,ã‚³ãƒ¼ãƒ©,Cola,ã‚³ã‚«ãƒ»ã‚³ãƒ¼ãƒ©,drinks,soft,300,9,true,false,false,false,,1,,cola.jpg
+menu-020,hirama,ã‚ªãƒ¬ãƒ³ã‚¸ã‚¸ãƒ¥ãƒ¼ã‚¹,Orange Juice,100%æžœæ±ã‚ªãƒ¬ãƒ³ã‚¸ã‚¸ãƒ¥ãƒ¼ã‚¹,drinks,soft,350,10,true,false,false,false,,1,,orange.jpg
+menu-021,hirama,ãƒãƒ§ãƒ¬ã‚®ã‚µãƒ©ãƒ€,Korean Salad,éŸ“å›½é¢¨ãƒ”ãƒªè¾›ã‚µãƒ©ãƒ€ã€‚ã”ã¾æ²¹ãŒé¦™ã‚‹,salad,,600,1,true,false,true,true,,3,,choregi.jpg
+menu-022,hirama,ã‚·ãƒ¼ã‚¶ãƒ¼ã‚µãƒ©ãƒ€,Caesar Salad,ãƒ‘ãƒ«ãƒ¡ã‚¶ãƒ³ãƒãƒ¼ã‚ºãŸã£ã·ã‚Š,salad,,700,2,true,false,false,true,milk,3,,caesar.jpg
+menu-023,hirama,ãƒŠãƒ ãƒ«ç››ã‚Šåˆã‚ã›,Namul Assortment,3ç¨®ã®ãƒŠãƒ ãƒ«ï¼ˆã‚‚ã‚„ã—ãƒ»ã»ã†ã‚Œã‚“è‰ãƒ»å¤§æ ¹ï¼‰,salad,,500,3,true,false,false,true,,3,,namul.jpg
+menu-024,hirama,ã‚­ãƒ ãƒç››ã‚Šåˆã‚ã›,Kimchi Assortment,ç™½èœãƒ»ã‚«ã‚¯ãƒ†ã‚­ãƒ»ã‚ªã‚¤ã‚­ãƒ ãƒ,salad,,550,4,true,false,true,true,,2,,kimchi.jpg
+menu-025,hirama,ãƒ©ã‚¤ã‚¹,Rice,å›½ç”£ã‚³ã‚·ãƒ’ã‚«ãƒªä½¿ç”¨,rice,,200,1,true,false,false,true,,2,,rice.jpg
+menu-026,hirama,å¤§ç››ã‚Šãƒ©ã‚¤ã‚¹,Large Rice,å›½ç”£ã‚³ã‚·ãƒ’ã‚«ãƒªå¤§ç››ã‚Š,rice,,300,2,true,false,false,true,,2,,rice_large.jpg
+menu-027,hirama,çŸ³ç„¼ãƒ“ãƒ“ãƒ³ãƒ,Stone Pot Bibimbap,ç†±ã€…ã®çŸ³é‹ã§æä¾›ã€‚ãŠã“ã’ãŒç¾Žå‘³ã—ã„,rice,,1200,3,true,true,true,false,egg,8,çŸ³é‹ã‚’ååˆ†ã«ç†±ã™ã‚‹,bibimbap.jpg
+menu-028,hirama,å†·éºº,Cold Noodles,éŸ“å›½å†·éººã€‚ã•ã£ã±ã‚Šã¨ã—ãŸå‘³ã‚ã„,rice,,900,4,true,false,false,false,wheat,5,,reimen.jpg
+menu-029,hirama,ã‚«ãƒ«ãƒ“ã‚¯ãƒƒãƒ‘,Kalbi Rice Soup,ã‚«ãƒ«ãƒ“å…¥ã‚Šã®éŸ“å›½é¢¨ã‚¹ãƒ¼ãƒ—ã”é£¯,rice,,950,5,true,false,true,false,,6,,kuppa.jpg
+menu-030,hirama,ã‚ã‹ã‚ã‚¹ãƒ¼ãƒ—,Seaweed Soup,éŸ“å›½é¢¨ã‚ã‹ã‚ã‚¹ãƒ¼ãƒ—,side,,350,1,true,false,false,true,,3,,wakame.jpg
+menu-031,hirama,ãƒ†ãƒ¼ãƒ«ã‚¹ãƒ¼ãƒ—,Oxtail Soup,ã‚³ãƒ©ãƒ¼ã‚²ãƒ³ãŸã£ã·ã‚Šç‰›ãƒ†ãƒ¼ãƒ«ã‚¹ãƒ¼ãƒ—,side,,800,2,true,false,false,false,,10,ã˜ã£ãã‚Šç…®è¾¼ã¿,tail_soup.jpg
+menu-032,hirama,æžè±†,Edamame,å¡©èŒ¹ã§æžè±†,side,,350,3,true,false,false,true,,2,,edamame.jpg
+menu-033,hirama,éŸ“å›½æµ·è‹”,Korean Seaweed,ã”ã¾æ²¹é¦™ã‚‹éŸ“å›½æµ·è‹”,side,,300,4,true,false,false,true,,1,,nori.jpg
+menu-034,hirama,ãƒãƒ‚ãƒŸ,Korean Pancake,æµ·é®®ãƒãƒ‚ãƒŸã€‚å¤–ã¯ã‚«ãƒªãƒƒã¨ä¸­ã¯ã‚‚ã£ã¡ã‚Š,side,,850,5,true,false,false,false,wheat|egg|seafood,10,,chijimi.jpg
+menu-035,hirama,ãƒãƒ‹ãƒ©ã‚¢ã‚¤ã‚¹,Vanilla Ice Cream,æ¿ƒåŽšãƒãƒ‹ãƒ©ã‚¢ã‚¤ã‚¹ã‚¯ãƒªãƒ¼ãƒ ,dessert,,400,1,true,false,false,true,milk,1,,vanilla_ice.jpg
+menu-036,hirama,æä»è±†è…,Almond Tofu,æ‰‹ä½œã‚Šæä»è±†è…ã€‚ãªã‚ã‚‰ã‹ãªå£å½“ãŸã‚Š,dessert,,450,2,true,false,false,true,milk,1,,annin.jpg
+menu-037,hirama,ã‚·ãƒ£ãƒ¼ãƒ™ãƒƒãƒˆ,Sherbet,ãƒžãƒ³ã‚´ãƒ¼ã‚·ãƒ£ãƒ¼ãƒ™ãƒƒãƒˆ,dessert,,400,3,true,false,false,true,,1,,sherbet.jpg
+menu-038,hirama,ç„¼è‚‰å®šé£Ÿ,Yakiniku Set,ã‚«ãƒ«ãƒ“ãƒ»ãƒ­ãƒ¼ã‚¹ãƒ»ãƒ©ã‚¤ã‚¹ãƒ»ã‚¹ãƒ¼ãƒ—ãƒ»ã‚µãƒ©ãƒ€,set,,1800,1,true,true,false,false,,15,ãƒ©ãƒ³ãƒã‚»ãƒƒãƒˆ,teishoku.jpg
+menu-039,hirama,ä¸Šç„¼è‚‰å®šé£Ÿ,Premium Yakiniku Set,ä¸Šã‚«ãƒ«ãƒ“ãƒ»ä¸Šãƒ­ãƒ¼ã‚¹ãƒ»ãƒ©ã‚¤ã‚¹ãƒ»ã‚¹ãƒ¼ãƒ—ãƒ»ã‚µãƒ©ãƒ€,set,,2500,2,true,false,false,false,,15,ãƒ©ãƒ³ãƒã‚»ãƒƒãƒˆ,teishoku_premium.jpg
+menu-040,hirama,å¥³å­ä¼šã‚³ãƒ¼ã‚¹,Ladies Course,ã‚µãƒ©ãƒ€ãƒ»ãŠè‚‰5ç¨®ãƒ»ãƒ‡ã‚¶ãƒ¼ãƒˆãƒ»ãƒ‰ãƒªãƒ³ã‚¯ä»˜ã,set,,3500,3,true,false,false,false,,20,2åæ§˜ã‚ˆã‚Š,ladies_course.jpg

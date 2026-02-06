@@ -44,9 +44,33 @@ const CONFIG = {
         private: '個室',
         tatami: '座敷',
     },
+
+    // Session phases (4-phase lifecycle)
+    SESSION_PHASES: {
+        WELCOME: 'welcome',
+        ORDERING: 'ordering',
+        BILL_REVIEW: 'bill_review',
+        CLEANING: 'cleaning',
+    },
+
+    // Valid phase transitions
+    SESSION_TRANSITIONS: {
+        welcome: ['ordering'],
+        ordering: ['bill_review'],
+        bill_review: ['ordering', 'cleaning'],
+        cleaning: ['welcome'],
+    },
+
+    // Inactivity timeout (ms) - 30 minutes
+    INACTIVITY_TIMEOUT: 30 * 60 * 1000,
+
+    // Long-press duration (ms) - 3 seconds
+    LONG_PRESS_DURATION: 3000,
 };
 
 // Freeze config to prevent modifications
 Object.freeze(CONFIG);
 Object.freeze(CONFIG.STATUS_LABELS);
 Object.freeze(CONFIG.TABLE_TYPES);
+Object.freeze(CONFIG.SESSION_PHASES);
+Object.freeze(CONFIG.SESSION_TRANSITIONS);

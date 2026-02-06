@@ -70,6 +70,400 @@ body {
 
 /* ============ Layout - Top Navigation ============ */
 
+/* ============ Welcome Screen ============ */
+
+.welcome-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2018 50%, #1a1a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    animation: welcomeFadeIn 0.6s ease;
+}
+
+.welcome-screen.hidden {
+    display: none;
+}
+
+.welcome-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.welcome-logo {
+    font-size: 80px;
+    margin-bottom: var(--spacing-lg);
+    animation: welcomePulse 2s ease-in-out infinite;
+}
+
+.welcome-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: 2px;
+}
+
+.welcome-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.welcome-table-info {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.welcome-table-badge,
+.welcome-guest-badge {
+    padding: 8px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.welcome-start-btn {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto 20px;
+    padding: 18px 32px;
+    background: var(--accent-color);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: welcomeBtnPulse 3s ease-in-out infinite;
+}
+
+.welcome-start-btn:active {
+    transform: scale(0.96);
+    background: var(--accent-hover);
+}
+
+.welcome-lang-hint {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+@keyframes welcomeFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes welcomePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+@keyframes welcomeBtnPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(212, 175, 55, 0); }
+}
+
+/* ============ Bill Review Screen ============ */
+
+.bill-review-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-primary);
+    z-index: 400;
+    display: flex;
+    flex-direction: column;
+    animation: screenSlideIn 0.3s ease;
+}
+
+.bill-review-screen.hidden {
+    display: none;
+}
+
+.bill-review-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--spacing-lg);
+}
+
+.bill-review-header {
+    text-align: center;
+    padding: var(--spacing-lg) 0;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.bill-review-header h1 {
+    font-size: 24px;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-xs);
+}
+
+.bill-review-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.bill-review-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md) 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bill-review-footer {
+    flex-shrink: 0;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.bill-review-summary {
+    margin-bottom: var(--spacing-lg);
+}
+
+.bill-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+.bill-summary-row.bill-summary-total {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-sm);
+}
+
+.bill-summary-amount {
+    color: var(--accent-color);
+}
+
+.bill-add-more-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-family);
+    cursor: pointer;
+    margin-bottom: var(--spacing-md);
+    transition: all 0.2s;
+}
+
+.bill-add-more-btn:active {
+    background: var(--accent-light);
+    transform: scale(0.97);
+}
+
+.bill-waiting-text {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    animation: waitingPulse 2s ease-in-out infinite;
+}
+
+@keyframes waitingPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ============ Cleaning Screen ============ */
+
+.cleaning-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #1a2018 50%, #1a1a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    animation: screenSlideIn 0.3s ease;
+}
+
+.cleaning-screen.hidden {
+    display: none;
+}
+
+.cleaning-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 480px;
+}
+
+.cleaning-icon {
+    font-size: 64px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.cleaning-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+.cleaning-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.cleaning-summary {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    text-align: left;
+}
+
+.cleaning-summary h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--spacing-md);
+}
+
+.cleaning-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+.cleaning-stat-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.cleaning-stat-total {
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    font-size: 18px;
+}
+
+.cleaning-stat-total .cleaning-stat-value {
+    color: var(--accent-color);
+    font-size: 20px;
+}
+
+.cleaning-reset-area {
+    margin-top: var(--spacing-lg);
+}
+
+.cleaning-reset-btn {
+    position: relative;
+    display: block;
+    width: 200px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 30px;
+    font-size: 15px;
+    font-family: var(--font-family);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s;
+}
+
+.cleaning-reset-btn:active,
+.cleaning-reset-btn.pressing {
+    border-color: var(--success);
+}
+
+.cleaning-reset-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--success);
+    width: 0%;
+    transition: none;
+}
+
+.cleaning-reset-btn.pressing .cleaning-reset-progress {
+    width: 100%;
+    transition: width 3s linear;
+}
+
+.cleaning-reset-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: var(--spacing-sm);
+}
+
+@keyframes screenSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ Inactivity Warning ============ */
+
+.inactivity-warning {
+    position: fixed;
+    top: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid var(--warning);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    z-index: 600;
+    animation: slideDown 0.3s ease;
+}
+
+.inactivity-warning-text {
+    color: var(--warning);
+    font-size: 14px;
+}
+
+.inactivity-dismiss-btn {
+    background: none;
+    border: 1px solid var(--warning);
+    color: var(--warning);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-family: var(--font-family);
+    cursor: pointer;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ============ .hidden utility ============ */
+.hidden {
+    display: none !important;
+}
+
 .app-container {
     display: flex;
     flex-direction: column;

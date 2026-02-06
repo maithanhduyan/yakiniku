@@ -23,6 +23,50 @@ from app.domains.tableorder.event_service import EventService
 router = APIRouter()
 
 
+# ============ Session Log Schema ============
+
+class SessionLogEntry(BaseModel):
+    type: str
+    ts: float
+    meta: Optional[dict] = None
+
+
+class SessionLogRequest(BaseModel):
+    session_id: str
+    table_id: str
+    entries: list[SessionLogEntry]
+
+
+# ============ Session Log Endpoint ============
+
+@router.post("/session-log")
+async def receive_session_log(
+    log_data: SessionLogRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Receive analytics/session log from table-order frontend.
+    Fire-and-forget: accepts the data and logs it.
+    In production, this would be stored for analytics.
+    """
+    event_service = EventService(db)
+
+    # Log as a single SESSION_LOG event with all entries
+    await event_service.log_event(
+        event_type=EventType.SESSION_LOG if hasattr(EventType, 'SESSION_LOG') else EventType.SESSION_STARTED,
+        event_source=EventSource.TABLE_ORDER,
+        branch_code="hirama",
+        table_id=log_data.table_id,
+        session_id=log_data.session_id,
+        data={
+            "entries": [e.model_dump() for e in log_data.entries],
+            "entry_count": len(log_data.entries)
+        }
+    )
+
+    return {"status": "ok", "received": len(log_data.entries)}
+
+
 # ============ Call Staff Schema ============
 
 class CallStaffRequest(BaseModel):

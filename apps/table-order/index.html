@@ -22,7 +22,84 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- ============ Welcome Screen ============ -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <div class="welcome-logo">🍖</div>
+            <h1 class="welcome-title" data-i18n="welcome.title">焼肉ジナン</h1>
+            <p class="welcome-subtitle" data-i18n="welcome.subtitle">テーブルオーダーシステム</p>
+            <div class="welcome-table-info">
+                <span class="welcome-table-badge" id="welcomeTable">T5</span>
+                <span class="welcome-guest-badge" id="welcomeGuests">4名様</span>
+            </div>
+            <button class="welcome-start-btn" id="welcomeStartBtn" data-i18n="welcome.start">
+                タッチして注文を始める
+            </button>
+            <div class="welcome-lang-hint" data-i18n="welcome.langHint">🌐 English available</div>
+        </div>
+    </div>
+
+    <!-- ============ Bill Review Screen ============ -->
+    <div class="bill-review-screen hidden" id="billReviewScreen">
+        <div class="bill-review-content">
+            <div class="bill-review-header">
+                <h1 data-i18n="bill.title">📋 ご注文内容</h1>
+                <p class="bill-review-subtitle" data-i18n="bill.subtitle">スタッフがお会計をご用意いたします</p>
+            </div>
+            <div class="bill-review-items" id="billReviewItems">
+                <!-- Rendered by JS -->
+            </div>
+            <div class="bill-review-footer">
+                <div class="bill-review-summary">
+                    <div class="bill-summary-row">
+                        <span data-i18n="bill.totalItems">合計品数</span>
+                        <span class="bill-summary-value" id="billTotalItems">0品</span>
+                    </div>
+                    <div class="bill-summary-row bill-summary-total">
+                        <span data-i18n="bill.totalAmount">お会計金額</span>
+                        <span class="bill-summary-amount" id="billTotalAmount">¥0</span>
+                    </div>
+                </div>
+                <button class="bill-add-more-btn" id="billAddMoreBtn" data-i18n="bill.addMore">
+                    ＋ 追加注文
+                </button>
+                <p class="bill-waiting-text" data-i18n="bill.waiting">お会計を準備中です...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Cleaning Screen ============ -->
+    <div class="cleaning-screen hidden" id="cleaningScreen">
+        <div class="cleaning-content">
+            <div class="cleaning-icon">🙏</div>
+            <h1 class="cleaning-title" data-i18n="cleaning.title">ありがとうございました</h1>
+            <p class="cleaning-subtitle" data-i18n="cleaning.subtitle">またのお越しをお待ちしております</p>
+            <div class="cleaning-summary" id="cleaningSummary">
+                <h3 data-i18n="cleaning.summary">セッション概要</h3>
+                <div class="cleaning-stat">
+                    <span data-i18n="cleaning.orders">注文回数</span>
+                    <span class="cleaning-stat-value" id="cleaningOrders">0</span>
+                </div>
+                <div class="cleaning-stat">
+                    <span data-i18n="cleaning.items">合計品数</span>
+                    <span class="cleaning-stat-value" id="cleaningItems">0</span>
+                </div>
+                <div class="cleaning-stat cleaning-stat-total">
+                    <span data-i18n="cleaning.total">お会計金額</span>
+                    <span class="cleaning-stat-value" id="cleaningTotal">¥0</span>
+                </div>
+            </div>
+            <div class="cleaning-reset-area">
+                <button class="cleaning-reset-btn" id="cleaningResetBtn">
+                    <span class="cleaning-reset-label" data-i18n="cleaning.reset">リセット</span>
+                    <div class="cleaning-reset-progress" id="cleaningResetProgress"></div>
+                </button>
+                <p class="cleaning-reset-hint" data-i18n="cleaning.resetHint">3秒長押しでリセット</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container hidden" id="appContainer">
         <!-- Top Header with Table Info & Cart -->
         <header class="app-header">
             <div class="header-left">

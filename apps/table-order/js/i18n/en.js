@@ -78,6 +78,37 @@ const en = {
     'loading.api': 'API',
     'loading.realtime': 'Real-time',
 
+    // Session - Welcome Screen
+    'welcome.title': 'Yakiniku Jinan',
+    'welcome.subtitle': 'Table Ordering System',
+    'welcome.start': 'Touch to start ordering',
+    'welcome.tableLabel': 'Table',
+    'welcome.guestsLabel': 'Guests',
+    'welcome.langHint': '🌐 日本語も対応',
+
+    // Session - Bill Review Screen
+    'bill.title': '📋 Order Summary',
+    'bill.subtitle': 'Staff will prepare your bill',
+    'bill.addMore': '＋ Add More',
+    'bill.waiting': 'Preparing your bill...',
+    'bill.totalItems': 'Total items',
+    'bill.totalAmount': 'Total amount',
+
+    // Session - Cleaning Screen
+    'cleaning.title': 'Thank you!',
+    'cleaning.subtitle': 'We look forward to seeing you again',
+    'cleaning.summary': 'Session Summary',
+    'cleaning.orders': 'Orders placed',
+    'cleaning.items': 'Total items',
+    'cleaning.total': 'Total amount',
+    'cleaning.reset': 'Reset',
+    'cleaning.resetHint': 'Hold 3 seconds to reset',
+    'cleaning.resetting': 'Resetting...',
+
+    // Session - Inactivity
+    'inactivity.warning': '🔔 No activity for 30 minutes',
+    'inactivity.dismiss': 'Dismiss',
+
     // Demo menu items - Meat
     'demo.meat.wagyu_harami': 'Wagyu Harami',
     'demo.meat.wagyu_harami.desc': 'Melt-in-your-mouth tender skirt steak with rich flavor. Our signature dish',

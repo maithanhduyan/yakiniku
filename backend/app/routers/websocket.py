@@ -106,6 +106,46 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+@router.websocket("")
+async def table_websocket(
+    websocket: WebSocket,
+    branch_code: str = Query(default="hirama"),
+    table_id: str = Query(default="")
+):
+    """WebSocket endpoint for table-order app real-time updates"""
+    await manager.connect(websocket, branch_code)
+
+    # Auto-subscribe to orders channel for this table
+    manager.subscribe(websocket, "orders")
+    if table_id:
+        manager.subscribe(websocket, f"table:{table_id}")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                msg_type = message.get("type")
+
+                if msg_type == "ping":
+                    await manager.send_personal(websocket, {"type": "pong"})
+                elif msg_type == "subscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        manager.subscribe(websocket, channel)
+                else:
+                    print(f"📨 Table WS received: {msg_type}")
+
+            except json.JSONDecodeError:
+                pass
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, branch_code)
+    except Exception as e:
+        print(f"❌ Table WebSocket error: {e}")
+        manager.disconnect(websocket, branch_code)
+
+
 @router.websocket("/dashboard")
 async def dashboard_websocket(
     websocket: WebSocket,
@@ -160,6 +200,15 @@ async def dashboard_websocket(
 
 # Helper functions to broadcast events from other parts of the app
 
+async def broadcast_order_event(branch_code: str, event_type: str, data: dict):
+    """Broadcast order-related events to table-order clients"""
+    await manager.broadcast_to_branch(branch_code, {
+        "type": event_type,
+        "data": data,
+        "channel": "orders"
+    }, channel="orders")
+
+
 async def broadcast_booking_created(branch_code: str, booking: dict):
     """Broadcast new booking event"""
     await manager.broadcast_to_branch(branch_code, {
@@ -197,4 +246,3 @@ async def broadcast_notification(branch_code: str, title: str, message: str):
             "timestamp": datetime.now().isoformat()
         }
     })
-

@@ -33,7 +33,7 @@ WELCOME → ORDERING → CLEANING
 │ PHASE: WELCOME                                          │
 │                                                         │
 │              🔥 焼肉 じなん 🔥                           │
-│              YAKINIKU JINAN                              │
+│              Yakiniku Jian                              │
 │                                                         │
 │              テーブル T5                                  │
 │              Table T5                                    │
@@ -603,7 +603,7 @@ function showWelcomeUI() {
         <div class="welcome-container">
             <div class="welcome-logo">🔥</div>
             <h1 class="welcome-title">焼肉 じなん</h1>
-            <p class="welcome-subtitle">YAKINIKU JINAN</p>
+            <p class="welcome-subtitle">Yakiniku Jian</p>
             <p class="welcome-table">テーブル ${state.tableNumber}</p>
             <button class="welcome-start-btn" onclick="transitionTo('ordering')">
                 タッチしてご注文

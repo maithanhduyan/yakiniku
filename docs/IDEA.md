@@ -2,8 +2,6 @@ Tuyệt vời! Đây là bản **Redesign hoàn chỉnh** dựa trên yêu cầu
 
 Tôi đã thay đổi toàn bộ giao diện sang phong cách **Dark Luxury (Sang trọng tối giản)**. Mã nguồn này bao gồm HTML, CSS và một chút JavaScript (cho menu trên điện thoại).
 
-Bạn hãy tạo file mới tên là `yakinikuJIAN_modern.html` và dán đoạn mã sau vào:
-
 ```html
 <!DOCTYPE html>
 <html lang="ja">

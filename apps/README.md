@@ -101,5 +101,3 @@ Mỗi app có domain riêng → dễ track và deploy độc lập:
 2. **CI/CD**: Build và deploy từng app độc lập
 3. **Monitoring**: Metrics theo subdomain
 4. **Team assignment**: Mỗi team quản lý app riêng
-
-Xem [shared/config/domains.toml](../shared/config/domains.toml) để config chi tiết.

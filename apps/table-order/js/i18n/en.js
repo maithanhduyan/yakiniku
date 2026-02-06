@@ -79,7 +79,7 @@ const en = {
     'loading.realtime': 'Real-time',
 
     // Session - Welcome Screen
-    'welcome.title': 'Yakiniku Jinan',
+    'welcome.title': 'Yakiniku Jian',
     'welcome.subtitle': 'Table Ordering System',
     'welcome.start': 'Touch to start ordering',
     'welcome.tableLabel': 'Table',

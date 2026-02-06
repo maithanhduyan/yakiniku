@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "aiosqlite>=0.22.1",
+    "alembic>=1.18.3",
     "asyncpg>=0.31.0",
     "fastapi>=0.128.0",
     "jinja2>=3.1.6",
@@ -14,6 +15,8 @@ dependencies = [
     "pydantic-settings>=2.12.0",
     "python-dotenv>=1.2.1",
     "python-multipart>=0.0.22",
+    "rich>=14.3.2",
     "sqlalchemy>=2.0.46",
+    "typer[all]>=0.21.1",
     "uvicorn[standard]>=0.40.0",
 ]

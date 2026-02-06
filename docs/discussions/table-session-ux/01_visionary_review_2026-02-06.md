@@ -6,7 +6,7 @@ Trong 5-10 năm tới, trải nghiệm yakiniku sẽ chuyển từ **"iPad đặ
 
 Với kiến trúc hiện tại — Vanilla JS offline-first + FastAPI event sourcing — chúng ta đang ở vị trí rất thuận lợi. Vanilla JS cho phép kiểm soát hoàn toàn performance trên iPad (không có framework overhead), offline-first đảm bảo reliability trong môi trường nhà hàng (Wi-Fi không ổn định), và event sourcing tạo ra **data goldmine** cho business intelligence. Điều quan trọng là thiết kế session lifecycle đúng từ đầu — vì mỗi event được ghi lại hôm nay sẽ trở thành training data cho AI recommendations 2-3 năm sau.
 
-Tầm nhìn 20 năm: mỗi nhà hàng Yakiniku Jinan sẽ là một **autonomous dining ecosystem** — iPad biết bạn thích thịt nướng medium-rare, biết khi nào grill cần thay, biết nhóm 6 người nên được suggest thêm 2 portion nữa vào phút thứ 40 của bữa ăn, và biết rằng khách hàng VIP nên được chào đón bằng tên ngay khi check-in.
+Tầm nhìn 20 năm: mỗi nhà hàng Yakiniku Jian sẽ là một **autonomous dining ecosystem** — iPad biết bạn thích thịt nướng medium-rare, biết khi nào grill cần thay, biết nhóm 6 người nên được suggest thêm 2 portion nữa vào phút thứ 40 của bữa ăn, và biết rằng khách hàng VIP nên được chào đón bằng tên ngay khi check-in.
 
 ---
 
@@ -44,7 +44,7 @@ Session không chỉ là container cho orders — nó là **complete narrative c
 │                                             │
 │         🏮  焼肉 じなん  🏮                  │
 │                                             │
-│          YAKINIKU JINAN                      │
+│          Yakiniku Jian                      │
 │          ── HIRAMA ──                        │
 │                                             │
 │     ┌───────────────────────────┐           │
@@ -1750,7 +1750,7 @@ const PrivacyPolicy = {
     // GDPR/APPI compliance (Japan's Act on Protection of Personal Information)
     compliance: {
         framework: 'APPI',  // 個人情報保護法
-        data_controller: 'Yakiniku Jinan Co., Ltd.',
+        data_controller: 'Yakiniku Jian Co., Ltd.',
         retention_notice: true,  // Display in welcome screen
         opt_out_analytics: false // Analytics are anonymized, no opt-out needed
     }

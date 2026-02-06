@@ -1,6 +1,6 @@
 /**
  * Table Order App - JavaScript
- * iPad table ordering system for Yakiniku Jinan
+ * iPad table ordering system for Yakiniku Jian
  */
 
 // Get table info from URL params or localStorage
@@ -358,6 +358,10 @@ function clearSessionData() {
     updateCartBadge();
     renderCartItems();
     renderHistory();
+
+    // Also reset cart drawer total display
+    const cartTotalEl = document.getElementById('cartTotal');
+    if (cartTotalEl) cartTotalEl.textContent = '¥0';
 }
 
 // ============ Inactivity Timer ============
@@ -427,6 +431,7 @@ function setupLongPress() {
         e.preventDefault();
         btn.classList.add('pressing');
         pressTimer = setTimeout(() => {
+            pressTimer = null; // Mark as executed before transition
             btn.classList.remove('pressing');
             // Transition back to WELCOME
             transitionTo(CONFIG.SESSION_PHASES.WELCOME);

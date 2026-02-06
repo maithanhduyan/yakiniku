@@ -61,7 +61,6 @@ const elements = {
     notificationText: document.getElementById('notificationText'),
     soundToggle: document.getElementById('soundToggle'),
     soundIcon: document.getElementById('soundIcon'),
-    notificationSound: document.getElementById('notificationSound'),
     thresholdWarning: document.getElementById('thresholdWarning'),
     thresholdUrgent: document.getElementById('thresholdUrgent'),
     // Stats
@@ -381,7 +380,7 @@ function setupWebSocket() {
     wsManager.on('new_order', (data) => {
         const tableNum = data?.table_number || data?.tableNumber || '??';
         showNotification(t('notify.newOrder', { table: tableNum }));
-        playSound();
+        playSound('newOrder');
         loadOrders(); // Refresh full list from API
     });
 
@@ -420,7 +419,7 @@ function handleWSMessage(data) {
     if (data.type === 'new_order') {
         const tableNum = data.data?.table_number || data.data?.tableNumber || '??';
         showNotification(t('notify.newOrder', { table: tableNum }));
-        playSound();
+        playSound('newOrder');
         loadOrders();
     } else if (data.type === 'order_update' || data.type === 'config_update') {
         loadOrders();
@@ -538,6 +537,7 @@ function confirmComplete() {
 
         // Send to API + log event
         if (item) {
+            playSound('complete');
             sendItemComplete(item);
             logKitchenEvent('kitchen.item.served', item);
         }
@@ -589,6 +589,7 @@ function confirmCancel() {
             logKitchenEvent('kitchen.item.cancelled', item, { reason });
         }
 
+        playSound('cancel');
         showNotification(t('notify.cancelled', { name: item?.name || '-' }));
     }, 300);
 }
@@ -685,16 +686,27 @@ function showNotification(text) {
 
 function toggleSound() {
     state.soundEnabled = !state.soundEnabled;
+    Sounds.enabled = state.soundEnabled;
     elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
     elements.soundIcon.textContent = state.soundEnabled ? '🔔' : '🔕';
 }
 
-function playSound() {
+/**
+ * Play notification sound via Web Audio API (KitchenSounds module).
+ * @param {'newOrder'|'complete'|'cancel'|'notify'} type - Sound type
+ */
+function playSound(type = 'newOrder') {
     if (!state.soundEnabled) return;
     try {
-        elements.notificationSound.currentTime = 0;
-        elements.notificationSound.play();
-    } catch (e) {}
+        switch (type) {
+            case 'complete': Sounds.complete(); break;
+            case 'cancel':   Sounds.cancel();   break;
+            case 'notify':   Sounds.notify();   break;
+            default:         Sounds.newOrder();  break;
+        }
+    } catch (e) {
+        console.warn('Sound playback failed:', e);
+    }
 }
 
 function toggleFullscreen() {

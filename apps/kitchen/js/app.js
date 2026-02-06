@@ -56,6 +56,8 @@ const state = {
     items: [],          // All individual items
     activeStation: 'all',
     isOnline: false,
+    isLoading: true,
+    isDemoMode: false,
     soundEnabled: true,
     historyVisible: false,
     history: []         // Cached history events
@@ -98,11 +100,14 @@ const elements = {
 // ============ Initialization ============
 document.addEventListener('DOMContentLoaded', init);
 
-function init() {
+async function init() {
     console.log('🍳 Kitchen Display - 焼肉ヅアン - Station Mode');
 
     // Initialize i18n
     I18N.init();
+
+    // Show loading overlay
+    showLoading();
 
     // Update threshold display
     elements.thresholdWarning.textContent = THRESHOLDS.WARNING / 60;
@@ -114,8 +119,13 @@ function init() {
 
     setupEventListeners();
     loadConfig();
-    loadOrders();
+    await loadOrders();
     connectWebSocket();
+
+    // Hide loading after initial load
+    setTimeout(() => {
+        hideLoading();
+    }, 800);
 
     setInterval(loadOrders, CONFIG.REFRESH_INTERVAL);
 }
@@ -157,6 +167,9 @@ function setupEventListeners() {
     document.getElementById('cancelModal')?.addEventListener('click', (e) => {
         if (e.target === e.currentTarget) closeCancelModal();
     });
+
+    // Demo banner close
+    document.getElementById('demoBannerClose')?.addEventListener('click', hideDemoBanner);
 
     // History panel
     document.getElementById('historyToggle')?.addEventListener('click', toggleHistory);
@@ -278,8 +291,16 @@ async function loadOrders() {
         const orders = await response.json();
         processOrders(orders);
         setOnline(true);
+        updateLoadingStatus('api', 'success');
+
+        // Clear demo mode if we get real data
+        if (state.isDemoMode) {
+            state.isDemoMode = false;
+            hideDemoBanner();
+        }
     } catch (error) {
         console.warn('API unavailable, using demo data');
+        updateLoadingStatus('api', 'error');
         if (state.items.length === 0) {
             loadDemoData();
         }
@@ -369,6 +390,10 @@ function loadDemoData() {
 
     processOrders(demoOrders);
     setOnline(true);
+
+    // Show demo mode banner
+    state.isDemoMode = true;
+    showDemoBanner();
 }
 
 // ============ Station Detection ============
@@ -390,6 +415,7 @@ function connectWebSocket() {
         ws.onopen = () => {
             console.log('WebSocket connected');
             setOnline(true);
+            updateLoadingStatus('ws', 'success');
         };
 
         ws.onmessage = (event) => {
@@ -401,10 +427,14 @@ function connectWebSocket() {
 
         ws.onclose = () => {
             setOnline(false);
+            updateLoadingStatus('ws', 'error');
             setTimeout(connectWebSocket, 5000);
         };
 
-        ws.onerror = () => setOnline(false);
+        ws.onerror = () => {
+            setOnline(false);
+            updateLoadingStatus('ws', 'error');
+        };
     } catch (error) {
         console.warn('WebSocket not available');
     }
@@ -702,6 +732,56 @@ function toggleFullscreen() {
 
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ============ Loading State ============
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        state.isLoading = true;
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        state.isLoading = false;
+    }
+}
+
+function updateLoadingStatus(type, status) {
+    const statusEl = document.getElementById(`${type}Status`);
+    if (!statusEl) return;
+
+    statusEl.classList.remove('success', 'error');
+    if (status === 'success' || status === 'error') {
+        statusEl.classList.add(status);
+    }
+
+    // Update icon
+    const iconEl = statusEl.querySelector('.status-icon');
+    if (iconEl) {
+        iconEl.textContent = status === 'success' ? '✓' : status === 'error' ? '✕' : '⏳';
+    }
+}
+
+// ============ Demo Mode Banner ============
+function showDemoBanner() {
+    const banner = document.getElementById('demoBanner');
+    if (banner) {
+        banner.classList.add('show');
+        document.body.classList.add('demo-active');
+    }
+}
+
+function hideDemoBanner() {
+    const banner = document.getElementById('demoBanner');
+    if (banner) {
+        banner.classList.remove('show');
+        document.body.classList.remove('demo-active');
+    }
 }
 
 // ============ Event Sourcing - Log Kitchen Events ============

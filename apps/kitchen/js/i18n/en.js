@@ -78,6 +78,14 @@ const en = {
     // Language
     'lang.toggle': 'JP',
     'lang.toggleTitle': '日本語に切替',
+
+    // Loading
+    'loading.text': 'Loading order data...',
+    'loading.api': 'API Connection',
+    'loading.realtime': 'Realtime',
+
+    // Demo mode
+    'demo.banner': 'Demo Mode — Showing sample data',
 };
 
 // Register to global i18n object

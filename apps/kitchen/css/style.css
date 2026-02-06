@@ -1106,3 +1106,141 @@ body {
     min-width: 40px;
     text-align: right;
 }
+
+/* ============ Loading Overlay ============ */
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-logo {
+    font-size: 64px;
+    margin-bottom: var(--space-lg);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto var(--space-lg);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+}
+
+.loading-status {
+    display: flex;
+    gap: var(--space-lg);
+    justify-content: center;
+}
+
+.loading-status .status-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.loading-status .status-item.success {
+    color: var(--status-done);
+    background: var(--status-done-bg);
+}
+
+.loading-status .status-item.error {
+    color: var(--status-urgent);
+    background: var(--status-urgent-bg);
+}
+
+/* ============ Demo Mode Banner ============ */
+
+.demo-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(135deg, rgba(255, 200, 87, 0.15), rgba(201, 162, 39, 0.12));
+    border-bottom: 1px solid rgba(255, 200, 87, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    font-size: 13px;
+    color: var(--status-warning);
+    z-index: 500;
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.demo-banner.show {
+    transform: translateY(0);
+}
+
+.demo-banner-icon {
+    font-size: 14px;
+}
+
+.demo-banner-text {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.demo-banner-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: var(--space-sm);
+    transition: all var(--transition-fast);
+}
+
+.demo-banner-close:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Shift content down when demo banner is visible */
+body.demo-active .app-container {
+    padding-top: 36px;
+}

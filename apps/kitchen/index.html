@@ -218,6 +218,32 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-logo">🍳</div>
+            <div class="loading-spinner"></div>
+            <p class="loading-text" data-i18n="loading.text">注文データを読み込み中...</p>
+            <div class="loading-status">
+                <span class="status-item" id="apiStatus">
+                    <span class="status-icon">⏳</span>
+                    <span data-i18n="loading.api">API接続</span>
+                </span>
+                <span class="status-item" id="wsStatus">
+                    <span class="status-icon">⏳</span>
+                    <span data-i18n="loading.realtime">リアルタイム</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Mode Banner -->
+    <div class="demo-banner" id="demoBanner">
+        <span class="demo-banner-icon">⚠️</span>
+        <span class="demo-banner-text" data-i18n="demo.banner">デモモード — サンプルデータを表示中</span>
+        <button class="demo-banner-close" id="demoBannerClose" aria-label="Close">✕</button>
+    </div>
+
     <!-- Notification -->
     <div class="notification" id="notification">
         <span class="notification-icon">📋</span>

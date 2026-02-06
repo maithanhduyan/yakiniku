@@ -78,6 +78,14 @@ const ja = {
     // Language
     'lang.toggle': 'EN',
     'lang.toggleTitle': 'Switch to English',
+
+    // Loading
+    'loading.text': '注文データを読み込み中...',
+    'loading.api': 'API接続',
+    'loading.realtime': 'リアルタイム',
+
+    // Demo mode
+    'demo.banner': 'デモモード — サンプルデータを表示中',
 };
 
 // Register to global i18n object

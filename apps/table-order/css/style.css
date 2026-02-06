@@ -733,18 +733,17 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    /* Reserve space at bottom for floating cart bar */
-    padding-bottom: var(--floating-bar-height);
     min-height: 0; /* Allow flex shrink */
 }
 
 /* Menu Grid - Tablet-first: fill viewport, NO scrolling */
 .menu-section {
     flex: 1;
-    overflow: hidden; /* No scrolling - pagination handles overflow */
+    overflow: hidden; /* No scrolling - swipe gestures handle pagination */
     padding: var(--spacing-xs) var(--spacing-sm);
     display: flex;
     min-height: 0; /* Critical: allow flex to shrink */
+    touch-action: pan-y; /* Allow vertical scroll, capture horizontal for swipe */
 }
 
 .menu-title {
@@ -874,32 +873,9 @@ body {
     color: var(--accent-color);
 }
 
-/* Quick Add Button - Large touch target */
+/* Quick Add Button - Removed from UI */
 .quick-add-btn {
-    width: 40px;
-    height: 40px;
-    background: var(--accent-color);
-    color: var(--bg-primary);
-    border: none;
-    border-radius: 50%;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-    flex-shrink: 0;
-}
-
-.quick-add-btn:active {
-    transform: scale(0.9);
-    background: var(--accent-hover);
-}
-
-.quick-add-btn .quick-add-qty {
-    font-size: 18px;
+    display: none;
 }
 
 /* Cart indicator on card */

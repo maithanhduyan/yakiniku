@@ -527,6 +527,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => calculateItemsPerPage(), 300);
     });
 
+    // Setup swipe gestures for page navigation
+    setupSwipeGestures();
+
     // Hide loading after initial load
     setTimeout(() => {
         hideLoading();
@@ -1098,9 +1101,6 @@ function renderMenuItems(items) {
                     <h3 class="menu-card-name" onclick="openItemModal('${item.id}')">${item.name}</h3>
                     <div class="menu-card-footer">
                         <span class="menu-card-price">¥${Number(item.price).toLocaleString()}</span>
-                        <button class="quick-add-btn" onclick="quickAddToCart('${item.id}')" aria-label="${t('menu.add')}">
-                            ${cartQty > 0 ? `<span class="quick-add-qty">${cartQty}</span>` : '＋'}
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1135,6 +1135,110 @@ function changePage(delta) {
         state.currentPage = newPage;
         renderMenuItems(cat.items);
     }
+}
+
+// ============ Swipe Gestures for Page Navigation ============
+
+function setupSwipeGestures() {
+    const menuSection = document.getElementById('menuSection');
+    const menuGrid = document.getElementById('menuGrid');
+    if (!menuSection || !menuGrid) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchDeltaX = 0;
+    let isSwiping = false;
+    const SWIPE_THRESHOLD = 60;  // Min distance to trigger page change
+    const ELASTIC_FACTOR = 0.3;  // Resistance when at boundary
+
+    menuSection.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchDeltaX = 0;
+        isSwiping = false;
+        menuGrid.style.transition = 'none';
+    }, { passive: true });
+
+    menuSection.addEventListener('touchmove', (e) => {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+
+        // Only activate horizontal swipe if dx > dy (not scrolling vertically)
+        if (!isSwiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+            isSwiping = true;
+        }
+
+        if (!isSwiping) return;
+        e.preventDefault();
+
+        const cat = state.categories.find(c => c.category === state.currentCategory);
+        const totalPages = cat ? Math.ceil(cat.items.length / state.itemsPerPage) : 1;
+        const atStart = state.currentPage <= 1;
+        const atEnd = state.currentPage >= totalPages;
+
+        // Apply elastic resistance at boundaries
+        if ((dx > 0 && atStart) || (dx < 0 && atEnd)) {
+            touchDeltaX = dx * ELASTIC_FACTOR;
+        } else {
+            touchDeltaX = dx;
+        }
+
+        menuGrid.style.transform = `translateX(${touchDeltaX}px)`;
+        menuGrid.style.opacity = Math.max(0.6, 1 - Math.abs(touchDeltaX) / 600);
+    }, { passive: false });
+
+    menuSection.addEventListener('touchend', () => {
+        menuGrid.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+
+        if (Math.abs(touchDeltaX) > SWIPE_THRESHOLD) {
+            const cat = state.categories.find(c => c.category === state.currentCategory);
+            const totalPages = cat ? Math.ceil(cat.items.length / state.itemsPerPage) : 1;
+
+            if (touchDeltaX > 0 && state.currentPage > 1) {
+                // Swipe right → previous page
+                menuGrid.style.transform = 'translateX(100%)';
+                menuGrid.style.opacity = '0';
+                setTimeout(() => {
+                    changePage(-1);
+                    menuGrid.style.transition = 'none';
+                    menuGrid.style.transform = 'translateX(-60px)';
+                    menuGrid.style.opacity = '0.5';
+                    requestAnimationFrame(() => {
+                        menuGrid.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+                        menuGrid.style.transform = 'translateX(0)';
+                        menuGrid.style.opacity = '1';
+                    });
+                }, 150);
+                return;
+            } else if (touchDeltaX < 0 && state.currentPage < totalPages) {
+                // Swipe left → next page
+                menuGrid.style.transform = 'translateX(-100%)';
+                menuGrid.style.opacity = '0';
+                setTimeout(() => {
+                    changePage(1);
+                    menuGrid.style.transition = 'none';
+                    menuGrid.style.transform = 'translateX(60px)';
+                    menuGrid.style.opacity = '0.5';
+                    requestAnimationFrame(() => {
+                        menuGrid.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+                        menuGrid.style.transform = 'translateX(0)';
+                        menuGrid.style.opacity = '1';
+                    });
+                }, 150);
+                return;
+            }
+        }
+
+        // Bounce back (elastic return)
+        menuGrid.style.transform = 'translateX(0)';
+        menuGrid.style.opacity = '1';
+    }, { passive: true });
+
+    menuSection.addEventListener('touchcancel', () => {
+        menuGrid.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        menuGrid.style.transform = 'translateX(0)';
+        menuGrid.style.opacity = '1';
+    }, { passive: true });
 }
 
 // Quick add - add 1 item without opening modal

@@ -248,6 +248,22 @@ function updateClock() {
 // Config loaded from config.js (no backend config endpoint needed)
 
 // ============ API ============
+let _loadOrdersTimer = null;
+
+/**
+ * Debounced loadOrders — collapses multiple rapid calls (e.g. from
+ * WebSocket events arriving in quick succession) into a single API fetch.
+ * The first call executes immediately; subsequent calls within 500ms are
+ * merged into one deferred call.
+ */
+function scheduleLoadOrders() {
+    if (_loadOrdersTimer) return;           // already scheduled
+    _loadOrdersTimer = setTimeout(() => {
+        _loadOrdersTimer = null;
+        loadOrders();
+    }, 500);
+}
+
 async function loadOrders() {
     try {
         const data = await API.getOrders();
@@ -381,17 +397,17 @@ function setupWebSocket() {
         const tableNum = data?.table_number || data?.tableNumber || '??';
         showNotification(t('notify.newOrder', { table: tableNum }));
         playSound('newOrder');
-        loadOrders(); // Refresh full list from API
+        scheduleLoadOrders(); // Debounced refresh from API
     });
 
     // Handle order status updates
     wsManager.on('order_update', () => {
-        loadOrders();
+        scheduleLoadOrders();
     });
 
     // Handle item-level updates
     wsManager.on('item_update', () => {
-        loadOrders();
+        scheduleLoadOrders();
     });
 
     // ── Cross-device sync: another KDS tablet marked item as served ──
@@ -432,9 +448,9 @@ function handleWSMessage(data) {
         const tableNum = data.data?.table_number || data.data?.tableNumber || '??';
         showNotification(t('notify.newOrder', { table: tableNum }));
         playSound('newOrder');
-        loadOrders();
+        scheduleLoadOrders();
     } else if (data.type === 'order_update' || data.type === 'config_update') {
-        loadOrders();
+        scheduleLoadOrders();
     }
 }
 
@@ -475,33 +491,108 @@ function renderPanel(station) {
     const countTab = document.getElementById(countId);
     if (countTab) countTab.textContent = items.length;
 
-    // Render items
-    container.innerHTML = items.map(item => renderItemRow(item, station !== state.activeStation)).join('');
+    // --- Diff-based DOM update (no innerHTML wipe) ---
+    const compact = station !== state.activeStation;
+    const newIds = new Set(items.map(i => i.id));
+    const existingRows = container.querySelectorAll('.item-row[data-item-id]');
+    const existingMap = new Map();
+
+    // Index existing rows
+    existingRows.forEach(row => {
+        const id = row.dataset.itemId;
+        if (newIds.has(id)) {
+            existingMap.set(id, row);
+        } else {
+            // Item no longer in list — animate out
+            row.classList.add('removing');
+            row.addEventListener('animationend', () => row.remove(), { once: true });
+            // Fallback removal in case animation doesn't fire
+            setTimeout(() => { if (row.parentNode) row.remove(); }, 400);
+        }
+    });
+
+    // Build the desired order, reusing or creating rows
+    items.forEach((item, idx) => {
+        let row = existingMap.get(item.id);
+        if (row) {
+            // Update existing row in-place
+            updateItemRow(row, item, compact);
+        } else {
+            // Create new row
+            row = createItemRowElement(item, compact);
+            row.classList.add('entering');
+            row.addEventListener('animationend', () => row.classList.remove('entering'), { once: true });
+        }
+
+        // Ensure correct position: the row at index `idx` should be
+        // the (idx)th child that is NOT being removed
+        const currentAtIdx = container.children[idx];
+        if (currentAtIdx !== row) {
+            container.insertBefore(row, currentAtIdx || null);
+        }
+    });
 }
 
-function renderItemRow(item, compact = false) {
+/**
+ * Create a new DOM element for an item row.
+ */
+function createItemRowElement(item, compact) {
     const elapsed = getElapsedSeconds(item.createdAt);
     const statusClass = getStatusClass(elapsed);
     const minutes = Math.floor(elapsed / 60);
 
-    return `
-        <div class="item-row ${statusClass} ${item.completed ? 'completed' : ''}"
-             data-item-id="${item.id}">
-            <div class="item-info">
-                <div class="item-name">${item.name}</div>
-                ${item.note ? `<div class="item-note">※ ${item.note}</div>` : ''}
-            </div>
-            <div class="item-quantity">×${item.quantity}</div>
-            <div class="item-table">${item.tableNumber}</div>
-            <div class="item-timer">${minutes}${t('item.minute')}</div>
-            <button class="item-cancel-btn" onclick="cancelItem('${item.id}')" title="${t('item.cancel')}">
-                ✕
-            </button>
-            <button class="item-done-btn" onclick="completeItem('${item.id}')" title="${t('item.done')}">
-                ✓
-            </button>
+    const row = document.createElement('div');
+    row.className = `item-row ${statusClass} ${item.completed ? 'completed' : ''}`.trim();
+    row.dataset.itemId = item.id;
+
+    row.innerHTML = `
+        <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            ${item.note ? `<div class="item-note">※ ${item.note}</div>` : ''}
         </div>
+        <div class="item-quantity">×${item.quantity}</div>
+        <div class="item-table">${item.tableNumber}</div>
+        <div class="item-timer">${minutes}${t('item.minute')}</div>
+        <button class="item-cancel-btn" onclick="cancelItem('${item.id}')" title="${t('item.cancel')}">✕</button>
+        <button class="item-done-btn" onclick="completeItem('${item.id}')" title="${t('item.done')}">✓</button>
     `;
+
+    return row;
+}
+
+/**
+ * Update an existing item-row DOM element in-place (no destroy/recreate).
+ * Only touches properties that may have changed.
+ */
+function updateItemRow(row, item, compact) {
+    // Status class
+    const elapsed = getElapsedSeconds(item.createdAt);
+    const statusClass = getStatusClass(elapsed);
+    const minutes = Math.floor(elapsed / 60);
+
+    row.classList.remove('status-warning', 'status-urgent');
+    if (statusClass) row.classList.add(statusClass);
+    row.classList.toggle('completed', !!item.completed);
+
+    // Timer
+    const timerEl = row.querySelector('.item-timer');
+    if (timerEl) {
+        const newText = `${minutes}${t('item.minute')}`;
+        if (timerEl.textContent !== newText) timerEl.textContent = newText;
+    }
+
+    // Quantity (may change if backend consolidates)
+    const qtyEl = row.querySelector('.item-quantity');
+    if (qtyEl) {
+        const newQty = `×${item.quantity}`;
+        if (qtyEl.textContent !== newQty) qtyEl.textContent = newQty;
+    }
+
+    // Table number
+    const tableEl = row.querySelector('.item-table');
+    if (tableEl && tableEl.textContent !== item.tableNumber) {
+        tableEl.textContent = item.tableNumber;
+    }
 }
 
 // ============ Item Actions ============

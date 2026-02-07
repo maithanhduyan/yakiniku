@@ -581,11 +581,13 @@ body {
     opacity: 0;
     transition: all var(--transition-slow);
     z-index: 100;
+    pointer-events: none;
 }
 
 .notification.show {
     transform: translateX(0);
     opacity: 1;
+    pointer-events: auto;
 }
 
 .notification-icon {
@@ -696,8 +698,23 @@ body {
     }
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .item-row.removing {
     animation: fadeOut var(--transition-normal) forwards;
+}
+
+.item-row.entering {
+    animation: fadeIn var(--transition-normal) ease-out;
 }
 
 /* ============ Confirm Modal ============ */
@@ -712,13 +729,16 @@ body {
     z-index: 200;
     opacity: 0;
     visibility: hidden;
-    transition: all var(--transition-normal);
+    transition: opacity var(--transition-normal), visibility 0s linear var(--transition-normal);
     backdrop-filter: blur(4px);
+    pointer-events: none;
 }
 
 .modal-overlay.show {
     opacity: 1;
     visibility: visible;
+    transition: opacity var(--transition-normal), visibility 0s linear 0s;
+    pointer-events: auto;
 }
 
 .modal-dialog {
@@ -900,13 +920,16 @@ body {
     z-index: 150;
     opacity: 0;
     visibility: hidden;
-    transition: all var(--transition-normal);
+    transition: opacity var(--transition-normal), visibility 0s linear var(--transition-normal);
     backdrop-filter: blur(2px);
+    pointer-events: none;
 }
 
 .history-overlay.show {
     opacity: 1;
     visibility: visible;
+    transition: opacity var(--transition-normal), visibility 0s linear 0s;
+    pointer-events: auto;
 }
 
 .history-panel {

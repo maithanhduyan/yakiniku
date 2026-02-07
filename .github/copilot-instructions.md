@@ -33,9 +33,9 @@ backend/app/
 cd backend && .venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Frontends via Live Server (port 5500) — NO build step needed:
-# http://127.0.0.1:5500/apps/table-order/
-# http://127.0.0.1:5500/apps/kitchen/
-# http://127.0.0.1:5500/apps/dashboard/
+# http://127.0.0.1:5500/table-order/
+# http://127.0.0.1:5500/kitchen/
+# http://127.0.0.1:5500/dashboard/
 
 # Seed DB (CSV-driven, drops all tables first):
 cd backend && .venv\Scripts\python.exe -m data.seed_data

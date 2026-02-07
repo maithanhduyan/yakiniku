@@ -90,6 +90,7 @@ const ja = {
     'bill.title': '📋 ご注文内容',
     'bill.subtitle': 'スタッフがお会計をご用意いたします',
     'bill.addMore': '＋ 追加注文',
+    'bill.requestPayment': '💰 お会計をお願いする',
     'bill.waiting': 'お会計を準備中です...',
     'bill.totalItems': '合計品数',
     'bill.totalAmount': 'お会計金額',

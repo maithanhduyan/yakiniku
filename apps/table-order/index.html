@@ -60,10 +60,15 @@
                         <span class="bill-summary-amount" id="billTotalAmount">¥0</span>
                     </div>
                 </div>
-                <button class="bill-add-more-btn" id="billAddMoreBtn" data-i18n="bill.addMore">
-                    ＋ 追加注文
-                </button>
-                <p class="bill-waiting-text" data-i18n="bill.waiting">お会計を準備中です...</p>
+                <div class="bill-action-buttons">
+                    <button class="bill-add-more-btn" id="billAddMoreBtn" data-i18n="bill.addMore">
+                        ＋ 追加注文
+                    </button>
+                    <button class="bill-payment-btn" id="billPaymentBtn" data-i18n="bill.requestPayment">
+                        💰 お会計をお願いする
+                    </button>
+                </div>
+                <p class="bill-waiting-text hidden" id="billWaitingText" data-i18n="bill.waiting">お会計を準備中です...</p>
             </div>
         </div>
     </div>

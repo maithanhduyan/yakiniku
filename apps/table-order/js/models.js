@@ -78,8 +78,15 @@ const EventSource = Object.freeze({
  */
 
 function createEvent(type, tableId, sessionId, data = {}, source = EventSource.CUSTOMER) {
+    // crypto.randomUUID() requires Secure Context (HTTPS or localhost).
+    // Fallback to crypto.getRandomValues for HTTP + LAN IP access.
+    const uuid = (typeof crypto.randomUUID === 'function')
+        ? crypto.randomUUID()
+        : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+          );
     return {
-        id: crypto.randomUUID(),
+        id: uuid,
         type,
         source,
         ts: Date.now(),

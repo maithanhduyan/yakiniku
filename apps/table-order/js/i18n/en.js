@@ -90,6 +90,7 @@ const en = {
     'bill.title': '📋 Order Summary',
     'bill.subtitle': 'Staff will prepare your bill',
     'bill.addMore': '＋ Add More',
+    'bill.requestPayment': '💰 Request Payment',
     'bill.waiting': 'Preparing your bill...',
     'bill.totalItems': 'Total items',
     'bill.totalAmount': 'Total amount',

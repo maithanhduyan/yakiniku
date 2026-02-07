@@ -225,8 +225,7 @@ function transitionTo(newPhase) {
         case CONFIG.SESSION_PHASES.BILL_REVIEW:
             showBillReviewUI();
             clearInactivityTimer();
-            // Notify backend: call bill (fire event directly, skip callStaff redirect)
-            fireCallStaffEvent('bill');
+            // Payment is now explicitly triggered by the payment button
             break;
 
         case CONFIG.SESSION_PHASES.CLEANING:
@@ -276,6 +275,15 @@ function showBillReviewUI() {
     document.getElementById('appContainer').classList.add('hidden');
     document.getElementById('billReviewScreen').classList.remove('hidden');
     document.getElementById('cleaningScreen').classList.add('hidden');
+
+    // Reset button visibility (may have been hidden after requesting payment)
+    const addMoreBtn = document.getElementById('billAddMoreBtn');
+    const paymentBtn = document.getElementById('billPaymentBtn');
+    const waitingText = document.getElementById('billWaitingText');
+    if (addMoreBtn) addMoreBtn.style.display = '';
+    if (paymentBtn) paymentBtn.style.display = '';
+    if (waitingText) waitingText.classList.add('hidden');
+
     renderBillReview();
 }
 
@@ -491,6 +499,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (addMoreBtn) {
         addMoreBtn.addEventListener('click', () => {
             transitionTo(CONFIG.SESSION_PHASES.ORDERING);
+        });
+    }
+
+    // Setup bill payment button — call staff for bill
+    const paymentBtn = document.getElementById('billPaymentBtn');
+    if (paymentBtn) {
+        paymentBtn.addEventListener('click', () => {
+            fireCallStaffEvent('bill');
+            // Show waiting text, hide buttons
+            paymentBtn.style.display = 'none';
+            addMoreBtn.style.display = 'none';
+            const waitingText = document.getElementById('billWaitingText');
+            if (waitingText) waitingText.classList.remove('hidden');
         });
     }
 

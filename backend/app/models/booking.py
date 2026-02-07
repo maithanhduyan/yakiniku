@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 import enum
+import secrets
 
 
 from app.database import Base
@@ -44,6 +45,10 @@ class Booking(Base):
     staff_note = Column(String(1000))  # Internal note
     checked_in_at = Column(DateTime(timezone=True))  # Check-in timestamp
 
+    # QR check-in
+    qr_token = Column(String(64), unique=True, nullable=True, index=True)
+    assigned_table_id = Column(String(36), ForeignKey("tables.id"), nullable=True)
+
     # Metadata
     source = Column(String(50), default="web")  # 'web', 'chat', 'phone'
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -51,4 +56,9 @@ class Booking(Base):
 
     # Relationships
     branch_customer = relationship("BranchCustomer")
+    assigned_table = relationship("Table", foreign_keys=[assigned_table_id])
 
+    @staticmethod
+    def generate_qr_token() -> str:
+        """Generate a unique 16-char hex token for QR code check-in."""
+        return secrets.token_hex(8)

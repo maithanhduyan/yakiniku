@@ -481,8 +481,8 @@ async def find_available_table(
         select(Table).where(
             Table.branch_code == branch_code,
             Table.is_active == True,
-            Table.capacity >= guest_count
-        ).order_by(Table.capacity)  # Prefer smaller tables that fit
+            Table.max_capacity >= guest_count
+        ).order_by(Table.max_capacity)  # Prefer smaller tables that fit
     )
     tables = result.scalars().all()
 

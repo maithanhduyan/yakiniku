@@ -358,6 +358,8 @@ async def seed_bookings(session: AsyncSession) -> int:
             status=row.get("status", "pending"),
             note=_str(row.get("note", "")),
             source=row.get("source", "web"),
+            # Generate QR token for confirmed bookings
+            qr_token=Booking.generate_qr_token() if row.get("status") == "confirmed" else None,
         )
         session.add(booking)
         count += 1

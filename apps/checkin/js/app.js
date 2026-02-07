@@ -10,7 +10,9 @@ const _host = window.location.hostname;
 const _port = window.location.port;
 const _isDev = _port && !['80', '443', ''].includes(_port);
 const _proto = window.location.protocol;
-const _base = _isDev ? `${_proto}//${_host}:8000` : `${_proto}//${_host}`;
+// Backend always runs HTTP in dev; in prod Traefik handles HTTPS termination
+const _apiProto = _isDev ? 'http:' : _proto;
+const _base = _isDev ? `${_apiProto}//${_host}:8000` : `${_proto}//${_host}`;
 
 const CONFIG = {
     API_BASE: `${_base}/api`,

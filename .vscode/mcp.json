@@ -7,7 +7,12 @@
                 "--browser",
                 "chrome",
                 "--viewport-size",
-                "1280x720"
+                "1280x720",
+                "--output-dir",
+                ".playwright-mcp",
+                "--output-mode",
+                "file",
+                "--ignore-https-errors"
             ]
         }
     }

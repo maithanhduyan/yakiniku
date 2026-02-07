@@ -84,10 +84,10 @@ try:
 except Exception as e:
     print(f"⚠️ Web directory not found: {e}")
 
-# CORS - allow web frontend
+# CORS - allow web frontend (CORS_ALLOW_ALL=True enables LAN access)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"] if settings.CORS_ALLOW_ALL else settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

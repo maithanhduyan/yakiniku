@@ -394,6 +394,18 @@ function setupWebSocket() {
         loadOrders();
     });
 
+    // ── Cross-device sync: another KDS tablet marked item as served ──
+    wsManager.on('kitchen.item.served', (data) => {
+        console.log('[Sync] Item served on another device:', data);
+        removeItemBySync(data, 'served');
+    });
+
+    // ── Cross-device sync: another KDS tablet cancelled an item ──
+    wsManager.on('kitchen.item.cancelled', (data) => {
+        console.log('[Sync] Item cancelled on another device:', data);
+        removeItemBySync(data, 'cancelled');
+    });
+
     // Handle connection events
     wsManager.on('connected', () => {
         setOnline(true);
@@ -597,6 +609,62 @@ function confirmCancel() {
 function closeCancelModal() {
     document.getElementById('cancelModal').classList.remove('show');
     _pendingCancelId = null;
+}
+
+// ============ Cross-Device Sync ============
+/**
+ * Remove an item from local state when another KDS device served/cancelled it.
+ * Matches by order_item_id (most reliable) or falls back to order_id + item_name.
+ * Skips if the item was already removed (this device initiated the action).
+ */
+function removeItemBySync(data, action) {
+    const orderItemId = data?.order_item_id;
+    const orderId = data?.order_id;
+    const itemName = data?.item_name;
+
+    // Find the matching item in state
+    let matchIdx = -1;
+
+    if (orderItemId) {
+        // Primary match: by order_item_id (part after '-' in composite id)
+        matchIdx = state.items.findIndex(i =>
+            i.itemId === orderItemId || i.id.endsWith(`-${orderItemId}`)
+        );
+    }
+
+    // Fallback: match by orderId + itemName
+    if (matchIdx === -1 && orderId && itemName) {
+        matchIdx = state.items.findIndex(i =>
+            i.orderId === orderId && i.name === itemName
+        );
+    }
+
+    if (matchIdx === -1) {
+        // Item already removed locally (this device did it) — nothing to do
+        console.log('[Sync] Item already removed locally, skipping');
+        return;
+    }
+
+    const item = state.items[matchIdx];
+    console.log(`[Sync] Removing item "${item.name}" (${action}) from local state`);
+
+    // Animate removal
+    const row = document.querySelector(`[data-item-id="${item.id}"]`);
+    if (row) {
+        row.classList.add('removing');
+    }
+
+    setTimeout(() => {
+        state.items.splice(matchIdx, 1);
+        renderAllPanels();
+        updateStats();
+
+        if (action === 'cancelled') {
+            showNotification(`❌ ${item.name} — ${t('notify.cancelledByOther')}`);
+        } else {
+            showNotification(`✅ ${item.name} — ${t('notify.servedByOther')}`);
+        }
+    }, 300);
 }
 
 async function sendItemComplete(item) {

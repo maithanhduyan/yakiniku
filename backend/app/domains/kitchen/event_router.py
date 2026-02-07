@@ -1,6 +1,7 @@
 """
 Kitchen Event Router - API endpoints for kitchen event sourcing
-Provides endpoints for logging kitchen actions and querying history
+Provides endpoints for logging kitchen actions and querying history.
+Broadcasts serve/cancel events to all KDS devices for cross-device sync.
 """
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,26 @@ from app.domains.kitchen.event_service import KitchenEventService
 router = APIRouter()
 
 
+async def _broadcast_kitchen_sync(event_type: str, event_data: KitchenEventCreate):
+    """Broadcast kitchen event to all connected KDS clients for cross-device sync"""
+    try:
+        from app.routers.websocket import manager
+        branch_code = event_data.branch_code or 'hirama'
+        await manager.broadcast_to_branch(branch_code, {
+            "type": event_type,
+            "data": {
+                "order_id": event_data.order_id,
+                "order_item_id": event_data.order_item_id,
+                "item_name": event_data.item_name,
+                "item_quantity": event_data.item_quantity,
+                "table_number": event_data.table_number,
+                "station": event_data.station,
+            }
+        }, channel="kitchen")
+    except Exception as e:
+        print(f"⚠️ Failed to broadcast kitchen sync event: {e}")
+
+
 @router.post("/", response_model=KitchenEventResponse)
 async def log_kitchen_event(
     event_data: KitchenEventCreate,
@@ -23,9 +44,15 @@ async def log_kitchen_event(
     """
     Log a kitchen event from the KDS frontend.
     Used for tracking item served, cancelled, and other actions.
+    Broadcasts to all kitchen devices for cross-device sync.
     """
     service = KitchenEventService(db)
     event = await service.log_from_create(event_data)
+
+    # Broadcast to all kitchen clients so other tablets update immediately
+    if event_data.event_type in ('kitchen.item.served', 'kitchen.item.cancelled'):
+        await _broadcast_kitchen_sync(event_data.event_type, event_data)
+
     return KitchenEventResponse.model_validate(event)
 
 

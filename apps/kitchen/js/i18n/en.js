@@ -74,6 +74,8 @@ const en = {
     // Notifications
     'notify.newOrder': 'New order from table {table}',
     'notify.cancelled': '{name} cancelled',
+    'notify.servedByOther': 'Served on another device',
+    'notify.cancelledByOther': 'Cancelled on another device',
 
     // Language
     'lang.toggle': 'JP',

@@ -41,6 +41,8 @@ class Settings(BaseSettings):
         "http://yakiniku.io",
         "http://www.yakiniku.io",
     ]
+    # LAN access — allow any origin in development
+    CORS_ALLOW_ALL: bool = True
 
     # Multi-tenant
     DEFAULT_BRANCH: str = "hirama"

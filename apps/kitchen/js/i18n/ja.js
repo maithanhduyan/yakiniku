@@ -74,6 +74,8 @@ const ja = {
     // Notifications
     'notify.newOrder': 'テーブル {table} から新規注文',
     'notify.cancelled': '{name} キャンセル済み',
+    'notify.servedByOther': '他のデバイスで提供済み',
+    'notify.cancelledByOther': '他のデバイスでキャンセル済み',
 
     // Language
     'lang.toggle': 'EN',

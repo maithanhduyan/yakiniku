@@ -45,14 +45,21 @@ async def get_kitchen_orders(
     result = await db.execute(query)
     orders = result.scalars().all()
 
-    # Get table info for each order
+    # Batch-fetch all table info (avoid N+1 queries)
+    table_ids = list(set(o.table_id for o in orders if o.table_id))
+    table_map = {}
+    if table_ids:
+        table_result = await db.execute(
+            select(Table).where(Table.id.in_(table_ids))
+        )
+        for tbl in table_result.scalars().all():
+            table_map[tbl.id] = tbl.table_number
+
+    # Build kitchen order list
     kitchen_orders = []
     for order in orders:
-        # Get table number
-        table_result = await db.execute(
-            select(Table).where(Table.id == order.table_id)
-        )
-        table = table_result.scalar_one_or_none()
+        # Resolve table_number: DB lookup → fallback to table_id
+        table_number = table_map.get(order.table_id) or order.table_id or "??"
 
         # Calculate wait time (handle both naive and aware datetimes)
         now = datetime.utcnow()
@@ -65,7 +72,7 @@ async def get_kitchen_orders(
             "id": order.id,
             "order_number": order.order_number,
             "table_id": order.table_id,
-            "table_number": table.table_number if table else "??",
+            "table_number": table_number,
             "session_id": order.session_id,
             "status": order.status,
             "wait_time_seconds": int(wait_seconds),
@@ -164,9 +171,10 @@ async def mark_served(
 @router.patch("/items/{item_id}/done")
 async def mark_item_done(
     item_id: str,
+    branch_code: str = "hirama",
     db: AsyncSession = Depends(get_db)
 ):
-    """Mark individual item as prepared"""
+    """Mark individual item as prepared and broadcast to all kitchen devices"""
     result = await db.execute(
         select(OrderItem).where(OrderItem.id == item_id)
     )
@@ -179,6 +187,20 @@ async def mark_item_done(
     item.prepared_at = datetime.utcnow()
 
     await db.commit()
+
+    # Broadcast item done to all kitchen clients for cross-device sync
+    try:
+        from app.routers.websocket import manager
+        await manager.broadcast_to_branch(branch_code, {
+            "type": "kitchen.item.served",
+            "data": {
+                "order_item_id": item_id,
+                "item_name": item.item_name,
+                "item_quantity": item.quantity,
+            }
+        }, channel="kitchen")
+    except Exception as e:
+        print(f"⚠️ Failed to broadcast item done: {e}")
 
     return {"message": "Item done", "status": "ready"}
 

@@ -472,8 +472,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadCartFromStorage();
     loadHistoryFromStorage();
 
-    // Setup table info
-    setupTableInfo();
+    // Setup table info (async — fetches table_number from API)
+    await setupTableInfo();
 
     // Setup long-press handler for cleaning screen
     setupLongPress();
@@ -551,13 +551,48 @@ function generateSessionId() {
     return id;
 }
 
-function setupTableInfo() {
-    const tableNumber = urlParams.get('table_number') || 'T5';
+async function setupTableInfo() {
     const guestCount = parseInt(urlParams.get('guests')) || 4;
-
-    state.tableNumber = tableNumber;
     state.guestCount = guestCount;
 
+    // Try to fetch table info from API using TABLE_ID
+    let tableNumber = urlParams.get('table_number') || null;
+    let resolvedTableId = TABLE_ID;
+
+    if (!tableNumber) {
+        try {
+            const resp = await fetch(`${CONFIG.API_URL}/tables?branch_code=${CONFIG.BRANCH_CODE}`);
+            if (resp.ok) {
+                const tables = await resp.json();
+                const match = tables.find(t => t.id === TABLE_ID);
+                if (match) {
+                    tableNumber = match.table_number;
+                } else if (tables.length > 0) {
+                    // TABLE_ID not found in DB (e.g. 'demo-table-1')
+                    // Auto-assign first available table for dev/demo
+                    const firstTable = tables[0];
+                    resolvedTableId = firstTable.id;
+                    tableNumber = firstTable.table_number;
+                    console.warn(`[Table] TABLE_ID "${TABLE_ID}" not in DB, using "${resolvedTableId}" (${tableNumber})`);
+                }
+            }
+        } catch (e) {
+            console.warn('[Table] Failed to fetch table info:', e);
+        }
+    }
+
+    // Update the global TABLE_ID if resolved to a real table
+    if (resolvedTableId !== TABLE_ID) {
+        // Can't reassign const, but we update the reference used by submitOrder
+        window._RESOLVED_TABLE_ID = resolvedTableId;
+    }
+
+    // Fallback: use TABLE_ID as display
+    if (!tableNumber) {
+        tableNumber = TABLE_ID;
+    }
+
+    state.tableNumber = tableNumber;
     document.getElementById('tableNumber').textContent = tableNumber;
     document.getElementById('guestCount').textContent = `${guestCount}${t('guest.suffix')}`;
 }
@@ -802,8 +837,9 @@ async function submitOrder() {
     btnOrder.innerHTML = `<span class="loading-spinner"></span> ${t('order.submitting')}`;
 
     try {
+        const effectiveTableId = window._RESOLVED_TABLE_ID || TABLE_ID;
         const orderData = {
-            table_id: TABLE_ID,
+            table_id: effectiveTableId,
             session_id: state.sessionId,
             branch_code: CONFIG.BRANCH_CODE,
             client_order_id: crypto.randomUUID ? crypto.randomUUID() : 'ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -937,7 +973,8 @@ function setupWebSocket() {
     updateLoadingStatus('ws', 'pending');
 
     try {
-        const ws = new WebSocket(`${CONFIG.WS_URL}?branch_code=${CONFIG.BRANCH_CODE}&table_id=${TABLE_ID}`);
+        const effectiveWsTableId = window._RESOLVED_TABLE_ID || TABLE_ID;
+        const ws = new WebSocket(`${CONFIG.WS_URL}?branch_code=${CONFIG.BRANCH_CODE}&table_id=${effectiveWsTableId}`);
 
         ws.onopen = () => {
             console.log('WebSocket connected');

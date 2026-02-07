@@ -1044,3 +1044,89 @@ body {
         gap: 10px;
     }
 }
+
+/* ============================================
+   Devices Page
+   ============================================ */
+.devices-page .page-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.device-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.device-row:hover {
+    background: var(--bg-hover);
+}
+
+.device-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.device-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.device-meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.device-table {
+    color: var(--accent-gold);
+    font-weight: 500;
+}
+
+.device-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.badge.active {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+}
+
+.badge.inactive {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+@media (max-width: 768px) {
+    .device-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .device-actions {
+        align-self: flex-end;
+    }
+
+    .device-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

@@ -51,6 +51,7 @@ async def init_db():
     # Import domain models
     from app.domains.checkin import models as checkin_models
     from app.domains.kitchen import events as kitchen_events
+    from app.domains.devices import models as device_models
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

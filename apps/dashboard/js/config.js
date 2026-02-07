@@ -36,7 +36,9 @@ const CONFIG = {
         completed: '完了',
         available: '空席',
         occupied: '使用中',
-        reserved: '予約済'
+        reserved: '予約済',
+        active: 'アクティブ',
+        inactive: '無効'
     },
 
     // Table types

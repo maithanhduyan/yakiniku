@@ -205,6 +205,37 @@ class APIClient {
             date: today
         });
     }
+
+    // ============================================
+    // Devices API
+    // ============================================
+
+    async getDevices(params = {}) {
+        return this.get('/api/devices/', {
+            branch_code: this.branchCode,
+            ...params
+        });
+    }
+
+    async getDevice(id) {
+        return this.get(`/api/devices/${id}`);
+    }
+
+    async createDevice(data) {
+        return this.post('/api/devices/', data);
+    }
+
+    async updateDevice(id, data) {
+        return this.patch(`/api/devices/${id}`, data);
+    }
+
+    async deleteDevice(id) {
+        return this.delete(`/api/devices/${id}`);
+    }
+
+    async regenerateDeviceToken(id) {
+        return this.post(`/api/devices/${id}/regenerate-token`, {});
+    }
 }
 
 /**
@@ -220,6 +251,3 @@ class APIError extends Error {
 
 // Create singleton instance
 const api = new APIClient();
-
-
-

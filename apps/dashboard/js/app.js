@@ -9,7 +9,8 @@ class DashboardApp {
             home: HomePage,
             bookings: BookingsPage,
             tables: TablesPage,
-            customers: CustomersPage
+            customers: CustomersPage,
+            devices: DevicesPage
         };
     }
 
@@ -89,7 +90,8 @@ class DashboardApp {
             home: 'ホーム',
             bookings: '予約管理',
             tables: 'テーブル',
-            customers: '顧客'
+            customers: '顧客',
+            devices: 'デバイス管理'
         };
         document.getElementById('pageTitle').textContent = titles[page] || page;
 

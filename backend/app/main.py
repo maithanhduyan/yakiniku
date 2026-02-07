@@ -147,3 +147,7 @@ app.include_router(pos_router, prefix="/api/pos", tags=["pos-domain"])
 # Team: checkin
 from app.domains.checkin.router import router as checkin_router
 app.include_router(checkin_router, prefix="/api/checkin", tags=["checkin-domain"])
+
+# Team: dashboard — device management
+from app.domains.devices.router import router as devices_router
+app.include_router(devices_router, prefix="/api/devices", tags=["devices"])

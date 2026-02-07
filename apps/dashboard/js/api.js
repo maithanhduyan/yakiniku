@@ -236,6 +236,10 @@ class APIClient {
     async regenerateDeviceToken(id) {
         return this.post(`/api/devices/${id}/regenerate-token`, {});
     }
+
+    async logoutDevice(id) {
+        return this.post(`/api/devices/${id}/logout`, {});
+    }
 }
 
 /**

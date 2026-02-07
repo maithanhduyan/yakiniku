@@ -203,6 +203,25 @@ const ja = {
     'demo.set.jo_yakiniku_set.desc': '上カルビ・上ロース・ライス・スープ・サラダ',
     'demo.set.joshikai': '女子会コース',
     'demo.set.joshikai.desc': 'サラダ・お肉5種・デザート・ドリンク付き',
+
+    // Device Auth
+    'auth.title': '端末認証',
+    'auth.subtitle': 'QRコードをスキャンするか、認証コードを入力してください',
+    'auth.scanQR': 'QRコードをスキャン',
+    'auth.or': 'または',
+    'auth.codeLabel': '認証コード',
+    'auth.codePlaceholder': 'コードを入力',
+    'auth.submit': '認証',
+    'auth.verifying': '認証中...',
+    'auth.hint': '※ 管理者がダッシュボードで発行したQRコードが必要です',
+    'auth.scanTitle': 'QRコードをスキャン',
+    'auth.scanHint': 'カメラをQRコードに向けてください',
+    'auth.invalidToken': '無効な認証コードです',
+    'auth.enterCode': '認証コードを入力してください',
+    'auth.cameraError': 'カメラにアクセスできません',
+    'auth.cameraNotSupported': 'このブラウザはQRスキャンに対応していません。コードを手入力してください',
+    'auth.deviceBound': 'このコードは他の端末で使用されています',
+    'auth.expired': 'セッションの有効期限が切れています。再認証してください',
 };
 
 // Register to global i18n object

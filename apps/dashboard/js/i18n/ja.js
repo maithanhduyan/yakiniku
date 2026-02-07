@@ -245,6 +245,15 @@ const ja = {
     'devices.deletedMessage': '{name} を削除しました',
     'devices.deleteFailed': '削除失敗',
 
+    // Device session / logout
+    'devices.connected': '接続中',
+    'devices.logout': 'ログアウト',
+    'devices.logoutTitle': 'デバイスログアウト',
+    'devices.logoutMessage': '「{name}」をログアウトしますか？端末は再認証が必要になります。',
+    'devices.logoutSuccess': 'ログアウト完了',
+    'devices.logoutSuccessMessage': '{name} をログアウトしました',
+    'devices.logoutFailed': 'ログアウト失敗',
+
     // ── Notifications ──
     'notification.title': '通知',
 };

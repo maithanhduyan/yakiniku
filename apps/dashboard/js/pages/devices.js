@@ -109,7 +109,10 @@ const DevicesPage = {
         return `
             <div class="device-row" data-device-id="${device.id}">
                 <div class="device-info">
-                    <div class="device-name">${device.name}</div>
+                    <div class="device-name">
+                        ${device.name}
+                        ${device.has_session ? `<span class="badge confirmed" style="font-size:10px;margin-left:6px;">🔗 ${t('devices.connected')}</span>` : ''}
+                    </div>
                     <div class="device-meta">
                         ${tablePart}
                         <span class="device-seen">${t('devices.lastSeen', { time: lastSeen })}</span>
@@ -117,6 +120,10 @@ const DevicesPage = {
                 </div>
                 <div class="device-actions">
                     ${statusBadge}
+                    ${device.has_session ? `
+                    <button class="btn btn-sm btn-warning device-logout-btn" data-id="${device.id}" title="${t('devices.logout')}">
+                        🔓
+                    </button>` : ''}
                     <button class="btn btn-sm btn-secondary device-qr-btn" data-id="${device.id}" title="QRコード表示">
                         📲
                     </button>
@@ -170,6 +177,14 @@ const DevicesPage = {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.confirmDelete(btn.dataset.id);
+            });
+        });
+
+        // Logout buttons
+        document.querySelectorAll('.device-logout-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.confirmLogout(btn.dataset.id);
             });
         });
 
@@ -535,6 +550,27 @@ const DevicesPage = {
                     this.setupEventListeners();
                 } catch (error) {
                     Toast.error(t('devices.deleteFailed'), error.message);
+                }
+            }
+        );
+    },
+
+    confirmLogout(deviceId) {
+        const device = this.devices.find(d => d.id === deviceId);
+        if (!device) return;
+
+        Modal.confirm(
+            t('devices.logoutTitle'),
+            t('devices.logoutMessage', { name: device.name }),
+            async () => {
+                try {
+                    await api.logoutDevice(deviceId);
+                    Toast.success(t('devices.logoutSuccess'), t('devices.logoutSuccessMessage', { name: device.name }));
+                    await this.loadData();
+                    this.render();
+                    this.setupEventListeners();
+                } catch (error) {
+                    Toast.error(t('devices.logoutFailed'), error.message);
                 }
             }
         );

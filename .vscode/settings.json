@@ -47,7 +47,7 @@
     "prettier.printWidth": 120,
 
     // ============ Live Server Configuration ============
-    "liveServer.settings.host": "0.0.0.0",
+    "liveServer.settings.host": ["localhost", "0.0.0.0"],
     "liveServer.settings.port": 5500,
     "liveServer.settings.root": "/apps",
     "liveServer.settings.ignoreFiles": [

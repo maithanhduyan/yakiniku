@@ -3,9 +3,9 @@
  * iPad table ordering system for Yakiniku Jian
  */
 
-// Get table info from URL params or localStorage
+// Get table info from URL params or localStorage (DeviceAuth may override later)
 const urlParams = new URLSearchParams(window.location.search);
-const TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || 'demo-table-1';
+let TABLE_ID = urlParams.get('table') || localStorage.getItem('table_id') || 'demo-table-1';
 
 // SESSION_ID is generated on WELCOME → ORDERING transition, not on page load
 let SESSION_ID = localStorage.getItem('session_id') || null;
@@ -475,6 +475,34 @@ function setupLongPress() {
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize i18n
     I18N.init();
+
+    // ── Device Auth Gate ──
+    // Check for valid device session before proceeding
+    const hasSession = await DeviceAuth.validateSavedSession();
+    if (hasSession) {
+        // Apply saved device config (table_id, branch_code, etc.)
+        DeviceAuth.applyDeviceConfig();
+        if (window._RESOLVED_TABLE_ID) {
+            TABLE_ID = window._RESOLVED_TABLE_ID;
+        }
+        DeviceAuth.hideAuthScreen();
+    } else {
+        // Show auth screen and wait for auth to complete
+        DeviceAuth.showAuthScreen();
+        await new Promise((resolve) => {
+            // Poll until deviceInfo is set (auth completed)
+            const _origPerform = DeviceAuth.performAuth.bind(DeviceAuth);
+            DeviceAuth.performAuth = async function(token) {
+                await _origPerform(token);
+                if (DeviceAuth.deviceInfo) {
+                    if (window._RESOLVED_TABLE_ID) {
+                        TABLE_ID = window._RESOLVED_TABLE_ID;
+                    }
+                    resolve();
+                }
+            };
+        });
+    }
 
     // Load saved cart and history
     loadCartFromStorage();

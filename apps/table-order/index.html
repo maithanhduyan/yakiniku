@@ -22,6 +22,64 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- ============ Device Auth Screen ============ -->
+    <div class="device-auth-screen hidden" id="deviceAuthScreen">
+        <div class="device-auth-content">
+            <div class="device-auth-logo">🍖</div>
+            <h1 class="device-auth-title" data-i18n="auth.title">端末認証</h1>
+            <p class="device-auth-subtitle" data-i18n="auth.subtitle">QRコードをスキャンするか、認証コードを入力してください</p>
+
+            <div class="device-auth-methods">
+                <!-- Camera QR Scanner -->
+                <div class="auth-method" id="authScanMethod">
+                    <button class="auth-scan-btn" id="authScanBtn">
+                        <span class="auth-scan-icon">📷</span>
+                        <span data-i18n="auth.scanQR">QRコードをスキャン</span>
+                    </button>
+                </div>
+
+                <div class="auth-divider">
+                    <span data-i18n="auth.or">または</span>
+                </div>
+
+                <!-- Manual Code Input -->
+                <div class="auth-method">
+                    <label class="auth-input-label" data-i18n="auth.codeLabel">認証コード</label>
+                    <input type="text" class="auth-code-input" id="authCodeInput"
+                           placeholder="xxxxxxxxxxxxxxxx"
+                           data-i18n-placeholder="auth.codePlaceholder"
+                           autocomplete="off" spellcheck="false">
+                    <button class="auth-submit-btn" id="authSubmitBtn" data-i18n="auth.submit">認証</button>
+                </div>
+            </div>
+
+            <div class="auth-error hidden" id="authError">
+                <span class="auth-error-icon">⚠️</span>
+                <span class="auth-error-text" id="authErrorText"></span>
+            </div>
+
+            <div class="auth-loading hidden" id="authLoading">
+                <div class="loading-spinner"></div>
+                <span data-i18n="auth.verifying">認証中...</span>
+            </div>
+
+            <p class="device-auth-hint" data-i18n="auth.hint">※ 管理者がダッシュボードで発行したQRコードが必要です</p>
+        </div>
+
+        <!-- QR Scanner Overlay -->
+        <div class="qr-scanner-overlay hidden" id="qrScannerOverlay">
+            <div class="qr-scanner-header">
+                <h2 data-i18n="auth.scanTitle">QRコードをスキャン</h2>
+                <button class="qr-scanner-close" id="qrScannerClose">✕</button>
+            </div>
+            <div class="qr-scanner-viewport">
+                <video id="qrVideo" autoplay playsinline></video>
+                <div class="qr-scanner-frame"></div>
+            </div>
+            <p class="qr-scanner-hint" data-i18n="auth.scanHint">カメラをQRコードに向けてください</p>
+        </div>
+    </div>
+
     <!-- ============ Welcome Screen ============ -->
     <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-content">
@@ -293,6 +351,7 @@
     <script src="js/models.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>
+    <script src="js/device-auth.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

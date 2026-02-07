@@ -2191,3 +2191,296 @@ body {
     transform: scale(0.95);
     background: var(--accent-hover);
 }
+
+/* ============ Device Auth Screen ============ */
+
+.device-auth-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2018 50%, #1a1a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    animation: welcomeFadeIn 0.6s ease;
+}
+
+.device-auth-screen.hidden {
+    display: none;
+}
+
+.device-auth-content {
+    text-align: center;
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 420px;
+}
+
+.device-auth-logo {
+    font-size: 64px;
+    margin-bottom: var(--spacing-lg);
+    animation: welcomePulse 2s ease-in-out infinite;
+}
+
+.device-auth-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: 1px;
+}
+
+.device-auth-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.5;
+}
+
+.device-auth-methods {
+    margin-bottom: var(--spacing-xl);
+}
+
+.auth-method {
+    margin-bottom: var(--spacing-md);
+}
+
+/* QR Scan Button */
+.auth-scan-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--accent-color);
+    color: #1a1a1a;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-scan-btn:active {
+    transform: scale(0.97);
+    background: var(--accent-hover);
+}
+
+.auth-scan-icon {
+    font-size: 24px;
+}
+
+/* Divider */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* Code Input */
+.auth-input-label {
+    display: block;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.auth-code-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: var(--spacing-md);
+}
+
+.auth-code-input:focus {
+    border-color: var(--accent-color);
+}
+
+.auth-code-input::placeholder {
+    color: var(--text-muted);
+    letter-spacing: 4px;
+}
+
+.auth-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-card);
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-submit-btn:active {
+    background: var(--accent-color);
+    color: #1a1a1a;
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Error */
+.auth-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid var(--error);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-md);
+    animation: screenSlideIn 0.3s ease;
+}
+
+.auth-error.hidden {
+    display: none;
+}
+
+.auth-error-icon {
+    font-size: 18px;
+}
+
+.auth-error-text {
+    color: var(--error);
+    font-size: 14px;
+}
+
+/* Loading */
+.auth-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.auth-loading.hidden {
+    display: none;
+}
+
+/* Hint */
+.device-auth-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: var(--spacing-lg);
+    line-height: 1.5;
+}
+
+/* ============ QR Scanner Overlay ============ */
+
+.qr-scanner-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    animation: screenSlideIn 0.3s ease;
+}
+
+.qr-scanner-overlay.hidden {
+    display: none;
+}
+
+.qr-scanner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.qr-scanner-header h2 {
+    font-size: 18px;
+    color: #fff;
+}
+
+.qr-scanner-close {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-scanner-close:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.qr-scanner-viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-scanner-viewport video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.qr-scanner-frame {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border: 3px solid var(--accent-color);
+    border-radius: 16px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    animation: scanPulse 2s ease-in-out infinite;
+}
+
+@keyframes scanPulse {
+    0%, 100% { border-color: var(--accent-color); }
+    50% { border-color: rgba(212, 175, 55, 0.5); }
+}
+
+.qr-scanner-hint {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8);
+}

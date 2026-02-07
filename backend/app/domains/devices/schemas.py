@@ -52,6 +52,9 @@ class DeviceResponse(BaseModel):
     table_id: Optional[str] = None
     table_number: Optional[str] = None
     status: str
+    device_fingerprint: Optional[str] = None
+    session_token: Optional[str] = None
+    session_expires_at: Optional[datetime] = None
     last_seen_at: Optional[datetime] = None
     activated_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
@@ -73,9 +76,11 @@ class DeviceQRPayload(BaseModel):
     api_url: str
 
 
-# ── Auth check (device sends token) ──
+# ── Auth request (device sends token + fingerprint) ──
 class DeviceAuthRequest(BaseModel):
     token: str
+    device_fingerprint: str = Field(..., min_length=8, max_length=64,
+                                     description="SHA-256 hash of browser/device info for binding")
 
 
 class DeviceAuthResponse(BaseModel):
@@ -86,4 +91,24 @@ class DeviceAuthResponse(BaseModel):
     table_id: Optional[str] = None
     table_number: Optional[str] = None
     config: Optional[dict] = None
+    session_token: Optional[str] = None
+    session_expires_at: Optional[datetime] = None
+    message: str = ""
+
+
+# ── Session validation (device sends session_token) ──
+class SessionValidateRequest(BaseModel):
+    session_token: str
+    device_fingerprint: str
+
+
+class SessionValidateResponse(BaseModel):
+    valid: bool
+    device_id: Optional[str] = None
+    device_type: Optional[str] = None
+    branch_code: Optional[str] = None
+    table_id: Optional[str] = None
+    table_number: Optional[str] = None
+    config: Optional[dict] = None
+    expires_at: Optional[datetime] = None
     message: str = ""

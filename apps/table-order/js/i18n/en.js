@@ -203,6 +203,25 @@ const en = {
     'demo.set.jo_yakiniku_set.desc': 'Premium Kalbi, Premium Loin, Rice, Soup & Salad',
     'demo.set.joshikai': 'Ladies Course',
     'demo.set.joshikai.desc': 'Salad, 5 kinds of meat, Dessert & Drink included',
+
+    // Device Auth
+    'auth.title': 'Device Authentication',
+    'auth.subtitle': 'Scan QR code or enter auth code to activate this device',
+    'auth.scanQR': 'Scan QR Code',
+    'auth.or': 'or',
+    'auth.codeLabel': 'Auth Code',
+    'auth.codePlaceholder': 'Enter code',
+    'auth.submit': 'Authenticate',
+    'auth.verifying': 'Verifying...',
+    'auth.hint': '* A QR code issued from the admin dashboard is required',
+    'auth.scanTitle': 'Scan QR Code',
+    'auth.scanHint': 'Point the camera at the QR code',
+    'auth.invalidToken': 'Invalid auth code',
+    'auth.enterCode': 'Please enter an auth code',
+    'auth.cameraError': 'Unable to access camera',
+    'auth.cameraNotSupported': 'QR scanning not supported on this browser. Please enter the code manually',
+    'auth.deviceBound': 'This code is already bound to another device',
+    'auth.expired': 'Session expired. Please re-authenticate',
 };
 
 // Register to global i18n object

@@ -51,6 +51,11 @@ class Device(Base):
     # Status
     status = Column(String(20), default=DeviceStatus.PENDING.value, index=True)
 
+    # Session binding (1 QR = 1 device only)
+    device_fingerprint = Column(String(64), nullable=True)     # SHA-256 of browser/device info
+    session_token = Column(String(64), unique=True, nullable=True, index=True)  # Active session token
+    session_expires_at = Column(DateTime(timezone=True))       # 1 year from activation
+
     # Audit
     last_seen_at = Column(DateTime(timezone=True))       # Last heartbeat
     activated_at = Column(DateTime(timezone=True))       # First successful login

@@ -245,6 +245,15 @@ const en = {
     'devices.deletedMessage': '{name} has been deleted',
     'devices.deleteFailed': 'Delete Failed',
 
+    // Device session / logout
+    'devices.connected': 'Connected',
+    'devices.logout': 'Logout',
+    'devices.logoutTitle': 'Logout Device',
+    'devices.logoutMessage': 'Logout "{name}"? The device will need to re-authenticate.',
+    'devices.logoutSuccess': 'Logged Out',
+    'devices.logoutSuccessMessage': '{name} has been logged out',
+    'devices.logoutFailed': 'Logout Failed',
+
     // ── Notifications ──
     'notification.title': 'Notifications',
 };

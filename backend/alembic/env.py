@@ -25,6 +25,8 @@ from app.models import (
 )
 from app.domains.tableorder.events import OrderEvent
 from app.domains.checkin.models import WaitingList, CheckInLog
+from app.domains.devices.models import Device
+from app.domains.kitchen.events import KitchenEvent
 
 # Alembic Config object
 config = context.config

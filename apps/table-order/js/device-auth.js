@@ -295,10 +295,11 @@ const DeviceAuth = {
         if (codeInput) codeInput.disabled = show;
     },
 
-    // ── QR Scanner (BarcodeDetector API — native on iPad/Chrome/Edge) ──
+    // ── QR Scanner (BarcodeDetector + jsQR fallback) ──
     _scannerStream: null,
     _scannerRAF: null,
     _detector: null,
+    _useJsQR: false,
 
     async openQRScanner() {
         const overlay = document.getElementById('qrScannerOverlay');
@@ -307,14 +308,22 @@ const DeviceAuth = {
 
         overlay.classList.remove('hidden');
 
-        // Attempt to create BarcodeDetector (native on iOS 15.4+, Chrome 83+)
+        // Try BarcodeDetector first (native on iOS 15.4+, Chrome 83+)
         if (!this._detector && 'BarcodeDetector' in window) {
             try {
                 this._detector = new BarcodeDetector({ formats: ['qr_code'] });
+                this._useJsQR = false;
             } catch { /* not supported */ }
         }
 
-        if (!this._detector) {
+        // Fallback to jsQR library
+        if (!this._detector && typeof jsQR === 'function') {
+            this._useJsQR = true;
+            console.log('[QR Scanner] Using jsQR fallback');
+        }
+
+        // Neither available
+        if (!this._detector && !this._useJsQR) {
             this.closeQRScanner();
             this.showError(t('auth.cameraNotSupported'));
             return;
@@ -344,11 +353,29 @@ const DeviceAuth = {
 
         if (video.readyState >= video.HAVE_ENOUGH_DATA) {
             try {
-                const codes = await this._detector.detect(video);
-                if (codes.length > 0) {
-                    const raw = codes[0].rawValue;
+                let rawValue = null;
+
+                if (this._useJsQR) {
+                    // jsQR fallback: draw video frame to canvas and decode
+                    const canvas = document.getElementById('qrCanvas');
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: 'dontInvert',
+                    });
+                    if (code) rawValue = code.data;
+                } else {
+                    // Native BarcodeDetector
+                    const codes = await this._detector.detect(video);
+                    if (codes.length > 0) rawValue = codes[0].rawValue;
+                }
+
+                if (rawValue) {
                     this.closeQRScanner();
-                    const token = this.parseQRPayload(raw);
+                    const token = this.parseQRPayload(rawValue);
                     this.performAuth(token);
                     return;
                 }

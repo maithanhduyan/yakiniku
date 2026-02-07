@@ -74,6 +74,7 @@
             </div>
             <div class="qr-scanner-viewport">
                 <video id="qrVideo" autoplay playsinline></video>
+                <canvas id="qrCanvas" style="display:none;"></canvas>
                 <div class="qr-scanner-frame"></div>
             </div>
             <p class="qr-scanner-hint" data-i18n="auth.scanHint">カメラをQRコードに向けてください</p>
@@ -343,6 +344,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/i18n/ja.js"></script>
     <script src="js/i18n/en.js"></script>

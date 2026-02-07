@@ -20,6 +20,9 @@ class DashboardApp {
     async init() {
         console.log('🍖 Dashboard initializing...');
 
+        // Initialize i18n
+        I18N.init();
+
         // Initialize components
         initComponents();
 
@@ -86,14 +89,8 @@ class DashboardApp {
         });
 
         // Update page title
-        const titles = {
-            home: 'ホーム',
-            bookings: '予約管理',
-            tables: 'テーブル',
-            customers: '顧客',
-            devices: 'デバイス管理'
-        };
-        document.getElementById('pageTitle').textContent = titles[page] || page;
+        const titleKey = `page.${page}`;
+        document.getElementById('pageTitle').textContent = t(titleKey);
 
         // Close mobile sidebar
         document.getElementById('sidebar').classList.remove('open');
@@ -107,7 +104,7 @@ class DashboardApp {
         } catch (error) {
             console.error(`Failed to load page ${page}:`, error);
             document.getElementById('pageContent').innerHTML =
-                EmptyState.render('❌', 'エラー', 'ページの読み込みに失敗しました');
+                EmptyState.render('❌', t('common.error'), t('common.loadFailed'));
         }
     }
 
@@ -220,7 +217,7 @@ class DashboardApp {
             ws.changeBranch(branch);
 
             // Reload current page
-            Toast.info('支店変更', `${branchSelect.options[branchSelect.selectedIndex].text}に切り替えました`);
+            Toast.info(t('toast.branchChanged'), t('toast.branchSwitched', { name: branchSelect.options[branchSelect.selectedIndex].text }));
             await this.navigateTo(this.currentPage);
         });
     }
@@ -230,30 +227,43 @@ class DashboardApp {
      */
     updateDateDisplay() {
         const dateEl = document.getElementById('currentDate');
-        const now = new Date();
-        dateEl.textContent = now.toLocaleDateString('ja-JP', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'short'
-        });
-
-        // Update every minute
-        setInterval(() => {
+        const formatDate = () => {
             const now = new Date();
-            dateEl.textContent = now.toLocaleDateString('ja-JP', {
+            dateEl.textContent = now.toLocaleDateString(I18N.dateLocale, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
                 weekday: 'short'
             });
-        }, 60000);
+        };
+        formatDate();
+        setInterval(formatDate, 60000);
+    }
+
+    /**
+     * Called when language is toggled — re-render current page
+     */
+    async onLanguageChange() {
+        // Update page title
+        const titleKey = `page.${this.currentPage}`;
+        document.getElementById('pageTitle').textContent = t(titleKey);
+
+        // Update date display locale
+        this.updateDateDisplay();
+
+        // Re-render current page with new language
+        try {
+            await this.pages[this.currentPage].init();
+        } catch (error) {
+            console.error('Failed to re-render page:', error);
+        }
     }
 }
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const app = new DashboardApp();
+    window.dashboardApp = app;
     app.init();
 });
 

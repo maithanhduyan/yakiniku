@@ -35,7 +35,7 @@ const HomePage = {
                 <div class="grid-2">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">本日の予約</h3>
+                            <h3 class="card-title">${t('home.todayBookings')}</h3>
                             <span class="text-muted">${Format.date(new Date())}</span>
                         </div>
                         <div class="card-body" id="todayBookings">
@@ -45,7 +45,7 @@ const HomePage = {
 
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">テーブル状況</h3>
+                            <h3 class="card-title">${t('home.tableStatus')}</h3>
                         </div>
                         <div class="card-body" id="tableOverview">
                             ${this.renderTableOverview()}
@@ -55,7 +55,7 @@ const HomePage = {
 
                 <div class="card" style="margin-top: 20px;">
                     <div class="card-header">
-                        <h3 class="card-title">最近のアクティビティ</h3>
+                        <h3 class="card-title">${t('home.recentActivity')}</h3>
                     </div>
                     <div class="card-body" id="recentActivity">
                         ${this.renderRecentActivity()}
@@ -78,22 +78,22 @@ const HomePage = {
                 <div class="stat-card">
                     <div class="icon">📅</div>
                     <div class="value">${stats.todayBookings || this.bookings.length}</div>
-                    <div class="label">本日の予約</div>
+                    <div class="label">${t('home.todayBookings')}</div>
                 </div>
                 <div class="stat-card">
                     <div class="icon">⏳</div>
                     <div class="value">${stats.pendingBookings || this.bookings.filter(b => b.status === 'pending').length}</div>
-                    <div class="label">保留中</div>
+                    <div class="label">${t('home.pending')}</div>
                 </div>
                 <div class="stat-card">
                     <div class="icon">🪑</div>
                     <div class="value">${stats.availableTables || '-'}</div>
-                    <div class="label">空きテーブル</div>
+                    <div class="label">${t('home.availableTables')}</div>
                 </div>
                 <div class="stat-card">
                     <div class="icon">👥</div>
                     <div class="value">${stats.totalGuests || this.bookings.reduce((sum, b) => sum + b.guests, 0)}</div>
-                    <div class="label">本日の来客数</div>
+                    <div class="label">${t('home.todayGuests')}</div>
                 </div>
             </div>
         `;
@@ -101,7 +101,7 @@ const HomePage = {
 
     renderTodayBookings() {
         if (this.bookings.length === 0) {
-            return EmptyState.render('📅', '予約なし', '本日の予約はありません');
+            return EmptyState.render('📅', t('home.noBookings'), t('home.noBookingsDesc'));
         }
 
         const sorted = [...this.bookings].sort((a, b) => a.time.localeCompare(b.time));
@@ -113,7 +113,7 @@ const HomePage = {
                         <div class="timeline-time">${Format.time(booking.time)}</div>
                         <div class="timeline-content">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong>${booking.guest_name || '名前なし'}</strong>
+                                <strong>${booking.guest_name || t('home.noName')}</strong>
                                 ${Badge.create(booking.status)}
                             </div>
                             <div class="text-muted" style="font-size: 0.85rem; margin-top: 4px;">
@@ -123,7 +123,7 @@ const HomePage = {
                     </div>
                 `).join('')}
             </div>
-            ${sorted.length > 8 ? `<div class="text-center" style="margin-top: 12px;"><a href="#" data-page="bookings">すべて見る →</a></div>` : ''}
+            ${sorted.length > 8 ? `<div class="text-center" style="margin-top: 12px;"><a href="#" data-page="bookings">${t('home.viewAll')}</a></div>` : ''}
         `;
     },
 
@@ -133,20 +133,20 @@ const HomePage = {
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">-</div>
-                        <div class="text-muted">空席</div>
+                        <div class="text-muted">${t('home.available')}</div>
                     </div>
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">-</div>
-                        <div class="text-muted">使用中</div>
+                        <div class="text-muted">${t('home.occupied')}</div>
                     </div>
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">-</div>
-                        <div class="text-muted">予約済</div>
+                        <div class="text-muted">${t('home.reserved')}</div>
                     </div>
                 </div>
             </div>
             <div style="margin-top: 16px; text-align: center;">
-                <a href="#" data-page="tables" class="btn btn-secondary btn-sm">テーブル管理 →</a>
+                <a href="#" data-page="tables" class="btn btn-secondary btn-sm">${t('home.manageTable')}</a>
             </div>
         `;
     },
@@ -154,7 +154,7 @@ const HomePage = {
     renderRecentActivity() {
         return `
             <div class="text-muted text-center" style="padding: 20px;">
-                WebSocket接続後にリアルタイムで表示されます
+                ${t('home.realtimeHint')}
             </div>
         `;
     },
@@ -166,7 +166,7 @@ const HomePage = {
         ws.on('booking:created', (booking) => {
             this.bookings.push(booking);
             document.getElementById('todayBookings').innerHTML = this.renderTodayBookings();
-            Toast.info('新規予約', `\${booking.guest_name}様 ${Format.time(booking.time)}`);
+            Toast.info(t('home.newBooking'), t('home.guestAt', { name: booking.guest_name, time: Format.time(booking.time) }));
         });
 
         ws.on('booking:updated', (booking) => {

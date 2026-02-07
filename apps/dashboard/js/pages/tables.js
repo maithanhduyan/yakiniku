@@ -17,7 +17,7 @@ const TablesPage = {
             this.tables = await api.getTables();
         } catch (error) {
             console.error('Failed to load tables:', error);
-            Toast.error('エラー', 'テーブルの読み込みに失敗しました');
+            Toast.error(t('common.error'), t('tables.loadFailed'));
             this.tables = [];
         }
     },
@@ -35,22 +35,22 @@ const TablesPage = {
                     <div class="stat-card">
                         <div class="icon" style="color: var(--success);">🟢</div>
                         <div class="value">${this.tables.filter(t => t.status === 'available').length}</div>
-                        <div class="label">空席</div>
+                        <div class="label">${t('tables.available')}</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon" style="color: var(--danger);">🔴</div>
                         <div class="value">${this.tables.filter(t => t.status === 'occupied').length}</div>
-                        <div class="label">使用中</div>
+                        <div class="label">${t('tables.occupied')}</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon" style="color: var(--warning);">🟡</div>
                         <div class="value">${this.tables.filter(t => t.status === 'reserved').length}</div>
-                        <div class="label">予約済</div>
+                        <div class="label">${t('tables.reserved')}</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon">🪑</div>
                         <div class="value">${this.tables.length}</div>
-                        <div class="label">総テーブル数</div>
+                        <div class="label">${t('tables.total')}</div>
                     </div>
                 </div>
 
@@ -58,8 +58,8 @@ const TablesPage = {
                 ${Object.entries(zones).map(([zone, tables]) => `
                     <div class="card" style="margin-bottom: 20px;">
                         <div class="card-header">
-                            <h3 class="card-title">${zone || 'その他'}</h3>
-                            <span class="text-muted">${tables.length}テーブル</span>
+                            <h3 class="card-title">${zone || t('tables.other')}</h3>
+                            <span class="text-muted">${t('tables.tableCount', { count: tables.length })}</span>
                         </div>
                         <div class="card-body">
                             <div class="table-grid">
@@ -96,7 +96,7 @@ const TablesPage = {
                 <div class="table-number">${table.table_number}</div>
                 <div class="table-info">
                     <div>${Format.tableType(table.table_type)}</div>
-                    <div>${table.max_capacity}名まで</div>
+                    <div>${t('tables.capacity', { count: table.max_capacity })}</div>
                     <div class="text-muted" style="margin-top: 4px;">${Format.status(status)}</div>
                 </div>
             </div>
@@ -118,41 +118,41 @@ const TablesPage = {
 
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" onclick="Modal.close()">閉じる</button>
+            <button class="btn btn-secondary" onclick="Modal.close()">${t('common.close')}</button>
             ${table.status === 'available' ?
-                `<button class="btn btn-danger" id="occupyBtn">使用開始</button>` :
+                `<button class="btn btn-danger" id="occupyBtn">${t('tables.startUse')}</button>` :
                 table.status === 'occupied' ?
-                `<button class="btn btn-success" id="releaseBtn">使用終了</button>` :
+                `<button class="btn btn-success" id="releaseBtn">${t('tables.endUse')}</button>` :
                 ''
             }
         `;
 
         Modal.open({
-            title: `テーブル ${table.table_number}`,
+            title: `${t('nav.tables')} ${table.table_number}`,
             content: `
                 <div class="table-detail">
                     <div class="detail-row">
-                        <label>タイプ</label>
+                        <label>${t('tables.type')}</label>
                         <span>${Format.tableType(table.table_type)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>定員</label>
-                        <span>${table.max_capacity}名</span>
+                        <label>${t('tables.capacity_label')}</label>
+                        <span>${t('tables.capacity', { count: table.max_capacity })}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ゾーン</label>
+                        <label>${t('tables.zone')}</label>
                         <span>${table.zone || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>窓側</label>
-                        <span>${table.has_window ? 'はい' : 'いいえ'}</span>
+                        <label>${t('tables.window')}</label>
+                        <span>${table.has_window ? t('tables.yes') : t('tables.no')}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ステータス</label>
+                        <label>${t('common.status')}</label>
                         ${Badge.create(table.status || 'available')}
                     </div>
                     <div class="detail-row">
-                        <label>備考</label>
+                        <label>${t('common.notes')}</label>
                         <span>${table.notes || '-'}</span>
                     </div>
                 </div>
@@ -180,12 +180,12 @@ const TablesPage = {
     async updateTableStatus(id, status) {
         try {
             await api.updateTableStatus(id, status);
-            Toast.success('更新完了', 'テーブルステータスを更新しました');
+            Toast.success(t('tables.updated'), t('tables.updatedMessage'));
             await this.loadData();
             this.render();
             this.setupEventListeners();
         } catch (error) {
-            Toast.error('エラー', error.message);
+            Toast.error(t('common.error'), error.message);
         }
     },
 

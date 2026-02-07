@@ -23,7 +23,7 @@ const DevicesPage = {
             this.tables = Array.isArray(tablesRes) ? tablesRes : [];
         } catch (error) {
             console.error('Failed to load devices:', error);
-            Toast.error('エラー', 'デバイスの読み込みに失敗しました');
+            Toast.error(t('common.error'), t('devices.loadFailed'));
             this.devices = [];
         }
     },
@@ -37,10 +37,10 @@ const DevicesPage = {
         });
 
         const typeLabels = {
-            'table-order': { icon: '🍽️', label: 'テーブルオーダー' },
-            kitchen:       { icon: '👨‍🍳', label: 'キッチン (KDS)' },
-            pos:           { icon: '💰', label: 'POS' },
-            checkin:       { icon: '📋', label: 'チェックイン' },
+            'table-order': { icon: '🍽️', label: t('devices.type.table-order').replace('🍽️ ', '') },
+            kitchen:       { icon: '👨‍🍳', label: t('devices.type.kitchen').replace('👨‍🍳 ', '') },
+            pos:           { icon: '💰', label: t('devices.type.pos').replace('💰 ', '') },
+            checkin:       { icon: '📋', label: t('devices.type.checkin').replace('📋 ', '') },
         };
 
         content.innerHTML = `
@@ -48,7 +48,7 @@ const DevicesPage = {
                 <!-- Header actions -->
                 <div class="page-actions">
                     <button class="btn btn-primary" id="addDeviceBtn">
-                        ＋ 新規デバイス登録
+                        ${t('devices.addDevice')}
                     </button>
                 </div>
 
@@ -57,22 +57,22 @@ const DevicesPage = {
                     <div class="stat-card">
                         <div class="icon" style="color: var(--success);">🟢</div>
                         <div class="value">${this.devices.filter(d => d.status === 'active').length}</div>
-                        <div class="label">アクティブ</div>
+                        <div class="label">${t('devices.active')}</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon" style="color: var(--warning);">🟡</div>
                         <div class="value">${this.devices.filter(d => d.status === 'pending').length}</div>
-                        <div class="label">認証待ち</div>
+                        <div class="label">${t('devices.pending')}</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon" style="color: var(--danger);">🔴</div>
                         <div class="value">${this.devices.filter(d => d.status === 'inactive').length}</div>
-                        <div class="label">無効</div>
+                        <div class="label">${t('devices.inactive')}</div>
                     </div>
                     <div class="stat-card">
                         <div class="icon">📱</div>
                         <div class="value">${this.devices.length}</div>
-                        <div class="label">総デバイス数</div>
+                        <div class="label">${t('devices.total')}</div>
                     </div>
                 </div>
 
@@ -81,11 +81,11 @@ const DevicesPage = {
                     <div class="card" style="margin-bottom: 20px;">
                         <div class="card-header">
                             <h3 class="card-title">${typeLabels[type].icon} ${typeLabels[type].label}</h3>
-                            <span class="text-muted">${devices.length}台</span>
+                            <span class="text-muted">${t('devices.unitCount', { count: devices.length })}</span>
                         </div>
                         <div class="card-body">
                             ${devices.length === 0
-                                ? '<div class="text-muted text-center" style="padding:24px;">登録されたデバイスはありません</div>'
+                                ? `<div class="text-muted text-center" style="padding:24px;">${t('devices.noDevices')}</div>`
                                 : `<div class="device-list">
                                     ${devices.map(d => this.renderDeviceRow(d, typeLabels)).join('')}
                                 </div>`
@@ -101,9 +101,9 @@ const DevicesPage = {
         const statusBadge = this._statusBadge(device.status);
         const lastSeen = device.last_seen_at
             ? Format.relativeTime(device.last_seen_at)
-            : '未接続';
+            : t('devices.notConnected');
         const tablePart = device.table_number
-            ? `<span class="device-table">テーブル ${device.table_number}</span>`
+            ? `<span class="device-table">${t('devices.table', { number: device.table_number })}</span>`
             : '';
 
         return `
@@ -112,7 +112,7 @@ const DevicesPage = {
                     <div class="device-name">${device.name}</div>
                     <div class="device-meta">
                         ${tablePart}
-                        <span class="device-seen">最終接続: ${lastSeen}</span>
+                        <span class="device-seen">${t('devices.lastSeen', { time: lastSeen })}</span>
                     </div>
                 </div>
                 <div class="device-actions">
@@ -133,9 +133,9 @@ const DevicesPage = {
 
     _statusBadge(status) {
         const map = {
-            active:   '<span class="badge confirmed">アクティブ</span>',
-            pending:  '<span class="badge pending">認証待ち</span>',
-            inactive: '<span class="badge cancelled">無効</span>',
+            active:   `<span class="badge confirmed">${t('devices.active')}</span>`,
+            pending:  `<span class="badge pending">${t('devices.pending')}</span>`,
+            inactive: `<span class="badge cancelled">${t('devices.inactive')}</span>`,
         };
         return map[status] || `<span class="badge">${status}</span>`;
     },
@@ -185,47 +185,47 @@ const DevicesPage = {
     // Create Device Modal
     // ──────────────────────────────────────────
     showCreateModal() {
-        const tableOptions = this.tables.map(t =>
-            `<option value="${t.id}" data-number="${t.table_number}">テーブル ${t.table_number}${t.zone ? ` (${t.zone})` : ''}</option>`
+        const tableOptions = this.tables.map(tbl =>
+            `<option value="${tbl.id}" data-number="${tbl.table_number}">${t('devices.table', { number: tbl.table_number })}${tbl.zone ? ` (${tbl.zone})` : ''}</option>`
         ).join('');
 
         const formContent = `
             <form id="deviceForm">
                 <div class="form-group">
-                    <label class="form-label">デバイスタイプ <span style="color:var(--danger)">*</span></label>
+                    <label class="form-label">${t('devices.typeLabel')} <span style="color:var(--danger)">*</span></label>
                     <select class="form-select" name="device_type" required>
-                        <option value="">選択してください</option>
-                        <option value="table-order">🍽️ テーブルオーダー</option>
-                        <option value="kitchen">👨‍🍳 キッチン (KDS)</option>
-                        <option value="pos">💰 POS</option>
-                        <option value="checkin">📋 チェックイン</option>
+                        <option value="">${t('devices.typePlaceholder')}</option>
+                        <option value="table-order">${t('devices.type.table-order')}</option>
+                        <option value="kitchen">${t('devices.type.kitchen')}</option>
+                        <option value="pos">${t('devices.type.pos')}</option>
+                        <option value="checkin">${t('devices.type.checkin')}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">デバイス名 <span style="color:var(--danger)">*</span></label>
-                    <input class="form-input" name="name" placeholder="例: iPad-テーブル1" required />
+                    <label class="form-label">${t('devices.nameLabel')} <span style="color:var(--danger)">*</span></label>
+                    <input class="form-input" name="name" placeholder="${t('devices.namePlaceholder')}" required />
                 </div>
                 <div class="form-group device-table-group" style="display:none;">
-                    <label class="form-label">テーブル <span style="color:var(--danger)">*</span></label>
+                    <label class="form-label">${t('devices.tableLabel')} <span style="color:var(--danger)">*</span></label>
                     <select class="form-select" name="table_id">
-                        <option value="">テーブルを選択</option>
+                        <option value="">${t('devices.tablePlaceholder')}</option>
                         ${tableOptions}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">備考</label>
-                    <textarea class="form-textarea" name="notes" rows="2" placeholder="メモ（任意）"></textarea>
+                    <label class="form-label">${t('devices.notesLabel')}</label>
+                    <textarea class="form-textarea" name="notes" rows="2" placeholder="${t('devices.notesPlaceholder')}"></textarea>
                 </div>
             </form>
         `;
 
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" id="cancelCreate">キャンセル</button>
-            <button class="btn btn-primary" id="submitCreate">登録</button>
+            <button class="btn btn-secondary" id="cancelCreate">${t('common.cancel')}</button>
+            <button class="btn btn-primary" id="submitCreate">${t('devices.register')}</button>
         `;
 
-        Modal.open({ title: '新規デバイス登録', content: formContent, footer });
+        Modal.open({ title: t('devices.createTitle'), content: formContent, footer });
 
         // Show/hide table select based on device type
         const typeSelect = document.querySelector('#deviceForm select[name="device_type"]');
@@ -259,10 +259,10 @@ const DevicesPage = {
         const notes = form.querySelector('[name="notes"]').value.trim() || null;
 
         // Validation
-        if (!type) { Toast.warning('入力エラー', 'デバイスタイプを選択してください'); return; }
-        if (!name) { Toast.warning('入力エラー', 'デバイス名を入力してください'); return; }
+        if (!type) { Toast.warning(t('toast.inputError'), t('devices.typeRequired')); return; }
+        if (!name) { Toast.warning(t('toast.inputError'), t('devices.nameRequired')); return; }
         if (type === 'table-order' && !tableId) {
-            Toast.warning('入力エラー', 'テーブルオーダーにはテーブルの選択が必須です');
+            Toast.warning(t('toast.inputError'), t('devices.tableRequired'));
             return;
         }
 
@@ -277,7 +277,7 @@ const DevicesPage = {
             });
 
             Modal.close();
-            Toast.success('登録完了', `${name} を登録しました`);
+            Toast.success(t('devices.created'), t('devices.createdMessage', { name }));
 
             // Reload and show QR
             await this.loadData();
@@ -285,7 +285,7 @@ const DevicesPage = {
             this.setupEventListeners();
             this.showQRCode(device.id);
         } catch (error) {
-            Toast.error('登録失敗', error.message);
+            Toast.error(t('devices.createFailed'), error.message);
         }
     },
 
@@ -312,34 +312,34 @@ const DevicesPage = {
                 <div class="qr-container" id="qrCanvas"></div>
                 <div class="qr-info">
                     <div class="detail-row">
-                        <label>デバイス名</label>
+                        <label>${t('devices.deviceName')}</label>
                         <span>${device.name}</span>
                     </div>
                     <div class="detail-row">
-                        <label>タイプ</label>
+                        <label>${t('devices.typeField')}</label>
                         <span>${this._typeLabel(device.device_type)}</span>
                     </div>
                     ${device.table_number ? `
                     <div class="detail-row">
-                        <label>テーブル</label>
-                        <span>テーブル ${device.table_number}</span>
+                        <label>${t('devices.tableLabel')}</label>
+                        <span>${t('devices.table', { number: device.table_number })}</span>
                     </div>` : ''}
                     <div class="detail-row">
-                        <label>ステータス</label>
+                        <label>${t('devices.statusField')}</label>
                         <span>${statusBadge}</span>
                     </div>
                     <div class="detail-row">
-                        <label>作成日</label>
+                        <label>${t('devices.createdAt')}</label>
                         <span>${Format.datetime(device.created_at)}</span>
                     </div>
                     ${device.activated_at ? `
                     <div class="detail-row">
-                        <label>認証日</label>
+                        <label>${t('devices.activatedAt')}</label>
                         <span>${Format.datetime(device.activated_at)}</span>
                     </div>` : ''}
                     ${device.last_seen_at ? `
                     <div class="detail-row">
-                        <label>最終接続</label>
+                        <label>${t('devices.lastSeenAt')}</label>
                         <span>${Format.relativeTime(device.last_seen_at)}</span>
                     </div>` : ''}
                 </div>
@@ -365,27 +365,27 @@ const DevicesPage = {
 
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" onclick="Modal.close()">閉じる</button>
-            <button class="btn btn-sm btn-secondary" id="regenerateTokenBtn" data-id="${device.id}">🔄 トークン再生成</button>
+            <button class="btn btn-secondary" onclick="Modal.close()">${t('common.close')}</button>
+            <button class="btn btn-sm btn-secondary" id="regenerateTokenBtn" data-id="${device.id}">${t('devices.regenerate')}</button>
         `;
 
-        Modal.open({ title: `📲 QRコード — ${device.name}`, content: modalContent, footer, size: 'md' });
+        Modal.open({ title: t('devices.qrTitle', { name: device.name }), content: modalContent, footer, size: 'md' });
 
         // Generate QR code after modal is open
         this._renderQR('qrCanvas', qrPayload);
 
         // Regenerate token
         footer.querySelector('#regenerateTokenBtn').addEventListener('click', async () => {
-            Modal.confirm('トークン再生成', 'トークンを再生成すると、既存のQRコードは無効になります。続行しますか？', async () => {
+            Modal.confirm(t('devices.regenerateTitle'), t('devices.regenerateMessage'), async () => {
                 try {
                     await api.regenerateDeviceToken(device.id);
-                    Toast.success('再生成完了', 'トークンを再生成しました');
+                    Toast.success(t('devices.regenerated'), t('devices.regeneratedMessage'));
                     await this.loadData();
                     this.render();
                     this.setupEventListeners();
                     this.showQRCode(device.id);
                 } catch (error) {
-                    Toast.error('エラー', error.message);
+                    Toast.error(t('common.error'), error.message);
                 }
             });
         });
@@ -400,7 +400,7 @@ const DevicesPage = {
 
         // Use the lightweight qrcode lib loaded from CDN
         if (typeof qrcode === 'undefined') {
-            container.innerHTML = '<div style="color:#999;padding:20px;">QRライブラリ読み込み中...</div>';
+            container.innerHTML = `<div style="color:#999;padding:20px;">${t('devices.qrLoading')}</div>`;
             // Retry after script loads
             setTimeout(() => this._renderQR(containerId, data), 500);
             return;
@@ -413,16 +413,16 @@ const DevicesPage = {
             container.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
         } catch (e) {
             console.error('QR generation failed:', e);
-            container.innerHTML = '<div style="color:var(--danger);">QR生成に失敗しました</div>';
+            container.innerHTML = `<div style="color:var(--danger);">${t('devices.qrFailed')}</div>`;
         }
     },
 
     _typeLabel(type) {
         const map = {
-            'table-order': '🍽️ テーブルオーダー',
-            kitchen: '👨‍🍳 キッチン (KDS)',
-            pos: '💰 POS',
-            checkin: '📋 チェックイン',
+            'table-order': t('devices.type.table-order'),
+            kitchen: t('devices.type.kitchen'),
+            pos: t('devices.type.pos'),
+            checkin: t('devices.type.checkin'),
         };
         return map[type] || type;
     },
@@ -434,8 +434,8 @@ const DevicesPage = {
         const device = this.devices.find(d => d.id === deviceId);
         if (!device) return;
 
-        const tableOptions = this.tables.map(t =>
-            `<option value="${t.id}" data-number="${t.table_number}" ${t.id === device.table_id ? 'selected' : ''}>テーブル ${t.table_number}${t.zone ? ` (${t.zone})` : ''}</option>`
+        const tableOptions = this.tables.map(tbl =>
+            `<option value="${tbl.id}" data-number="${tbl.table_number}" ${tbl.id === device.table_id ? 'selected' : ''}>${t('devices.table', { number: tbl.table_number })}${tbl.zone ? ` (${tbl.zone})` : ''}</option>`
         ).join('');
 
         const isTableOrder = device.device_type === 'table-order';
@@ -443,30 +443,30 @@ const DevicesPage = {
         const formContent = `
             <form id="editDeviceForm">
                 <div class="form-group">
-                    <label class="form-label">デバイスタイプ</label>
+                    <label class="form-label">${t('devices.typeLabel')}</label>
                     <input class="form-input" value="${this._typeLabel(device.device_type)}" disabled />
                 </div>
                 <div class="form-group">
-                    <label class="form-label">デバイス名</label>
+                    <label class="form-label">${t('devices.nameLabel')}</label>
                     <input class="form-input" name="name" value="${device.name}" required />
                 </div>
                 <div class="form-group device-table-group" style="display:${isTableOrder ? 'block' : 'none'};">
-                    <label class="form-label">テーブル</label>
+                    <label class="form-label">${t('devices.tableLabel')}</label>
                     <select class="form-select" name="table_id">
-                        <option value="">テーブルを選択</option>
+                        <option value="">${t('devices.tablePlaceholder')}</option>
                         ${tableOptions}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">ステータス</label>
+                    <label class="form-label">${t('common.status')}</label>
                     <select class="form-select" name="status">
-                        <option value="active" ${device.status === 'active' ? 'selected' : ''}>アクティブ</option>
-                        <option value="pending" ${device.status === 'pending' ? 'selected' : ''}>認証待ち</option>
-                        <option value="inactive" ${device.status === 'inactive' ? 'selected' : ''}>無効</option>
+                        <option value="active" ${device.status === 'active' ? 'selected' : ''}>${t('devices.statusActive')}</option>
+                        <option value="pending" ${device.status === 'pending' ? 'selected' : ''}>${t('devices.statusPending')}</option>
+                        <option value="inactive" ${device.status === 'inactive' ? 'selected' : ''}>${t('devices.statusInactive')}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">備考</label>
+                    <label class="form-label">${t('devices.notesLabel')}</label>
                     <textarea class="form-textarea" name="notes" rows="2">${device.notes || ''}</textarea>
                 </div>
             </form>
@@ -474,11 +474,11 @@ const DevicesPage = {
 
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" id="cancelEdit">キャンセル</button>
-            <button class="btn btn-primary" id="submitEdit">更新</button>
+            <button class="btn btn-secondary" id="cancelEdit">${t('common.cancel')}</button>
+            <button class="btn btn-primary" id="submitEdit">${t('common.update')}</button>
         `;
 
-        Modal.open({ title: `デバイス編集 — ${device.name}`, content: formContent, footer });
+        Modal.open({ title: t('devices.editTitle', { name: device.name }), content: formContent, footer });
 
         footer.querySelector('#cancelEdit').addEventListener('click', () => Modal.close());
         footer.querySelector('#submitEdit').addEventListener('click', () => this.handleEdit(deviceId));
@@ -495,7 +495,7 @@ const DevicesPage = {
         const status = form.querySelector('[name="status"]').value;
         const notes = form.querySelector('[name="notes"]').value.trim() || null;
 
-        if (!name) { Toast.warning('入力エラー', 'デバイス名を入力してください'); return; }
+        if (!name) { Toast.warning(t('toast.inputError'), t('devices.nameRequired')); return; }
 
         try {
             await api.updateDevice(deviceId, {
@@ -507,12 +507,12 @@ const DevicesPage = {
             });
 
             Modal.close();
-            Toast.success('更新完了', `${name} を更新しました`);
+            Toast.success(t('devices.updated'), t('devices.updatedMessage', { name }));
             await this.loadData();
             this.render();
             this.setupEventListeners();
         } catch (error) {
-            Toast.error('更新失敗', error.message);
+            Toast.error(t('devices.updateFailed'), error.message);
         }
     },
 
@@ -524,17 +524,17 @@ const DevicesPage = {
         if (!device) return;
 
         Modal.confirm(
-            'デバイス削除',
-            `「${device.name}」を削除しますか？この操作は取り消せません。`,
+            t('devices.deleteTitle'),
+            t('devices.deleteMessage', { name: device.name }),
             async () => {
                 try {
                     await api.deleteDevice(deviceId);
-                    Toast.success('削除完了', `${device.name} を削除しました`);
+                    Toast.success(t('devices.deleted'), t('devices.deletedMessage', { name: device.name }));
                     await this.loadData();
                     this.render();
                     this.setupEventListeners();
                 } catch (error) {
-                    Toast.error('削除失敗', error.message);
+                    Toast.error(t('devices.deleteFailed'), error.message);
                 }
             }
         );

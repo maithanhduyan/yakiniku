@@ -188,7 +188,7 @@ const Format = {
     date(dateStr) {
         if (!dateStr) return '-';
         const date = new Date(dateStr);
-        return date.toLocaleDateString('ja-JP', {
+        return date.toLocaleDateString(I18N.dateLocale, {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -203,7 +203,7 @@ const Format = {
     datetime(datetimeStr) {
         if (!datetimeStr) return '-';
         const date = new Date(datetimeStr);
-        return date.toLocaleString('ja-JP', {
+        return date.toLocaleString(I18N.dateLocale, {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
@@ -221,23 +221,35 @@ const Format = {
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
 
-        if (minutes < 1) return 'たった今';
-        if (minutes < 60) return `${minutes}分前`;
-        if (hours < 24) return `${hours}時間前`;
-        if (days < 7) return `${days}日前`;
+        const isJa = typeof I18N !== 'undefined' && I18N.currentLang === 'ja';
+        if (minutes < 1) return isJa ? 'たった今' : 'just now';
+        if (minutes < 60) return isJa ? `${minutes}分前` : `${minutes}m ago`;
+        if (hours < 24) return isJa ? `${hours}時間前` : `${hours}h ago`;
+        if (days < 7) return isJa ? `${days}日前` : `${days}d ago`;
         return this.date(datetimeStr);
     },
 
     status(status) {
+        if (typeof t === 'function') {
+            const key = `status.${status}`;
+            const translated = t(key);
+            if (translated !== key) return translated;
+        }
         return CONFIG.STATUS_LABELS[status] || status;
     },
 
     tableType(type) {
+        if (typeof t === 'function') {
+            const key = `tableType.${type}`;
+            const translated = t(key);
+            if (translated !== key) return translated;
+        }
         return CONFIG.TABLE_TYPES[type] || type;
     },
 
     guests(count) {
-        return `${count}名`;
+        const suffix = typeof t === 'function' ? t('home.guestSuffix') : '名';
+        return `${count}${suffix}`;
     },
 
     phone(phone) {

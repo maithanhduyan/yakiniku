@@ -25,7 +25,7 @@ const BookingsPage = {
             });
         } catch (error) {
             console.error('Failed to load bookings:', error);
-            Toast.error('エラー', '予約の読み込みに失敗しました');
+            Toast.error(t('common.error'), t('bookings.loadFailed'));
             this.bookings = [];
         }
     },
@@ -48,15 +48,15 @@ const BookingsPage = {
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <select class="form-select" id="filterStatus" style="width: 150px;">
-                                    <option value="">すべてのステータス</option>
-                                    <option value="confirmed" ${this.filters.status === 'confirmed' ? 'selected' : ''}>確定</option>
-                                    <option value="pending" ${this.filters.status === 'pending' ? 'selected' : ''}>保留中</option>
-                                    <option value="cancelled" ${this.filters.status === 'cancelled' ? 'selected' : ''}>キャンセル</option>
+                                    <option value="">${t('bookings.allStatus')}</option>
+                                    <option value="confirmed" ${this.filters.status === 'confirmed' ? 'selected' : ''}>${t('bookings.confirmed')}</option>
+                                    <option value="pending" ${this.filters.status === 'pending' ? 'selected' : ''}>${t('bookings.pending')}</option>
+                                    <option value="cancelled" ${this.filters.status === 'cancelled' ? 'selected' : ''}>${t('bookings.cancelled')}</option>
                                 </select>
                             </div>
-                            <button class="btn btn-secondary btn-sm" id="refreshBtn">更新</button>
+                            <button class="btn btn-secondary btn-sm" id="refreshBtn">${t('common.refresh')}</button>
                             <div style="margin-left: auto;">
-                                <button class="btn btn-primary" id="newBookingBtn">+ 新規予約</button>
+                                <button class="btn btn-primary" id="newBookingBtn">${t('bookings.newBooking')}</button>
                             </div>
                         </div>
                     </div>
@@ -74,7 +74,7 @@ const BookingsPage = {
 
     renderTable() {
         if (this.bookings.length === 0) {
-            return EmptyState.render('📅', '予約がありません', '選択した日付の予約はありません', '予約を追加');
+            return EmptyState.render('📅', t('bookings.noBookings'), t('bookings.noBookingsDesc'), t('bookings.addBooking'));
         }
 
         const sorted = [...this.bookings].sort((a, b) => a.time.localeCompare(b.time));
@@ -83,13 +83,13 @@ const BookingsPage = {
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>時間</th>
-                        <th>お客様名</th>
-                        <th>人数</th>
-                        <th>電話番号</th>
-                        <th>ステータス</th>
-                        <th>備考</th>
-                        <th>操作</th>
+                        <th>${t('bookings.time')}</th>
+                        <th>${t('bookings.guestName')}</th>
+                        <th>${t('bookings.guests')}</th>
+                        <th>${t('bookings.phone')}</th>
+                        <th>${t('bookings.status')}</th>
+                        <th>${t('bookings.notes')}</th>
+                        <th>${t('bookings.actions')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,12 +103,12 @@ const BookingsPage = {
                             <td class="text-muted">${booking.note ? booking.note.substring(0, 30) + '...' : '-'}</td>
                             <td>
                                 <div style="display: flex; gap: 6px;">
-                                    <button class="btn btn-sm btn-secondary view-btn" data-id="${booking.id}">詳細</button>
+                                    <button class="btn btn-sm btn-secondary view-btn" data-id="${booking.id}">${t('common.detail')}</button>
                                     ${booking.status === 'pending' ?
-                                        `<button class="btn btn-sm btn-primary confirm-btn" data-id="${booking.id}">確定</button>` :
+                                        `<button class="btn btn-sm btn-primary confirm-btn" data-id="${booking.id}">${t('bookings.confirm')}</button>` :
                                         ''}
                                     ${booking.status !== 'cancelled' ?
-                                        `<button class="btn btn-sm btn-icon cancel-btn" data-id="${booking.id}" title="キャンセル">✕</button>` :
+                                        `<button class="btn btn-sm btn-icon cancel-btn" data-id="${booking.id}" title="${t('common.cancel')}">✕</button>` :
                                         ''}
                                 </div>
                             </td>
@@ -139,7 +139,7 @@ const BookingsPage = {
             await this.loadData();
             document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
             this.attachTableListeners();
-            Toast.success('更新完了', '予約リストを更新しました');
+            Toast.success(t('bookings.refreshed'), t('bookings.refreshedMessage'));
         });
 
         document.getElementById('newBookingBtn').addEventListener('click', () => {
@@ -165,7 +165,7 @@ const BookingsPage = {
         // Cancel buttons
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                Modal.confirm('キャンセル確認', 'この予約をキャンセルしますか？', async () => {
+                Modal.confirm(t('bookings.cancelTitle'), t('bookings.cancelMessage'), async () => {
                     await this.cancelBooking(btn.dataset.id);
                 });
             });
@@ -177,43 +177,43 @@ const BookingsPage = {
         if (!booking) return;
 
         Modal.open({
-            title: '予約詳細',
+            title: t('bookings.detail'),
             content: `
                 <div class="booking-detail">
                     <div class="detail-row">
-                        <label>予約ID</label>
+                        <label>${t('bookings.bookingId')}</label>
                         <span>${booking.id}</span>
                     </div>
                     <div class="detail-row">
-                        <label>日時</label>
+                        <label>${t('bookings.dateTime')}</label>
                         <span>${Format.date(booking.date)} ${Format.time(booking.time)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>お客様名</label>
+                        <label>${t('bookings.guestName')}</label>
                         <span>${booking.guest_name || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>人数</label>
+                        <label>${t('bookings.guests')}</label>
                         <span>${Format.guests(booking.guests)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>電話番号</label>
+                        <label>${t('bookings.phone')}</label>
                         <span>${Format.phone(booking.guest_phone)}</span>
                     </div>
                     <div class="detail-row">
-                        <label>メール</label>
+                        <label>${t('bookings.email')}</label>
                         <span>${booking.guest_email || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>ステータス</label>
+                        <label>${t('bookings.status')}</label>
                         ${Badge.create(booking.status)}
                     </div>
                     <div class="detail-row">
-                        <label>予約経路</label>
+                        <label>${t('bookings.source')}</label>
                         <span>${booking.source || '-'}</span>
                     </div>
                     <div class="detail-row">
-                        <label>備考</label>
+                        <label>${t('common.notes')}</label>
                         <span>${booking.note || '-'}</span>
                     </div>
                 </div>
@@ -230,40 +230,40 @@ const BookingsPage = {
     showNewBookingModal() {
         const footer = document.createElement('div');
         footer.innerHTML = `
-            <button class="btn btn-secondary" id="modalCancel">キャンセル</button>
-            <button class="btn btn-primary" id="modalSave">保存</button>
+            <button class="btn btn-secondary" id="modalCancel">${t('common.cancel')}</button>
+            <button class="btn btn-primary" id="modalSave">${t('common.save')}</button>
         `;
 
         Modal.open({
-            title: '新規予約',
+            title: t('bookings.createTitle'),
             content: `
                 <form id="bookingForm">
                     <div class="form-group">
-                        <label class="form-label">日付 *</label>
+                        <label class="form-label">${t('bookings.dateLabel')} ${t('common.required')}</label>
                         <input type="date" class="form-input" name="date" value="${this.filters.date}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">時間 *</label>
+                        <label class="form-label">${t('bookings.timeLabel')} ${t('common.required')}</label>
                         <input type="time" class="form-input" name="time" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">人数 *</label>
+                        <label class="form-label">${t('bookings.guestsLabel')} ${t('common.required')}</label>
                         <input type="number" class="form-input" name="guests" min="1" max="50" value="2" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">お客様名</label>
+                        <label class="form-label">${t('bookings.nameLabel')}</label>
                         <input type="text" class="form-input" name="guest_name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">電話番号</label>
+                        <label class="form-label">${t('bookings.phoneLabel')}</label>
                         <input type="tel" class="form-input" name="guest_phone">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">メール</label>
+                        <label class="form-label">${t('bookings.emailLabel')}</label>
                         <input type="email" class="form-input" name="guest_email">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">備考</label>
+                        <label class="form-label">${t('bookings.notesLabel')}</label>
                         <textarea class="form-textarea" name="note" rows="3"></textarea>
                     </div>
                 </form>
@@ -279,19 +279,19 @@ const BookingsPage = {
             const data = Object.fromEntries(formData.entries());
 
             if (!data.date || !data.time || !data.guests) {
-                Toast.error('入力エラー', '必須項目を入力してください');
+                Toast.error(t('toast.inputError'), t('bookings.requiredError'));
                 return;
             }
 
             try {
                 await api.createBooking(data);
                 Modal.close();
-                Toast.success('予約作成', '予約を作成しました');
+                Toast.success(t('bookings.created'), t('bookings.createdMessage'));
                 await this.loadData();
                 document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
                 this.attachTableListeners();
             } catch (error) {
-                Toast.error('エラー', error.message);
+                Toast.error(t('common.error'), error.message);
             }
         });
     },
@@ -299,24 +299,24 @@ const BookingsPage = {
     async confirmBooking(id) {
         try {
             await api.confirmBooking(id);
-            Toast.success('確定完了', '予約を確定しました');
+            Toast.success(t('bookings.confirmedToast'), t('bookings.confirmedMessage'));
             await this.loadData();
             document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
             this.attachTableListeners();
         } catch (error) {
-            Toast.error('エラー', error.message);
+            Toast.error(t('common.error'), error.message);
         }
     },
 
     async cancelBooking(id) {
         try {
             await api.cancelBooking(id);
-            Toast.success('キャンセル完了', '予約をキャンセルしました');
+            Toast.success(t('bookings.cancelledToast'), t('bookings.cancelledMessage'));
             await this.loadData();
             document.querySelector('.card-body[style*="padding: 0"]').innerHTML = this.renderTable();
             this.attachTableListeners();
         } catch (error) {
-            Toast.error('エラー', error.message);
+            Toast.error(t('common.error'), error.message);
         }
     },
 

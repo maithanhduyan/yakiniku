@@ -1,0 +1,21 @@
+id,staff_id,branch_code,username,password,display_name,role,can_dashboard,can_checkin,can_table_order,can_kitchen,can_pos,managed_branches,is_active,notes
+user-001,,hirama,ceo,password123,CEO オーナー,chef_manager,true,true,true,true,true,*,true,全店舗統括
+user-002,,hirama,regional_mgr,password123,エリアマネージャー 関東,chef_manager,true,true,true,true,true,"hirama,shinjuku,yaesu",true,関東エリア担当
+user-003,,shinjuku,regional_mgr2,password123,エリアマネージャー 南部,chef_manager,true,true,true,true,true,"shinagawa,yokohama",true,南部エリア担当
+user-004,staff-001,hirama,yamada,password123,山田 太郎,manager,true,true,true,true,true,,true,平間本店 店長
+user-005,staff-003,hirama,tanaka,password123,田中 一郎,manager,true,true,true,true,true,,true,平間本店 副店長
+user-006,staff-011,shinjuku,matsumoto,password123,松本 大介,manager,true,true,true,true,true,,true,新宿店 店長
+user-007,staff-012,shinjuku,inoue,password123,井上 明美,manager,true,true,true,true,true,,true,新宿店 副店長
+user-008,staff-018,yaesu,ikeda,password123,池田 直樹,manager,true,true,true,true,true,,true,八重洲店 店長
+user-009,staff-023,shinagawa,fujiwara,password123,藤原 剛,manager,true,true,true,true,true,,true,品川店 店長
+user-010,staff-028,yokohama,sakamoto,password123,坂本 隼人,manager,true,true,true,true,true,,true,横浜店 店長
+user-011,staff-005,hirama,takahashi,password123,高橋 健太,staff,false,true,true,true,false,,true,ホール担当
+user-012,staff-006,hirama,ito,password123,伊藤 さくら,staff,false,true,true,true,false,,true,ホール担当
+user-013,staff-007,hirama,watanabe,password123,渡辺 大輔,staff,false,false,false,true,false,,true,キッチン専任
+user-014,staff-008,hirama,nakamura,password123,中村 真由美,staff,false,false,false,true,false,,true,キッチン専任
+user-015,staff-009,hirama,kobayashi,password123,小林 翔太,staff,false,true,true,false,false,,true,レセプション・ホール
+user-016,staff-004,hirama,suzuki,password123,鈴木 美咲,staff,false,false,true,false,true,,true,レジ・ホール担当
+user-017,staff-014,shinjuku,hayashi,password123,林 優子,staff,false,true,true,true,false,,true,ホール担当
+user-018,staff-016,shinjuku,yamaguchi,password123,山口 彩香,staff,false,false,false,true,false,,true,キッチン専任
+user-019,staff-020,yaesu,abe,password123,阿部 翔,staff,false,true,true,true,false,,true,ホール担当
+user-020,staff-022,yaesu,maeda,password123,前田 龍一,staff,false,false,false,true,false,,true,キッチン専任

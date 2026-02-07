@@ -23,12 +23,12 @@ services:
   backend:
     build: ./backend
     environment:
-      - DATABASE_URL=postgresql://yakiniku:yakiniku@db:5432/yakiniku
+      - DATABASE_URL=postgresql://yakiniku:yakiniku@postgres:5432/yakiniku
       - REDIS_URL=redis://redis:6379
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SECRET_KEY=${SECRET_KEY}
     depends_on:
-      - db
+      - postgres
       - redis
     volumes:
       - ./backend:/app
@@ -44,8 +44,9 @@ services:
       - yakiniku-net
 
   # ============ PostgreSQL Database ============
-  db:
+  postgres:
     image: postgres:15-alpine
+    container_name: postgres
     environment:
       - POSTGRES_USER=yakiniku
       - POSTGRES_PASSWORD=yakiniku
@@ -59,6 +60,7 @@ services:
   # ============ Redis Cache ============
   redis:
     image: redis:7-alpine
+    container_name: redis
     restart: unless-stopped
     networks:
       - yakiniku-net

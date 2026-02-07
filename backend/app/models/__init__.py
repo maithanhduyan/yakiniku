@@ -10,6 +10,7 @@ from app.models.table import Table, TableAssignment, TableAvailability
 from app.models.menu import MenuItem, MenuCategory
 from app.models.order import Order, OrderItem, TableSession, OrderStatus
 from app.models.staff import Staff, StaffRole
+from app.models.user import User, UserRole
 
 # New enhanced menu models
 from app.models.category import ItemCategory
@@ -61,4 +62,8 @@ __all__ = [
     # Staff
     "Staff",
     "StaffRole",
+
+    # Users (app operators)
+    "User",
+    "UserRole",
 ]

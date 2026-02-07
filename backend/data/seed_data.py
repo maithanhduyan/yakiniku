@@ -13,7 +13,8 @@ Tables seeded (in dependency order):
   3. branch_customers  — 50 branch-customer relationships
   4. customer_preferences — 57 preferences
   5. staff             — 34 staff across all branches
-  6. tables            — 21 tables across branches
+  6. users             — 20 app operators (chef_manager / manager / staff)
+  7. tables            — 21 tables across branches
   7. bookings          — 25 bookings
   8. menu_items        — 40 legacy menu items (hirama)
   9. item_categories   — 16 categories (6 top-level + 10 sub)
@@ -44,6 +45,7 @@ from app.database import AsyncSessionLocal, engine, Base
 # Models
 from app.models.branch import Branch
 from app.models.staff import Staff, StaffRole
+from app.models.user import User, UserRole
 from app.models.customer import GlobalCustomer, BranchCustomer
 from app.models.preference import CustomerPreference
 from app.models.table import Table
@@ -267,6 +269,35 @@ async def seed_staff(session: AsyncSession) -> int:
         count += 1
     await session.commit()
     print(f"  ✅ staff: {count} rows")
+    return count
+
+
+async def seed_users(session: AsyncSession) -> int:
+    """Seed users (app operators) from users.csv."""
+    rows = _read_csv("users.csv")
+    count = 0
+    for row in rows:
+        user = User(
+            id=row["id"],
+            staff_id=_str(row.get("staff_id", "")),
+            branch_code=_str(row.get("branch_code", "")),
+            username=row["username"],
+            password_hash=User.hash_password(row.get("password", "password123")),
+            display_name=row["display_name"],
+            role=row.get("role", "staff"),
+            can_dashboard=_bool(row.get("can_dashboard", "false")),
+            can_checkin=_bool(row.get("can_checkin", "false")),
+            can_table_order=_bool(row.get("can_table_order", "false")),
+            can_kitchen=_bool(row.get("can_kitchen", "false")),
+            can_pos=_bool(row.get("can_pos", "false")),
+            managed_branches=_str(row.get("managed_branches", "")),
+            is_active=_bool(row.get("is_active", "true")),
+            notes=_str(row.get("notes", "")),
+        )
+        session.add(user)
+        count += 1
+    await session.commit()
+    print(f"  ✅ users: {count} rows")
     return count
 
 
@@ -613,6 +644,8 @@ async def seed_all(drop_existing: bool = True):
         Combo, ComboItem, Promotion, PromotionUsage,
         Order, OrderItem, TableSession, Staff,
     )
+    from app.models.user import User
+    from app.domains.devices.models import Device
     from app.domains.tableorder.events import OrderEvent
     from app.domains.checkin.models import WaitingList, CheckInLog
 
@@ -633,6 +666,7 @@ async def seed_all(drop_existing: bool = True):
         # 2. Entities depending on core
         totals["branch_customers"] = await seed_branch_customers(session)
         totals["staff"] = await seed_staff(session)
+        totals["users"] = await seed_users(session)
         totals["tables"] = await seed_tables(session)
 
         # 3. Entities depending on customers/tables

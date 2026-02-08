@@ -47,9 +47,9 @@ Bạn là **quản lý cửa hàng (Manager)** nhà hàng **焼肉ジナン**. B
 
 ### URL
 
-- Dashboard: `http://localhost:5500/dashboard/`
-- Table-Order: `http://localhost:5500/table-order/`
-- Backend API: `http://localhost:8000/api/`
+- Dashboard: `http://localhost:5500/dashboard/` | `https://localhost:5500/dashboard/`
+- Table-Order: `http://localhost:5500/table-order/` | `https://localhost:5500/table-order/`
+- Backend API: `http://localhost:8000/api/` | `https://localhost:8000/api/`
 
 ### Bố cục trang Devices
 
@@ -91,7 +91,7 @@ Bạn là **quản lý cửa hàng (Manager)** nhà hàng **焼肉ジナン**. B
 ### Phase 0: SETUP — Mở Dashboard trang Devices
 
 ```steps
-1. Dùng `browser_navigate` mở `http://localhost:5500/dashboard/`
+1. Dùng `browser_navigate` mở `http://localhost:5500/dashboard/` hoặc `https://localhost:5500/dashboard/`
 2. Chờ dashboard load xong (chờ text "Dashboard" hoặc heading)
 3. Dùng `browser_snapshot` kiểm tra sidebar
 4. Click link "📱 Devices" trong sidebar navigation
@@ -185,7 +185,10 @@ Phương thức A: Scan QR Code bằng Camera (ưu tiên)
    - Nút "認証"
 
 3. Mock camera stream bằng `browser_evaluate`:
-   Inject fake getUserMedia trả về canvas stream chứa QR Code:
+   Inject fake getUserMedia trả về canvas stream chứa QR Code.
+   ⚠️ QUAN TRỌNG: Chỉ dùng TOKEN (64 hex chars) làm dữ liệu QR.
+   KHÔNG dùng full JSON payload chứa branch_name (tiếng Nhật sẽ bị encode
+   Shift-JIS bởi qrcode-generator → jsQR trả về code.data rỗng).
    ```js
    async () => {
      // Load QR code generator
@@ -194,46 +197,45 @@ Phương thức A: Scan QR Code bằng Camera (ưu tiên)
      document.head.appendChild(script);
      await new Promise(r => { script.onload = r; script.onerror = r; });
 
-     // Generate QR with token
+     // QR data = token ONLY (ASCII-safe, 33-module QR)
      const token = '[TOKEN TỪ PHASE 3]';
      const qr = qrcode(0, 'L');
      qr.addData(token);
      qr.make();
 
      // Draw QR on canvas
-     const canvas = document.createElement('canvas');
      const mc = qr.getModuleCount();
      const cell = 10, margin = 40;
      const sz = mc * cell + margin * 2;
+     const canvas = document.createElement('canvas');
      canvas.width = sz; canvas.height = sz;
      const ctx = canvas.getContext('2d');
-     ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, sz, sz);
-     ctx.fillStyle = '#000';
-     for (let r = 0; r < mc; r++)
-       for (let c = 0; c < mc; c++)
-         if (qr.isDark(r, c))
-           ctx.fillRect(margin + c * cell, margin + r * cell, cell, cell);
 
-     window._qrCanvas = canvas;
+     function drawQR() {
+       ctx.fillStyle = '#FFF'; ctx.fillRect(0, 0, sz, sz);
+       ctx.fillStyle = '#000';
+       for (let r = 0; r < mc; r++)
+         for (let c = 0; c < mc; c++)
+           if (qr.isDark(r, c))
+             ctx.fillRect(margin + c * cell, margin + r * cell, cell, cell);
+     }
+     drawQR();
 
-     // Mock getUserMedia
-     const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+     // Mock getUserMedia → return canvas stream
      navigator.mediaDevices.getUserMedia = async (constraints) => {
        if (constraints?.video) {
-         const stream = canvas.captureStream(30);
-         const ctx2 = canvas.getContext('2d');
-         setInterval(() => { ctx2.fillRect(0, 0, 1, 1); }, 100);
-         return stream;
+         setInterval(drawQR, 50);   // keep redrawing for captureStream
+         return canvas.captureStream(30);
        }
-       return orig(constraints);
+       throw new Error('Only video mock');
      };
 
      return 'Camera mock ready with token: ' + token.substring(0, 16) + '...';
    }
-```
+   ```
 
 4. Click nút "📷 QRコードをスキャン"
-5. Chờ auth screen biến mất (camera scan + jsQR decode + auth tự động)
+5. Chờ 3 giây (camera scan + jsQR decode + auth tự động)
 6. Chụp snapshot xác nhận Welcome screen:
     - Heading "焼肉ジナン"
     - Table number (ví dụ: "A1")
@@ -254,7 +256,7 @@ Phương thức B: Nhập Code thủ công (backup nếu camera mock fail)
 ### Phase 5: VERIFY — Xác nhận trên Dashboard
 
 ```steps
-1. Dùng `browser_navigate` mở `http://localhost:5500/dashboard/#devices`
+1. Dùng `browser_navigate` mở `http://localhost:5500/dashboard/#devices` hoặc `https://localhost:5500/dashboard/#devices`
 2. Click link "📱 Devices" trong sidebar
 3. Chờ trang load xong
 4. Chụp snapshot xác nhận:

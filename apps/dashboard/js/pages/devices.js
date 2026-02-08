@@ -204,8 +204,16 @@ const DevicesPage = {
             `<option value="${tbl.id}" data-number="${tbl.table_number}">${t('devices.table', { number: tbl.table_number })}${tbl.zone ? ` (${tbl.zone})` : ''}</option>`
         ).join('');
 
+        // Resolve current branch name from sidebar selector
+        const branchSelect = document.getElementById('branchSelect');
+        const branchName = branchSelect ? branchSelect.options[branchSelect.selectedIndex].text : api.branchCode;
+
         const formContent = `
             <form id="deviceForm">
+                <div class="form-group">
+                    <label class="form-label">${t('devices.branchLabel')}</label>
+                    <input class="form-input" value="${branchName}" disabled />
+                </div>
                 <div class="form-group">
                     <label class="form-label">${t('devices.typeLabel')} <span style="color:var(--danger)">*</span></label>
                     <select class="form-select" name="device_type" required>
@@ -312,6 +320,9 @@ const DevicesPage = {
         if (!device) return;
 
         const apiUrl = CONFIG.API_URL;
+        // NOTE: Do NOT include branch_name here — Japanese characters cause
+        // qrcode-generator to use Shift-JIS encoding, which jsQR cannot
+        // decode (returns empty string). Only ASCII-safe fields in QR payload.
         const qrPayload = JSON.stringify({
             token: device.token,
             branch_code: device.branch_code,
@@ -326,6 +337,10 @@ const DevicesPage = {
             <div class="qr-display">
                 <div class="qr-container" id="qrCanvas"></div>
                 <div class="qr-info">
+                    <div class="detail-row">
+                        <label>${t('devices.branchField')}</label>
+                        <span>${device.branch_name || device.branch_code}</span>
+                    </div>
                     <div class="detail-row">
                         <label>${t('devices.deviceName')}</label>
                         <span>${device.name}</span>

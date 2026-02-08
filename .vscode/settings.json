@@ -46,29 +46,9 @@
     "prettier.singleQuote": true,
     "prettier.printWidth": 120,
 
-    // ============ Live Server Configuration ============
-    "liveServer.settings.host": "0.0.0.0",
-    "liveServer.settings.port": 5500,
-    "liveServer.settings.root": "/apps",
-    "liveServer.settings.https": {
-        "enable": true,
-        "cert": "./.cert/server.crt",
-        "key": "./.cert/server.key",
-        "passphrase": ""
-    },
-    "liveServer.settings.ignoreFiles": [
-        ".vscode/**",
-        "**/*.md",
-        "**/*.txt",
-        "**/*.xml",
-        "**/*.png",
-        "**/*.jpg",
-        "**/*.jpeg",
-        "**/*.gif",
-        "**/*.svg",
-        "**/*.pdf"
-    ],
-    "liveServer.settings.fullReload": false,
+    // ============ Hotplate Configuration ============
+    "hotplate.root": "./apps/",
+    // "hotplate.https.enable": true,
 
     // ============ Python + UV Configuration ============
     // Cross-platform: works on both Windows and Linux

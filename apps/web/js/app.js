@@ -15,7 +15,7 @@
     const _h = window.location.hostname;
     const _p = window.location.port;
     const _d = _p && !['80','443',''].includes(_p);
-    const API_BASE = `${window.location.protocol}//${_h}${_d ? ':8000' : ''}/api`;
+    const API_BASE = `${_d ? 'http:' : window.location.protocol}//${_h}${_d ? ':8000' : ''}/api`;  // Dev: backend always HTTP
     const BRANCH_CODE = 'hirama';
 
     // ============================================

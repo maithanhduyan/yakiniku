@@ -197,6 +197,7 @@ const ja = {
 
     // Device create modal
     'devices.createTitle': '新規デバイス登録',
+    'devices.branchLabel': '支店',
     'devices.typeLabel': 'デバイスタイプ',
     'devices.typePlaceholder': '選択してください',
     'devices.nameLabel': 'デバイス名',
@@ -216,6 +217,7 @@ const ja = {
     // Device QR modal
     'devices.qrTitle': '📲 QRコード — {name}',
     'devices.deviceName': 'デバイス名',
+    'devices.branchField': '支店',
     'devices.typeField': 'タイプ',
     'devices.statusField': 'ステータス',
     'devices.createdAt': '作成日',

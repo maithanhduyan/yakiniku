@@ -366,7 +366,16 @@ const DeviceAuth = {
                     const code = jsQR(imageData.data, imageData.width, imageData.height, {
                         inversionAttempts: 'dontInvert',
                     });
-                    if (code) rawValue = code.data;
+                    if (code) {
+                        // Prefer code.data, but fall back to binaryData decoded as UTF-8.
+                        // qrcode-generator may encode non-ASCII as Shift-JIS, causing
+                        // jsQR to return empty string in code.data while binaryData is valid.
+                        rawValue = code.data;
+                        if (!rawValue && code.binaryData && code.binaryData.length > 0) {
+                            rawValue = new TextDecoder('utf-8', { fatal: false })
+                                .decode(new Uint8Array(code.binaryData));
+                        }
+                    }
                 } else {
                     // Native BarcodeDetector
                     const codes = await this._detector.detect(video);

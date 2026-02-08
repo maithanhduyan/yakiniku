@@ -10,7 +10,7 @@ const _port = window.location.port;
 const _isDev = _port && !['80', '443', ''].includes(_port);
 const _proto = window.location.protocol;
 const _wsProto = _proto === 'https:' ? 'wss:' : 'ws:';
-const _base = _isDev ? `${_proto}//${_host}:8000` : `${_proto}//${_host}`;
+const _base = _isDev ? `http://${_host}:8000` : `${_proto}//${_host}`;  // Dev: backend always HTTP
 
 const CONFIG = {
     API_BASE: `${_base}/api`,

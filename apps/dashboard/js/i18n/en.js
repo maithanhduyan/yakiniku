@@ -197,6 +197,7 @@ const en = {
 
     // Device create modal
     'devices.createTitle': 'Register New Device',
+    'devices.branchLabel': 'Branch',
     'devices.typeLabel': 'Device Type',
     'devices.typePlaceholder': 'Select type',
     'devices.nameLabel': 'Device Name',
@@ -216,6 +217,7 @@ const en = {
     // Device QR modal
     'devices.qrTitle': '📲 QR Code — {name}',
     'devices.deviceName': 'Device Name',
+    'devices.branchField': 'Branch',
     'devices.typeField': 'Type',
     'devices.statusField': 'Status',
     'devices.createdAt': 'Created',

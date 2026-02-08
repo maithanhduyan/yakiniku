@@ -12,6 +12,7 @@ import json
 
 from app.database import get_db
 from app.domains.devices.models import Device, DeviceStatus
+from app.models.branch import Branch
 from app.domains.devices.schemas import (
     DeviceCreate, DeviceUpdate, DeviceResponse,
     DeviceAuthRequest, DeviceAuthResponse,
@@ -49,8 +50,11 @@ async def list_devices(
     result = await db.execute(query)
     devices = result.scalars().all()
 
+    # Resolve branch name
+    branch_name = await _resolve_branch_name(db, branch_code)
+
     return {
-        "devices": [_device_to_dict(d) for d in devices],
+        "devices": [_device_to_dict(d, branch_name=branch_name) for d in devices],
         "total": len(devices),
     }
 
@@ -68,7 +72,8 @@ async def get_device(
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
 
-    return _device_to_dict(device)
+    branch_name = await _resolve_branch_name(db, device.branch_code)
+    return _device_to_dict(device, branch_name=branch_name)
 
 
 # ── Create device ──
@@ -96,7 +101,8 @@ async def create_device(
     await db.commit()
     await db.refresh(device)
 
-    return _device_to_dict(device)
+    branch_name = await _resolve_branch_name(db, device.branch_code)
+    return _device_to_dict(device, branch_name=branch_name)
 
 
 # ── Update device ──
@@ -129,7 +135,8 @@ async def update_device(
     await db.commit()
     await db.refresh(device)
 
-    return _device_to_dict(device)
+    branch_name = await _resolve_branch_name(db, device.branch_code)
+    return _device_to_dict(device, branch_name=branch_name)
 
 
 # ── Delete device ──
@@ -175,7 +182,8 @@ async def regenerate_token(
     await db.commit()
     await db.refresh(device)
 
-    return _device_to_dict(device)
+    branch_name = await _resolve_branch_name(db, device.branch_code)
+    return _device_to_dict(device, branch_name=branch_name)
 
 
 # ── Device auth (called by devices when scanning QR) ──
@@ -328,15 +336,25 @@ async def logout_device(
     await db.commit()
     await db.refresh(device)
 
-    return {"ok": True, "message": f"Device '{device.name}' logged out", "device": _device_to_dict(device)}
+    branch_name = await _resolve_branch_name(db, device.branch_code)
+    return {"ok": True, "message": f"Device '{device.name}' logged out", "device": _device_to_dict(device, branch_name=branch_name)}
 
 
-# ── Helper ──
-def _device_to_dict(device: Device) -> dict:
+# ── Helpers ──
+async def _resolve_branch_name(db: AsyncSession, branch_code: str) -> Optional[str]:
+    """Look up branch name from code"""
+    result = await db.execute(
+        select(Branch.name).where(Branch.code == branch_code)
+    )
+    return result.scalar_one_or_none()
+
+
+def _device_to_dict(device: Device, *, branch_name: Optional[str] = None) -> dict:
     """Convert Device model to dict for JSON response"""
     return {
         "id": device.id,
         "branch_code": device.branch_code,
+        "branch_name": branch_name or device.branch_code,
         "name": device.name,
         "device_type": device.device_type,
         "token": device.token,

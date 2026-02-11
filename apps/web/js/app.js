@@ -23,11 +23,18 @@
     // ============================================
     const hamburger = document.querySelector('.hamburger');
     const mobileNav = document.querySelector('.mobile-nav');
+    const headerEl = document.querySelector('header');
 
     function toggleMenu() {
+        const isOpening = !mobileNav.classList.contains('active');
         hamburger.classList.toggle('active');
         mobileNav.classList.toggle('active');
-        document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+        document.body.style.overflow = isOpening ? 'hidden' : '';
+
+        // Toggle header transparency (fallback for browsers without :has())
+        if (headerEl) {
+            headerEl.classList.toggle('nav-open', isOpening);
+        }
     }
 
     if (hamburger) {

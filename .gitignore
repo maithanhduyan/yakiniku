@@ -1,6 +1,6 @@
 .playwright-mcp/
 .cert/
-hotplate/target/
+.hotplate/
 
 #Python
 __pycache__/

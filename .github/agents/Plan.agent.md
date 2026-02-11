@@ -1,8 +1,8 @@
 ---
-name: Yakiniku-Plan
+name: Yakiniku-Planer
 description: Researches and outlines multi-step plans
 argument-hint: Outline the goal or problem to research
-tools: ['search', 'github/github-mcp-server/get_issue', 'github/github-mcp-server/get_issue_comments', 'runSubagent', 'usages', 'problems', 'changes', 'testFailure', 'fetch', 'githubRepo', 'github.vscode-pull-request-github/issue_fetch', 'github.vscode-pull-request-github/activePullRequest']
+tools: ['execute/testFailure', 'read/problems', 'read/readFile', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'web', 'agent']
 handoffs:
   - label: Start Implementation
     agent: agent
@@ -10,6 +10,11 @@ handoffs:
   - label: Open in Editor
     agent: agent
     prompt: '#createFile the plan as is into an untitled file (`untitled:plan-${camelCaseName}.prompt.md` without frontmatter) for further refinement.'
+    showContinueOn: false
+    send: true
+  - label: Lên kế hoạch
+    agent: Yakiniku-Planer
+    prompt: 'Create a GitHub issue with the plan as is, using the title "Plan: ${title}" and the plan content as the issue body.'
     showContinueOn: false
     send: true
 ---

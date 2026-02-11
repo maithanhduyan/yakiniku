@@ -32,9 +32,11 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
+    overflow-x: hidden;
     font-family: var(--font-main);
     background-color: var(--bg-color);
     color: var(--text-color);
@@ -73,9 +75,8 @@ h1, h2, h3 {
     text-align: center;
     margin-bottom: var(--spacing-xl);
     position: relative;
-    display: inline-block;
-    left: 50%;
-    transform: translateX(-50%);
+    display: block;
+    width: 100%;
 }
 
 .section-title::after {
@@ -133,11 +134,12 @@ header {
     top: 0;
     width: 100%;
     padding: var(--spacing-md) 0;
-    z-index: 1000;
+    z-index: 2000;
     background: rgba(26, 26, 26, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    transition: background 0.3s ease;
 }
 
 .header-inner {
@@ -218,61 +220,128 @@ header {
     fill: currentColor;
 }
 
-/* Mobile Menu Button (Hamburger) */
+/* Mobile Menu Button (Hamburger → X) */
 .hamburger {
     display: flex;
     flex-direction: column;
     cursor: pointer;
-    z-index: 2000;
+    z-index: 100;
     padding: var(--spacing-sm);
-    min-width: var(--touch-target);
-    min-height: var(--touch-target);
+    width: var(--touch-target);
+    height: var(--touch-target);
     justify-content: center;
     align-items: center;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    position: relative;
+}
+
+.hamburger:active {
+    background: rgba(212, 175, 55, 0.1);
 }
 
 .bar {
     display: block;
-    width: 25px;
+    width: 24px;
     height: 2px;
-    margin: 4px auto;
+    margin: 3px auto;
     background-color: var(--accent-color);
-    transition: var(--transition);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s ease;
+    transform-origin: center;
 }
 
-/* Mobile Nav Drawer */
+/* Mobile Nav Overlay */
 .mobile-nav {
     position: fixed;
     top: 0;
-    right: -100%;
+    left: 0;
     width: 100%;
     height: 100vh;
     height: 100dvh;
-    background-color: var(--bg-color);
+    background: var(--bg-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: var(--transition);
+    gap: 8px;
     z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .mobile-nav.active {
-    right: 0;
+    opacity: 1;
+    visibility: visible;
 }
 
 .mobile-nav a {
-    font-size: 1.3rem;
-    margin: var(--spacing-md) 0;
+    font-size: 1.4rem;
     font-family: var(--font-serif);
-    padding: var(--spacing-sm) var(--spacing-xl);
+    padding: var(--spacing-md) var(--spacing-xl);
     min-height: var(--touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: color 0.2s ease, background 0.2s ease;
+    letter-spacing: 0.15em;
+    color: var(--text-color);
+    opacity: 0;
+    transform: translateY(15px);
 }
 
-/* Hamburger Animation */
-.hamburger.active .bar:nth-child(2) { opacity: 0; }
-.hamburger.active .bar:nth-child(1) { transform: translateY(10px) rotate(45deg); }
-.hamburger.active .bar:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
+.mobile-nav.active a {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.mobile-nav.active a:nth-child(1) { transition: opacity 0.3s 0.05s ease, transform 0.3s 0.05s ease, color 0.2s ease, background 0.2s ease; }
+.mobile-nav.active a:nth-child(2) { transition: opacity 0.3s 0.10s ease, transform 0.3s 0.10s ease, color 0.2s ease, background 0.2s ease; }
+.mobile-nav.active a:nth-child(3) { transition: opacity 0.3s 0.15s ease, transform 0.3s 0.15s ease, color 0.2s ease, background 0.2s ease; }
+.mobile-nav.active a:nth-child(4) { transition: opacity 0.3s 0.20s ease, transform 0.3s 0.20s ease, color 0.2s ease, background 0.2s ease; }
+.mobile-nav.active a:nth-child(5) { transition: opacity 0.3s 0.25s ease, transform 0.3s 0.25s ease, color 0.2s ease, background 0.2s ease; }
+.mobile-nav.active a:nth-child(6) { transition: opacity 0.3s 0.30s ease, transform 0.3s 0.30s ease, color 0.2s ease, background 0.2s ease; }
+
+.mobile-nav a:hover,
+.mobile-nav a:active {
+    color: var(--accent-color);
+    background: rgba(212, 175, 55, 0.08);
+}
+
+.mobile-nav .header-book-btn {
+    margin-top: var(--spacing-lg) !important;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+}
+
+/* Hamburger → X Animation */
+.hamburger.active .bar:nth-child(2) {
+    opacity: 0;
+}
+.hamburger.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+.hamburger.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Header becomes transparent over the nav overlay */
+header:has(.hamburger.active),
+header.nav-open {
+    background: transparent !important;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* Hide header booking button when nav is open */
+header.nav-open .header-book-btn,
+header:has(.hamburger.active) .header-book-btn {
+    opacity: 0;
+    pointer-events: none;
+}
 
 /* --- 5. HERO SECTION --- */
 .hero {
@@ -291,41 +360,59 @@ header {
 
 .hero-content {
     max-width: 600px;
+    padding: 0 var(--spacing-md);
 }
 
 .hero h2 {
-    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-size: clamp(2rem, 7vw, 3.2rem);
     margin-bottom: var(--spacing-md);
-    text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.7);
+    line-height: 1.3;
 }
 
 .hero h2 span {
     display: block;
-    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    font-size: clamp(0.85rem, 2.8vw, 1.1rem);
     font-family: var(--font-main);
     font-weight: 300;
     margin-bottom: var(--spacing-sm);
     color: var(--accent-color);
+    letter-spacing: 0.2em;
 }
 
 .hero p {
-    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-    margin-bottom: var(--spacing-lg);
-    max-width: 600px;
+    font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+    margin-bottom: var(--spacing-xl);
+    max-width: 500px;
     margin-left: auto;
     margin-right: auto;
+    opacity: 0.9;
+    line-height: 2;
 }
 
 .hero-buttons {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
     align-items: center;
+}
+
+.hero-buttons .btn-gold:first-child {
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+.hero-buttons .btn-gold:last-child {
+    font-size: 1rem;
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-weight: 700;
+    letter-spacing: 0.1em;
 }
 
 /* --- 6. SECTIONS & LAYOUT --- */
 section {
     padding: 60px 0;
+    overflow: hidden;
 }
 
 /* News Ticker */
@@ -357,6 +444,7 @@ section {
     grid-template-columns: 1fr;
     gap: var(--spacing-xl);
     align-items: center;
+    overflow: hidden;
 }
 
 .concept-img {

@@ -3,6 +3,7 @@
     "short_name": "テーブル注文",
     "description": "iPad table ordering system for Yakiniku JIAN",
     "start_url": "/apps/table-order/",
+    "scope": "/apps/table-order/",
     "display": "standalone",
     "orientation": "any",
     "background_color": "#1a1a1a",

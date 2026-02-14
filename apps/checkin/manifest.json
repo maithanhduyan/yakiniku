@@ -3,26 +3,28 @@
     "short_name": "CheckIn",
     "description": "焼肉ヅアン - 受付チェックインシステム",
     "start_url": "/apps/checkin/",
+    "scope": "/apps/checkin/",
     "display": "standalone",
     "orientation": "landscape",
     "background_color": "#0a0a0a",
     "theme_color": "#d4af37",
     "icons": [
         {
-            "src": "icons/icon.svg",
+            "src": "assets/icon.svg",
             "sizes": "any",
-            "type": "image/svg+xml",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "/shared/branding/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/shared/branding/icon-512.png",
+            "src": "assets/icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }

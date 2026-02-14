@@ -3,20 +3,28 @@
     "short_name": "KDS",
     "description": "Kitchen Display System for Yakiniku JIAN",
     "start_url": "/apps/kitchen/",
+    "scope": "/apps/kitchen/",
     "display": "standalone",
     "orientation": "landscape",
     "background_color": "#1a1a1a",
     "theme_color": "#d4af37",
     "icons": [
         {
-            "src": "/shared/branding/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
+            "src": "assets/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
         },
         {
-            "src": "/shared/branding/icon-512.png",
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }

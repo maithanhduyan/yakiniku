@@ -1,22 +1,30 @@
 {
     "name": "焼肉ヅアン",
-    "short_name": "Web",
-    "description": "Landing page for Yakiniku JIAN",
+    "short_name": "焼肉ヅアン",
+    "description": "焼肉ヅアン - 平間の上質焼肉",
     "start_url": "/apps/web/",
+    "scope": "/apps/web/",
     "display": "standalone",
     "orientation": "any",
     "background_color": "#1a1a1a",
     "theme_color": "#d4af37",
     "icons": [
         {
-            "src": "/shared/branding/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
+            "src": "assets/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
         },
         {
-            "src": "/shared/branding/icon-512.png",
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }

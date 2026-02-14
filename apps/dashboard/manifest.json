@@ -3,20 +3,28 @@
     "short_name": "Dashboard",
     "description": "Restaurant management dashboard for Yakiniku JIAN",
     "start_url": "/apps/dashboard/",
+    "scope": "/apps/dashboard/",
     "display": "standalone",
     "orientation": "any",
     "background_color": "#1a1a1a",
     "theme_color": "#d4af37",
     "icons": [
         {
-            "src": "/shared/branding/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
+            "src": "assets/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
         },
         {
-            "src": "/shared/branding/icon-512.png",
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }
